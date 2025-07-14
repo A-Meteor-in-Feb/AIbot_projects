@@ -4,7 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-UPLOAD_DIR = 'backend_image/images'
+UPLOAD_DIR = 'images'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.route('/api/robots/<string:robotId>/images', methods=['POST'])
