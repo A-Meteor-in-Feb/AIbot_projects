@@ -30,6 +30,26 @@ def handle_move_command(robotId, command):
                             {"x": 10.0, "y": 5.0, "z": 0.0}]
         }
     
+    elif cmd == "deliver":
+        #TODO
+        task_id = parameters.get("taskId")
+        bin_id = parameters.get("binId")
+    elif cmd == "pause":
+        #TODO
+
+        result = {"status": "paused"}
+    elif cmd == "resume":
+        #TODO
+
+        result = {"status": "resumed"}
+    elif cmd == "abort":
+        #TODO
+        result = {"status": "aborted"}
+    else:
+        #TODO - return the command is not allowed.
+        print("no process of this command")
+
+    
     return jsonify(result), 200 if result["status"] == "accepted" else 400
 
 if __name__ == "__main__":
