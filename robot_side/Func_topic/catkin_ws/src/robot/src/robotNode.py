@@ -2,6 +2,7 @@
 import rospy
 import json
 import struct
+import ssl
 import paho.mqtt.client as mqtt
 from robot.msg import State
 from robot.msg import Connection
@@ -9,7 +10,7 @@ from datetime import datetime
 from datetime import timezone
 
 HOST = "127.0.0.1"
-PORT = 1883
+PORT = 8883
 ROBOTID = "R1234"
 
 STATE_HEADER_ID = 0
@@ -21,7 +22,6 @@ SERIAL_NUMBER = "serial"
 
 def VDA_5050_header(header_id, version, manufacturer, serial_number) -> bytes:
     header_id_bytes = struct.pack(">I", header_id)
-    print(len(header_id_bytes))
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4]+"Z"
     parts = [header_id_bytes, timestamp.encode("utf-8"), version.encode("utf-8"), manufacturer.encode("utf-8"), serial_number.encode("utf-8")]
     header = b"\n".join(parts)+b"\n"
@@ -56,24 +56,34 @@ def state_callback(msg):
     rospy.loginfo(f"Forwarded state topic to MQTT: {payload}")
 
 
-def connection_callback(msg):
+def online_notification():
 
     global CONN_HEADER_ID
     CONN_HEADER_ID += 1
 
-    payload = {
-        "status": msg.status,
-        "reason": msg.reason
-    }
+    payload = {"status": "online", "reason": "connect"}
 
     vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
     vda5050_body = json.dumps(payload).encode("utf-8")
 
     message = vda5050_header+vda5050_body
 
-    mqtt_client.publish(f"robot/{ROBOTID}/connection", message, qos=1)
+    mqtt_client.publish(f"robot/{ROBOTID}/connection", message, qos=1, retain=True)
 
-    rospy.loginfo(f"Forwarded connection topic to MQTT: {payload}")
+
+def last_will_set():
+
+    global CONN_HEADER_ID
+    CONN_HEADER_ID += 1
+
+    payload = {"status": "offline", "reason": "disconnect"}
+
+    vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
+    vda5050_body = json.dumps(payload).encode("utf-8")
+
+    message = vda5050_header+vda5050_body
+
+    mqtt_client.will_set(f"robot/{ROBOTID}/connection", message, qos=1, retain=True)
 
 
 if __name__ == "__main__":
@@ -81,12 +91,21 @@ if __name__ == "__main__":
     rospy.init_node('ros2mqtt_bridge', anonymous=True)
 
     mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id="mqtt_publisher")
+    
+    #TLS
+    mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
+    
     mqtt_client.on_connect = on_connect
+
+    #LAST WILL 
+    last_will_set()
+
     mqtt_client.connect(host=HOST, port=PORT, keepalive=60)
     mqtt_client.loop_start()
 
+    online_notification()
+
     rospy.Subscriber("state", State, state_callback)
-    rospy.Subscriber("connection", Connection, connection_callback)
 
     rospy.spin()
 

@@ -3,3 +3,4 @@ robot_side/Func_topic/catkin_ws/devel/*
 backend/backend_image/images/*
 backend/backend_video/__pycache__/*
 robot_side/func_video/__pycache__/*
+mqtt_certs/*

@@ -9,7 +9,6 @@ def publish_topics():
     rospy.init_node("test_publisher")
 
     pub_state = rospy.Publisher("state", State, queue_size=10)
-    pub_connection = rospy.Publisher("connection", Connection, queue_size=10)
 
     rate = rospy.Rate(1)
 
@@ -25,12 +24,7 @@ def publish_topics():
         state.fault = False
         state.cargoLoad = 5
 
-        connection = Connection()
-        connection.status = "offline"
-        connection.reason = "disconnect"
-
         pub_state.publish(state)
-        pub_connection.publish(connection)
 
         rate.sleep()
 

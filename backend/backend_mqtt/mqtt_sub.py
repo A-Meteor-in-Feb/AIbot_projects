@@ -1,12 +1,13 @@
 import json
 import struct
+import ssl
 import paho.mqtt.client as mqtt
 
 
 #HOST = "192.168.123.61"
 #PORT = 1883
 HOST = "127.0.0.1"
-PORT = 1883
+PORT = 8883
 ROBOTID = "R1234"
 
 
@@ -62,6 +63,10 @@ def on_disconnect(client, userdata, reason_code):
 
 if __name__ == "__main__":
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="mqtt_subscriber")
+    
+    #TLS
+    mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
+    
     mqtt_client.on_connect = on_connect
     mqtt_client.on_disconnect = on_connect
 
