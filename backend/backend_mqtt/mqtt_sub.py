@@ -8,7 +8,14 @@ import paho.mqtt.client as mqtt
 #PORT = 1883
 HOST = "127.0.0.1"
 PORT = 8883
-ROBOTID = "R1234"
+
+ORG_ID = "AIbot"
+DEVICE_TYPE = "backend"
+BACKEND_ID = "B1234"
+ROBOTID = "R1235"
+TOKEN = "98765"
+
+CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"
 
 
 def parse_message(vda5050_msg:bytes):
@@ -62,7 +69,10 @@ def on_disconnect(client, userdata, reason_code):
 
 
 if __name__ == "__main__":
-    mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="mqtt_subscriber")
+    mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
+
+    #Authentication
+    mqtt_client.username_pw_set(username=BACKEND_ID, password=TOKEN)
     
     #TLS
     mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
@@ -71,6 +81,7 @@ if __name__ == "__main__":
     mqtt_client.on_disconnect = on_connect
 
     mqtt_client.connect(HOST, PORT, 60)
+
     try:
         mqtt_client.loop_forever()
     except KeyboardInterrupt:
