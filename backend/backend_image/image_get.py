@@ -40,8 +40,6 @@ def get_image(robotId):
         path = os.path.join(UPLOAD_DIR, file_name)
         file.save(path)
 
-    
-
     return jsonify({"status": "ok"}), 200
 
 

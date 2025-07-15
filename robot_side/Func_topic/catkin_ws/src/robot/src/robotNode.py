@@ -1,32 +1,92 @@
 #!/usr/bin/env python3
-import paho.mqtt.client as mqtt
 import rospy
 import json
-from std_msgs.msg import String
+import struct
+import paho.mqtt.client as mqtt
+from robot.msg import State
+from robot.msg import Connection
+from datetime import datetime
+from datetime import timezone
+
+HOST = "127.0.0.1"
+PORT = 1883
+ROBOTID = "R1234"
+
+STATE_HEADER_ID = 0
+CONN_HEADER_ID = 0
+VERSION = "version"
+MANUFACTURER = "manu"
+SERIAL_NUMBER = "serial"
+
+
+def VDA_5050_header(header_id, version, manufacturer, serial_number) -> bytes:
+    header_id_bytes = struct.pack(">I", header_id)
+    print(len(header_id_bytes))
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4]+"Z"
+    parts = [header_id_bytes, timestamp.encode("utf-8"), version.encode("utf-8"), manufacturer.encode("utf-8"), serial_number.encode("utf-8")]
+    header = b"\n".join(parts)+b"\n"
+    return header
 
 def on_connect(client, userdata, flags, reason_code, properties):
     #rospy.loginfo(f"Connected with the result code {reason_code}")
     print(f"Connected with the result code {reason_code}")
 
-def ros_callback(msg):
-    payload = json.dumps({
-        "ros_topic": msg._connection_header['topic'],
-        "data": msg.data,
-        "stamp": rospy.get_time()
-    })
-    mqtt_client.publish(topic="test/topic", payload=payload, qos=1)
-    rospy.loginfo(f"Forwarded to MQTT: {payload}")
+
+def state_callback(msg):
+
+    global STATE_HEADER_ID
+    STATE_HEADER_ID += 1
+
+    payload = {
+        "position": {"x": msg.x, "y": msg.y, "z": msg.z},
+        "battery": msg.battery,
+        "taskStatus": msg.taskStatus,
+        "connection": msg.connection,
+        "fault": msg.fault,
+        "cargoLoad": msg.cargoLoad
+    }
+    
+    vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
+    vda5050_body = json.dumps(payload).encode("utf-8")
+
+    message = vda5050_header+vda5050_body
+
+    mqtt_client.publish(f"robot/{ROBOTID}/state", message, qos=0)
+
+    rospy.loginfo(f"Forwarded state topic to MQTT: {payload}")
+
+
+def connection_callback(msg):
+
+    global CONN_HEADER_ID
+    CONN_HEADER_ID += 1
+
+    payload = {
+        "status": msg.status,
+        "reason": msg.reason
+    }
+
+    vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
+    vda5050_body = json.dumps(payload).encode("utf-8")
+
+    message = vda5050_header+vda5050_body
+
+    mqtt_client.publish(f"robot/{ROBOTID}/connection", message, qos=1)
+
+    rospy.loginfo(f"Forwarded connection topic to MQTT: {payload}")
+
 
 if __name__ == "__main__":
 
     rospy.init_node('ros2mqtt_bridge', anonymous=True)
 
-    mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id="bridge")
+    mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id="mqtt_publisher")
     mqtt_client.on_connect = on_connect
-    mqtt_client.connect(host="127.0.01.1", port=1883, keepalive=60)
+    mqtt_client.connect(host=HOST, port=PORT, keepalive=60)
     mqtt_client.loop_start()
 
-    rospy.Subscriber("test/topic", String, ros_callback)
+    rospy.Subscriber("state", State, state_callback)
+    rospy.Subscriber("connection", Connection, connection_callback)
 
     rospy.spin()
 
