@@ -2,10 +2,26 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 
+
+BACKEND_VALID_TOKENS = {
+    "B1234": "12345ABCDEF"
+}
+
+ROBOT_ID = "R1234"
+ROBOT_TOKEN = "ABCDEF12345"
+
+
 app = Flask(__name__)
 
 @app.route('/api/robots/<string:robotId>/<string:command>', methods=['POST'])
 def handle_move_command(robotId, command):
+    
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != BACKEND_VALID_TOKENS["B1234"]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+
     data = request.get_json(force=True)
     print(data)
     cmd = data.get('command')
@@ -71,4 +87,5 @@ def handle_move_command(robotId, command):
         return jsonify(result), 422
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8000)
+    context = ("cert.pem", "key.pem")
+    app.run(host="127.0.0.1", port=8443, ssl_context=context)

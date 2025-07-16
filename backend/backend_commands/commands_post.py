@@ -1,6 +1,13 @@
 import requests
 import json
 
+ROBOT_VALID_TOKENS = {
+    "R1234": "ABCDEF12345"
+}
+
+BACKEND_ID = "B1234"
+BACKEND_TOKEN = "12345ABCDEF"
+
 
 COMMAND_MOVE = '0'
 COMMAND_DELIVER = '1'
@@ -16,11 +23,11 @@ def on_quit():
     RUNNING = False
 
 
-def send_command(base_url, token, command, robotId, parameters):
+def send_command(base_url, command, robotId, parameters):
     url = f"{base_url}/api/robots/{robotId}/{command}"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {token}"
+        "Authorization": f"Bearer {BACKEND_TOKEN}"
     }
     if parameters == {}:
         payload = {
@@ -32,7 +39,13 @@ def send_command(base_url, token, command, robotId, parameters):
             "params": parameters
         }
     
-    response = requests.post(url=url, headers=headers, json=payload, timeout=5)
+    response = requests.post(
+        url=url, 
+        headers=headers, 
+        json=payload, 
+        timeout=5,
+        verify="cert.pem"
+    )
     
     print(f"Got status code {response.status_code}")
 
@@ -44,66 +57,71 @@ def send_command(base_url, token, command, robotId, parameters):
 
 
 def move_control():
-    base_url = "http://127.0.0.1:8000"
-    token = "OneToken"
+    base_url = "https://127.0.0.1:8443"
+    
     command = "move"
     robotId = "R1234"
+
     parameters = {"taskId": 1234, "x": 11.11, "y": 22.22, "z": 33.33}
 
     try:
-        send_command(base_url, token, command, robotId, parameters)  
+        send_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
 
 def deliver_control():
-    base_url = "http://127.0.0.1:8000"
-    token = "OneToken"
+    base_url = "https://127.0.0.1:8443"
+    
     command = "deliver"
     robotId = "R1234"
+
     parameters = {"taskId": 1234, "binId": 100}
 
     try:
-        send_command(base_url, token, command, robotId, parameters)  
+        send_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
 
 def pause_control():
-    base_url = "http://127.0.0.1:8000"
-    token = "OneToken"
+    base_url = "https://127.0.0.1:8443"
+    
     command = "pause"
     robotId = "R1234"
+
     parameters = {}
 
     try:
-        send_command(base_url, token, command, robotId, parameters)  
+        send_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
 
 def resume_control():
-    base_url = "http://127.0.0.1:8000"
-    token = "OneToken"
+    base_url = "https://127.0.0.1:8443"
+    
     command = "resume"
     robotId = "R1234"
+
     parameters = {}
 
     try:
-        send_command(base_url, token, command, robotId, parameters)  
+        send_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
 
 def abort_control():
-    base_url = "http://127.0.0.1:8000"
-    token = "OneToken"
+    base_url = "https://127.0.0.1:8443"
+    
     command = "abort"
     robotId = "R1234"
+    
     parameters = {}
 
     try:
-        send_command(base_url, token, command, robotId, parameters)  
+        send_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
