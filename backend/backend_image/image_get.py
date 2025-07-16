@@ -2,6 +2,15 @@ from flask import Flask, request, jsonify
 import os, base64
 from datetime import datetime 
 
+
+ROBOT_VALID_TOKENS = {
+    "R1234": "ABCDEF12345"
+}
+
+BACKEND_ID = "B1234"
+BACKEND_TOKEN = "12345ABCDEF"
+
+
 app = Flask(__name__)
 
 UPLOAD_DIR = 'images'
@@ -9,6 +18,14 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.route('/api/robots/<string:robotId>/images', methods=['POST'])
 def get_image(robotId):
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != ROBOT_VALID_TOKENS["R1234"]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     #JSON Base64
     if request.is_json:
         data = request.get_json(force=True)
@@ -40,8 +57,14 @@ def get_image(robotId):
         path = os.path.join(UPLOAD_DIR, file_name)
         file.save(path)
 
+        print("stored image already")
+    
+    else:
+        return jsonify({"status": "Unsupported Media Type"}), 415
+
     return jsonify({"status": "ok"}), 200
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8000)
+    context = ("cert.pem", "key.pem")
+    app.run(host="127.0.0.1", port=8443, ssl_context=context)

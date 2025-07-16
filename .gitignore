@@ -6,5 +6,8 @@ robot_side/func_video/__pycache__/*
 mqtt_certs/*
 https_certs/*
 backend/backend_commands/cert.pem
+backend/backend_image/cert.pem
+backend/backend_image/key.pem
 robot_side/func_commands/cert.pem
 robot_side/func_commands/key.pem
+robot_side/func_image/cert.pem

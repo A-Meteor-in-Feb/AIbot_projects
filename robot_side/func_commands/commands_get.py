@@ -21,6 +21,8 @@ def handle_move_command(robotId, command):
     if token != BACKEND_VALID_TOKENS["B1234"]:
         result = {"status": "Unauthorized"}
         return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
 
     data = request.get_json(force=True)
     print(data)
@@ -85,6 +87,8 @@ def handle_move_command(robotId, command):
         
         result = {"status": "This command is not defined."}
         return jsonify(result), 422
+
+
 
 if __name__ == "__main__":
     context = ("cert.pem", "key.pem")
