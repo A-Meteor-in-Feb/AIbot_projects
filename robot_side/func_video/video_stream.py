@@ -4,15 +4,14 @@ import cv2
 import uvicorn
 import os
 
+
+BACKEND_VALID_TOKENS = {
+    "B1234": "12345ABCDEF"
+}
+
+
 app = FastAPI()
 
-def verify_bearer_token(authorization: str):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
-    
-    token = authorization.split(" ", 1)[1]
-    
-    payload = token
 
 def frame_generator():
 
@@ -45,12 +44,21 @@ def frame_generator():
     finally:
         cap.release()
 
-@app.get("/camera/video-stream")
-def video_stream():
+@app.get("/camera/stream")
+def video_stream(authorization: str = Header(None)):
+
+    if authorization is None:
+        raise HTTPException(status_code=401, detail="Missing authorization header")
     
+    authorization_parts = authorization.split()
+    token = authorization_parts[1]
+
+    if token != BACKEND_VALID_TOKENS["B1234"]:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     return StreamingResponse(
         frame_generator(),
-        media_type="multipart/x-mixed-replace; boundary=frame"
+        media_type="multipart/x-mixed-replace; boundary=--frame"
     )
 
 if __name__ == "__main__":

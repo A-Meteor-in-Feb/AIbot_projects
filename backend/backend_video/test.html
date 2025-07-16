@@ -9,9 +9,10 @@
   
   <img 
     id="stream" 
-    src = "http://127.0.0.1:8000/camera/video-stream"
+    src = "https://127.0.0.1:8444/api/robots/R1234/video-stream"
     alt="MJPEG Stream" 
     style="max-width:100%; border:1px solid #ccc;" 
+    onerror="setTimeout(() => {this.src = this.src; }, 8000)"
   />
 </body>
 </html>
