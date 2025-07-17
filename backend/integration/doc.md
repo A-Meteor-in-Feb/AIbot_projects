@@ -4,58 +4,58 @@
 
 * MQTT Broker's address:  
 
-BROKER_HOST = "127.0.0.1" 
-BROKER_PORT = 8445
+BROKER_HOST = "127.0.0.1"  
+BROKER_PORT = 8445  
 
 * Parameter needed by VDA5050 protocol header:  
 
-ORG_ID = "AIbot"
+ORG_ID = "AIbot"  
 
 * URLs needed for testing:  
 
-TEST_ROBOT_HOST = "127.0.0.1"
-TEST_ROBOT_PORT = 8443
-TEST_BACKEND_HOST = "127.0.0.1"
-TEST_BACKEND_PORT = 8444
+TEST_ROBOT_HOST = "127.0.0.1"  
+TEST_ROBOT_PORT = 8443  
+TEST_BACKEND_HOST = "127.0.0.1"  
+TEST_BACKEND_PORT = 8444  
 
 * For control commands:  
 
-COMMAND_MOVE = '0'
-COMMAND_DELIVER = '1'
-COMMAND_PAUSE = '2'
-COMMAND_RESUME = '3'
-COMMAND_ABORT = '4'
+COMMAND_MOVE = '0'  
+COMMAND_DELIVER = '1'  
+COMMAND_PAUSE = '2'  
+COMMAND_RESUME = '3'  
+COMMAND_ABORT = '4'  
 
-TASKID_MOVE = 1234
-TASKID_DELIVER = 1235
+TASKID_MOVE = 1234  
+TASKID_DELIVER = 1235  
 
 * For authorization:  
 
-ROBOT_ID_1 = "R1234"
-ROBOT_ID_2 = "R1235"
-ROBOT_VALID_TOKENS = {
-    ROBOT_ID_1: "ABCDEF12345",
-    ROBOT_ID_2: "1234567"
-}
+ROBOT_ID_1 = "R1234"  
+ROBOT_ID_2 = "R1235"  
+ROBOT_VALID_TOKENS = {  
+    ROBOT_ID_1: "ABCDEF12345",  
+    ROBOT_ID_2: "1234567"  
+}  
 
-DEVICE_TYPE = "backend"
-BACKEND_ID = "B1234"
-BACKEND_TOKEN = "98765"
+DEVICE_TYPE = "backend"  
+BACKEND_ID = "B1234"  
+BACKEND_TOKEN = "98765"  
 
-CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"
+CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
 
 * TLS configuration:
-cert.pem
-key.pem
+cert.pem  
+key.pem  
 
 ### 1. backend_client.py
 
 #### 1.1 Dependency
 
 `requests`
-'''bash
+```bash
 conda install -c conda-forge requests
-'''
+```
 
 #### 1.2 Structure
 
@@ -70,18 +70,18 @@ backend_client.py
 
 #### 1.3 How to run
 
-'''bash
+```bash
 python backend_client.py
-'''
+```
 
 ### 2. backend_mqtt_client.py
 
 #### 2.1 dependencies
 
 `paho.mqtt.client`
-'''bash
+```bash
 conda install -c conda-forge paho-mqtt
-'''
+```
 
 #### 2.2 Structure
 
@@ -95,23 +95,23 @@ backend_mqtt_client.py
 
 #### 2.3 How to run
 
-'''bash
+```bash
 python backend_mqtt_client.py
-'''
+```
 
 ### 3. backend_server.py
 
 #### 3.1 dependency
 
 `Flask`
-'''bash
+```bash
 conda install -c conda-forge Flask
-'''
+```
 
 `requets`
-'''bash
+```bash
 conda install -c conda-forge requests
-'''
+```
 
 #### 3.2 Get Image (POST `/api/robots/<robotId>/images`)
 
@@ -141,6 +141,6 @@ conda install -c conda-forge requests
 
 #### 3.5 How to run
 
-'''bash
+```bash
 python backend_server.py
-'''
+```
