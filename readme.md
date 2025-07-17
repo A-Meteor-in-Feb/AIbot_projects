@@ -21,36 +21,36 @@ To ensure security:
 ### Structure
 
 backend -----  
-&nbsp;&nbsp;&nbsp;|- backend_commands:  
-&emsp;&emsp;&emsp;|            |------- commands_post.py: Post the control commands from the backend.  
-            |- backend_image:  
-            |            |------- image_get.py: Get the images from the Robot on the backend.  
-            |- backend_mqtt:  
-            |            |------- mqtt_sub.py: Subscribe MQTT topics from the Robot on the backend.  
-            |            |------- mqtt_pub.py: A MQTT publisher for testing.  
-            |- backend_video:  
-            |            |------- video_get.py: Get and response the video stream by fastapi.  
-            |            |------- video_get2.py: Get and response the video stream by Flask(suggested by the Doc(3)).  
-            |- integration: Integrate and review all separate functions.  
-                         |------- backend_client.py: Sends control-command requests to the robot.  
-                         |------- backend_mqtt_client.py: Subscribes to the robot's MQTT-published messages/.  
-                         |------- backend_server.py: Exposes HTTP endpoints to handle image uploads from the robot and video-stream requets from the fronend.  
+&emsp;&emsp;&emsp;|- backend_commands:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- commands_post.py: Post the control commands from the backend.  
+&emsp;&emsp;&emsp;|- backend_image:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- image_get.py: Get the images from the Robot on the backend.  
+&emsp;&emsp;&emsp;|- backend_mqtt:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- mqtt_sub.py: Subscribe MQTT topics from the Robot on the backend.  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- mqtt_pub.py: A MQTT publisher for testing.  
+&emsp;&emsp;&emsp;|- backend_video:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- video_get.py: Get and response the video stream by fastapi.  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- video_get2.py: Get and response the video stream by Flask(suggested by the Doc(3)).  
+&emsp;&emsp;&emsp;|- integration: Integrate and review all separate functions.  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- backend_client.py: Sends control-command requests to the robot.  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- backend_mqtt_client.py: Subscribes to the robot's MQTT-published messages/.  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- backend_server.py: Exposes HTTP endpoints to handle image uploads from the robot and video-stream requets from the fronend.  
 
 robot_side---  
-            |- func_commands:  
-            |            |------- commands_get.py: Get the control commands from the backend.  
-            |- func_image:  
-            |            |------- image_post.py: Post the images to the backend.  
-            |- Func_topic:  
-            |            |------- catkin_ws/src/robot/src:  
-            |            |                |------- robotNode.py: Publish MQTT topics to the backend.  
-            |            |                |------- ros_publisher.py: ros publisher for testing.  
-            |- func_video:  
-            |            |------- video_stream.py: Response the video stream by fastapi.  
-            |            |------- video_stream2.py: Response the video stream by Flask(suggested by the Doc(3)).  
-            |- integrate: Integrate and review all separate functions.  
-                         |------- catkin_ws/src/robot/src:  
-                         |                |------- robot_mqtt_client.py: Subscribe to messages published by ROS1, converts them to JSON, then publishes via MQTT  
-                         |                |------- ros_publisher_test.py: Ros publisher for testing.  
-                         |------- robot_client.py: Exposes HTTP endpoints to handle command requests and video stream requets from the backend.  
-                         |------- robot_server.py: Sends image-data requests to the backend.  
+&emsp;&emsp;&emsp;|- func_commands:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- commands_get.py: Get the control commands from the backend.  
+&emsp;&emsp;&emsp;|- func_image:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- image_post.py: Post the images to the backend.  
+&emsp;&emsp;&emsp;|- Func_topic:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- catkin_ws/src/robot/src:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- robotNode.py: Publish MQTT topics to the backend.  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- ros_publisher.py: ros publisher for testing.  
+&emsp;&emsp;&emsp;|- func_video:  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- video_stream.py: Response the video stream by fastapi.  
+&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- video_stream2.py: Response the video stream by Flask(suggested by the Doc(3)).  
+&emsp;&emsp;&emsp;|- integrate: Integrate and review all separate functions.  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- catkin_ws/src/robot/src:  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- robot_mqtt_client.py: Subscribe to messages published by ROS1, converts them to JSON, then publishes via MQTT  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- ros_publisher_test.py: Ros publisher for testing.  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- robot_client.py: Exposes HTTP endpoints to handle command requests and video stream requets from the backend.  
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- robot_server.py: Sends image-data requests to the backend.  
