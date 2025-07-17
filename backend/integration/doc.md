@@ -1,6 +1,6 @@
 ## Documentation for the Backend Program
 
-#### Constants Configuration
+### Constants Configuration
 
 * MQTT Broker's address:  
 
