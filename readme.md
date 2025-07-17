@@ -20,7 +20,7 @@ To ensure security:
 
 ### Structure
 
-backend -----  
+backend  
 &emsp;&emsp;&emsp;|- backend_commands:  
 &emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- commands_post.py: Post the control commands from the backend.  
 &emsp;&emsp;&emsp;|- backend_image:  
@@ -36,7 +36,7 @@ backend -----
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- backend_mqtt_client.py: Subscribes to the robot's MQTT-published messages/.  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|------- backend_server.py: Exposes HTTP endpoints to handle image uploads from the robot and video-stream requets from the fronend.  
 
-robot_side---  
+robot_side  
 &emsp;&emsp;&emsp;|- func_commands:  
 &emsp;&emsp;&emsp;|&emsp;&emsp;&emsp;|------- commands_get.py: Get the control commands from the backend.  
 &emsp;&emsp;&emsp;|- func_image:  
