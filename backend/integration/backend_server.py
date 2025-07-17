@@ -1,19 +1,29 @@
+#as a server
+import os
+import base64
+import requests
 from flask import Flask
 from flask import request
 from flask import jsonify
-import os, base64
-from datetime import datetime 
+from flask import Response
+from flask import abort
+from flask import send_from_directory
+from datetime import datetime
 
+TEST_ROBOT_HOST = "127.0.0.1"
+TEST_ROBOT_PORT = 8443
+TEST_BACKEND_HOST = "127.0.0.1"
+TEST_BACKEND_PORT = 8444
 
+ROBOT_ID_1 = "R1234"
 ROBOT_VALID_TOKENS = {
-    "R1234": "ABCDEF12345"
+    ROBOT_ID_1: "ABCDEF12345"
 }
-
 BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
 
-
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, static_folder=BASE_DIR, static_url_path='')
 
 UPLOAD_DIR = 'images'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -22,7 +32,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def get_image(robotId):
     header = request.headers
     token = header.get('Authorization')[7:]
-    if token != ROBOT_VALID_TOKENS["R1234"]:
+    if token != ROBOT_VALID_TOKENS[robotId]:
         result = {"status": "Unauthorized"}
         return jsonify(result), 401
     else:
@@ -67,6 +77,45 @@ def get_image(robotId):
     return jsonify({"status": "ok"}), 200
 
 
+@app.route('/', defaults={'path': 'test.html'})
+def serve(path):
+    full_path = os.path.join(BASE_DIR, path)
+    if os.path.isfile(full_path):
+        return send_from_directory(BASE_DIR, path)
+    else:
+        abort(404)
+
+
+@app.route('/api/robots/<robotId>/video-stream', methods=['GET'])
+def proxy_mjpeg(robotId):
+   
+    url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}/camera/stream"
+
+    headers = {
+        "Authorization": f"Bearer {BACKEND_TOKEN}"
+    }
+
+    response = requests.get(
+        url=url,
+        headers=headers,
+        stream=True,
+        timeout=(5, None),
+        verify="cert.pem"
+    )
+
+    if response.status_code != 200:
+        abort(response.status_code, description="Robot stream error")
+
+    content_type = response.headers.get(
+        "Content-Type",
+        "multipart/x-mixed-replace; boundary=--frame"
+    )
+
+    return Response(
+        response.iter_content(chunk_size=1024),
+        mimetype=content_type
+    )
+
 if __name__ == "__main__":
     context = ("cert.pem", "key.pem")
-    app.run(host="127.0.0.1", port=8443, ssl_context=context)
+    app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)

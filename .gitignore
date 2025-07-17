@@ -10,8 +10,12 @@ backend/backend_image/cert.pem
 backend/backend_image/key.pem
 backend/backend_video/cert.pem
 backend/backend_video/key.pem
+backend/integration/cert.pem
+backend/integration/key.pem
 robot_side/func_commands/cert.pem
 robot_side/func_commands/key.pem
 robot_side/func_image/cert.pem
 robot_side/func_video/cert.pem
 robot_side/func_video/key.pem
+robot_side/integration/cert.pem
+robot_side/integration/key.pem

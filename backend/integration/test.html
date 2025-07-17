@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Robot MJPEG Test</title>
+</head>
+<body>
+  <h1>Robot Camera Stream</h1>
+  
+  <img 
+    id="stream" 
+    src = "https://127.0.0.1:8444/api/robots/R1234/video-stream"
+    alt="MJPEG Stream" 
+    style="max-width:100%; border:1px solid #ccc;" 
+    onerror="setTimeout(() => {this.src = this.src; }, 8000)"
+  />
+</body>
+</html>
