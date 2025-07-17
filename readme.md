@@ -22,7 +22,7 @@ To ensure security:
 
 backend -----  
 &nbsp;&nbsp;&nbsp;|- backend_commands:  
-            |            |------- commands_post.py: Post the control commands from the backend.  
+&emsp;&emsp;&emsp;|            |------- commands_post.py: Post the control commands from the backend.  
             |- backend_image:  
             |            |------- image_get.py: Get the images from the Robot on the backend.  
             |- backend_mqtt:  
