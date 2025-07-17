@@ -21,6 +21,11 @@ CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"
 
 
 def parse_message(vda5050_msg:bytes):
+    """
+        Parse binary vda5050 message into header and data.
+        vda5050_msg: The received data.
+        return: (header, data)
+    """
 
     message = vda5050_msg.payload.decode("utf-8")
     print(len(message))
@@ -43,10 +48,18 @@ def parse_message(vda5050_msg:bytes):
     return (header, data)
 
 def state_handler(client, userdata, msg):
+    """
+        process robot/{robotId}/state message.
+        print corresponding header and data.
+    """
     (header, data) = parse_message(msg)
     print(f"The state topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
 
 def connection_handler(client, userdata, msg):
+    """
+        process robot/{robotId}/connect message.
+        print corresponding header and data.
+    """
     (header, data) = parse_message(msg)
     print(f"The connection topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
 
@@ -59,6 +72,10 @@ TOPICS = [
 
 
 def on_connect(client, userdata, flags, reason_code, properties):
+    """
+        Callbcak for MQTT connection.
+        Subscribe the topics.
+    """
     print(f"Connected with the reason code {reason_code}")
     for topic, qos, handler in TOPICS:
         client.subscribe(topic, qos)

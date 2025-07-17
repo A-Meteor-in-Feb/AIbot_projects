@@ -30,6 +30,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.route('/api/robots/<string:robotId>/images', methods=['POST'])
 def get_image(robotId):
+    """
+        Process the image uploaded from the robot.
+    """
     header = request.headers
     token = header.get('Authorization')[7:]
     if token != ROBOT_VALID_TOKENS[robotId]:
@@ -79,6 +82,9 @@ def get_image(robotId):
 
 @app.route('/', defaults={'path': 'test.html'})
 def serve(path):
+    """
+        Access to the test.html 
+    """
     full_path = os.path.join(BASE_DIR, path)
     if os.path.isfile(full_path):
         return send_from_directory(BASE_DIR, path)
@@ -88,6 +94,9 @@ def serve(path):
 
 @app.route('/api/robots/<robotId>/video-stream', methods=['GET'])
 def proxy_mjpeg(robotId):
+    """
+        Get video stream from robot side, then forward to the fronend.
+    """
    
     url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}/camera/stream"
 

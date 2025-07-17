@@ -22,6 +22,14 @@ ROBOT_ID_1 = "R1234"
 
 
 def send_command(base_url, command, robotId, parameters):
+    """
+        send control commands to the specific robot
+        base_url: url of the robot(https://ip:port)
+        command: the specific control command
+        robotId: the specific robot id
+        parameters: the request parameters
+    """
+
     url = f"{base_url}/api/robots/{robotId}/{command}"
     headers = {
         "Content-Type": "application/json",
@@ -52,6 +60,9 @@ def send_command(base_url, command, robotId, parameters):
 
 
 def move_control():
+    """
+        Define the request details for posting move command.
+    """
     base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
 
     command = "move"
@@ -66,6 +77,9 @@ def move_control():
 
 
 def deliver_control():
+    """
+        Define the request details for posting deliver command.
+    """
     base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "deliver"
@@ -80,6 +94,9 @@ def deliver_control():
 
 
 def pause_control():
+    """
+        Define the request details for posting pause command.
+    """
     base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "pause"
@@ -94,6 +111,9 @@ def pause_control():
 
 
 def resume_control():
+    """
+        Define the request details for posting resume command.
+    """
     base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "resume"
@@ -108,6 +128,9 @@ def resume_control():
 
 
 def abort_control():
+    """
+        Define the request details for posting abort command.
+    """
     base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "abort"
