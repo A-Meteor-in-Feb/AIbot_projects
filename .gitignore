@@ -19,3 +19,5 @@ robot_side/func_video/cert.pem
 robot_side/func_video/key.pem
 robot_side/integration/cert.pem
 robot_side/integration/key.pem
+robot_side/integration/catkin_ws/build/*
+robot_side/integration/catkin_ws/devel/*
