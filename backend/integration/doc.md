@@ -4,49 +4,49 @@
 
 * MQTT Broker's address:  
 
-BROKER_HOST = "127.0.0.1"  
-BROKER_PORT = 8445  
+&emsp;BROKER_HOST = "127.0.0.1"  
+&emsp;BROKER_PORT = 8445  
 
 * Parameter needed by VDA5050 protocol header:  
 
-ORG_ID = "AIbot"  
+&emsp;ORG_ID = "AIbot"  
 
 * URLs needed for testing:  
 
-TEST_ROBOT_HOST = "127.0.0.1"  
-TEST_ROBOT_PORT = 8443  
-TEST_BACKEND_HOST = "127.0.0.1"  
-TEST_BACKEND_PORT = 8444  
+&emsp;TEST_ROBOT_HOST = "127.0.0.1"  
+&emsp;TEST_ROBOT_PORT = 8443  
+&emsp;TEST_BACKEND_HOST = "127.0.0.1"  
+&emsp;TEST_BACKEND_PORT = 8444  
 
 * For control commands:  
 
-COMMAND_MOVE = '0'  
-COMMAND_DELIVER = '1'  
-COMMAND_PAUSE = '2'  
-COMMAND_RESUME = '3'  
-COMMAND_ABORT = '4'  
+&emsp;COMMAND_MOVE = '0'  
+&emsp;COMMAND_DELIVER = '1'  
+&emsp;COMMAND_PAUSE = '2'  
+&emsp;COMMAND_RESUME = '3'  
+&emsp;COMMAND_ABORT = '4'  
 
-TASKID_MOVE = 1234  
-TASKID_DELIVER = 1235  
+&emsp;TASKID_MOVE = 1234  
+&emsp;TASKID_DELIVER = 1235  
 
 * For authorization:  
 
-ROBOT_ID_1 = "R1234"  
-ROBOT_ID_2 = "R1235"  
-ROBOT_VALID_TOKENS = {  
-    ROBOT_ID_1: "ABCDEF12345",  
-    ROBOT_ID_2: "1234567"  
-}  
+&emsp;ROBOT_ID_1 = "R1234"  
+&emsp;ROBOT_ID_2 = "R1235"  
+&emsp;ROBOT_VALID_TOKENS = {  
+&emsp;&emsp;ROBOT_ID_1: "ABCDEF12345",  
+&emsp;&emsp;ROBOT_ID_2: "1234567"  
+&emsp;}  
 
-DEVICE_TYPE = "backend"  
-BACKEND_ID = "B1234"  
-BACKEND_TOKEN = "98765"  
+&emsp;DEVICE_TYPE = "backend"  
+&emsp;BACKEND_ID = "B1234"  
+&emsp;BACKEND_TOKEN = "98765"  
 
-CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
+&emsp;CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
 
-* TLS configuration:
-cert.pem  
-key.pem  
+* TLS configuration:  
+&emsp;cert.pem  
+&emsp;key.pem  
 
 ### 1. backend_client.py
 
@@ -59,14 +59,14 @@ conda install -c conda-forge requests
 
 #### 1.2 Structure
 
-backend_client.py
-&emsp;|- send_command(): Basic HTTP POST encapsulation
-&emsp;|- move_control(): "move" action, the robot will move to the specific 3D coordinates.
-&emsp;|- deliver_control(): "deliver" action, the robot will deliver the cargo.
-&emsp;|- pause_control(): "pause" action, the robot will pause.
-&emsp;|- resume_control(): "resume" action, the robot will continue doing tasks.
-&emsp;|- abort_control(): "abort" action, the robot will stop doing the task.
-&emsp;|- main loop: Run the corresponding function according to the user's input.
+backend_client.py  
+&emsp;|- send_command(): Basic HTTP POST encapsulation  
+&emsp;|- move_control(): "move" action, the robot will move to the specific 3D coordinates.  
+&emsp;|- deliver_control(): "deliver" action, the robot will deliver the cargo.  
+&emsp;|- pause_control(): "pause" action, the robot will pause.  
+&emsp;|- resume_control(): "resume" action, the robot will continue doing tasks.  
+&emsp;|- abort_control(): "abort" action, the robot will stop doing the task.  
+&emsp;|- main loop: Run the corresponding function according to the user's input.  
 
 #### 1.3 How to run
 
@@ -85,13 +85,13 @@ conda install -c conda-forge paho-mqtt
 
 #### 2.2 Structure
 
-backend_mqtt_client.py
-&emsp;|- parse_message(vda5050_msg): Parses a VDA5050 formatted MQTT message and return (header, data).
-&emsp;|- state_handler(client, userdata, msg): callback for robot/{robotId}/state topic.
-&emsp;|- connection_handler(client, userdata, msg): callback for robot/{robotId}/connection topic.
-&emsp;|- on_connect(client, userdata, flags, rc, properties): subscribe to each topic in TOPICS and binds the corresponding callback.
-&emsp;|- on_disconnect(client, userdata, rc): Automatically reconnect after a disconnect.
-&emsp;|- entry point: create client, set username and password, configure TLS, attach on_connect, and topic callbacks, start loop_forever().
+backend_mqtt_client.py  
+&emsp;|- parse_message(vda5050_msg): Parses a VDA5050 formatted MQTT message and return (header, data).  
+&emsp;|- state_handler(client, userdata, msg): callback for robot/{robotId}/state topic.  
+&emsp;|- connection_handler(client, userdata, msg): callback for robot/{robotId}/connection topic.  
+&emsp;|- on_connect(client, userdata, flags, rc, properties): subscribe to each topic in TOPICS and binds the corresponding callback.  
+&emsp;|- on_disconnect(client, userdata, rc): Automatically reconnect after a disconnect.  
+&emsp;|- entry point: create client, set username and password, configure TLS, attach on_connect, and topic callbacks, start loop_forever().  
 
 #### 2.3 How to run
 
