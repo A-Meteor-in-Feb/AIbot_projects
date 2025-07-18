@@ -27,6 +27,14 @@ SERIAL_NUMBER = "serial"
 
 
 def VDA_5050_header(header_id, version, manufacturer, serial_number) -> bytes:
+    """
+        Generate binary vda5050 message header.
+        header_id: the id number for every topic.
+        version: protocol's version.
+        manufacturer: the manufacturer.
+        serial_number: serial number
+        return header
+    """
     header_id_bytes = struct.pack(">I", header_id)
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4]+"Z"
     parts = [header_id_bytes, timestamp.encode("utf-8"), version.encode("utf-8"), manufacturer.encode("utf-8"), serial_number.encode("utf-8")]
@@ -34,11 +42,17 @@ def VDA_5050_header(header_id, version, manufacturer, serial_number) -> bytes:
     return header
 
 def on_connect(client, userdata, flags, reason_code, properties):
+    """
+        connect callback
+    """
     #rospy.loginfo(f"Connected with the result code {reason_code}")
     print(f"Connected with the result code {reason_code}")
 
 
 def state_callback(msg):
+    """
+        callback function for robots/{robotId}/state topic.
+    """
 
     global STATE_HEADER_ID
     STATE_HEADER_ID += 1
@@ -63,6 +77,9 @@ def state_callback(msg):
 
 
 def online_notification():
+    """
+        publish the mqtt client (robot side) online state
+    """
 
     global CONN_HEADER_ID
     CONN_HEADER_ID += 1
@@ -78,6 +95,9 @@ def online_notification():
 
 
 def last_will_set():
+    """
+        set last will for robot
+    """
 
     global CONN_HEADER_ID
     CONN_HEADER_ID += 1

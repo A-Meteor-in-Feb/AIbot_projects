@@ -14,6 +14,12 @@ PICKUP_TYPE = '1'
 
 
 def upload_image_base64(taskId, type, image_path):
+    """
+        upload image in base64.
+        taskId: the id of the task
+        type: the image type (deliver or pickup).
+        image_path: the specific image.
+    """
     base_url = f"https://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}"
     url = f"{base_url}/api/robots/{ROBOT_ID}/images"
 
@@ -50,6 +56,12 @@ def upload_image_base64(taskId, type, image_path):
 
 
 def upload_image_form(taskId, type, image_path):
+    """
+        upload image in multipart/form-date
+        taskId: the id of the task
+        type: the image type (deliver or pickup).
+        image_path: the specific image.
+    """
     base_url= "https://127.0.0.1:8443"
     url = f"{base_url}/api/robots/{ROBOT_ID}/images"
 
@@ -84,12 +96,20 @@ def upload_image_form(taskId, type, image_path):
 
 
 def deliver_type(image_path):
+    """
+        The deliver image will be uploaded.
+        image_path: the specific image.
+    """
     taskId = 1235
     type = "deliver"
     upload_image_base64(taskId, type, image_path)
 
 
 def pickup_type(image_path):
+    """
+        The pickup image will be uploaded.
+        image_path: the specific image.
+    """
     taskId = 1236
     type = "pickup"
     upload_image_form(taskId, type, image_path)

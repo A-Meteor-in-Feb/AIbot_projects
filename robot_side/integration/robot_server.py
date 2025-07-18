@@ -18,7 +18,9 @@ app = Flask(__name__)
 
 @app.route('/api/robots/<string:robotId>/<string:command>', methods=['POST'])
 def handle_move_command(robotId, command):
-    
+    """
+        Process the command sent from the backend.
+    """
     header = request.headers
     token = header.get('Authorization')[7:]
     if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
@@ -93,7 +95,9 @@ def handle_move_command(robotId, command):
     
 
 def frame_generator():
-    
+    """
+        generate the video frame
+    """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     VIDEO_PATH = os.path.join(BASE_DIR, "videos", "test_video.mp4")
     cap = cv2.VideoCapture(VIDEO_PATH)
@@ -122,6 +126,9 @@ def frame_generator():
 
 @app.route('/camera/stream')
 def video_stream():
+    """
+        Response to the video stream request.
+    """
     auth_header = request.headers.get('Authorization')
     if not auth_header:
         abort(401, description="Missing authorization header")
