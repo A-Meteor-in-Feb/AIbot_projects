@@ -108,14 +108,14 @@ catkin_create_pkg robot std_msgs rospy message_generation
 
 #### 3.2 Structure
 
-robot_mqtt_client.py
-&emsp;|- VDA_5050_header(header_id, version, manufacturer, serial_number):
-&emsp;|-&emsp;generate the header contents for every topic.
-&emsp;|- on_connect(client, userdata, flags, reason_code, properties): callback for connection with MQTT broker.
-&emsp;|- state_callback(msg): receive msg from ros then convert to json then combine the header, publish at the end.
-&emsp;|- online_notification(): send a MQTT connection topic to the backend to notify its online state.
-&emsp;|- last_will_set(): set the last will function to notify the backend that the robot side disconnects.
-&emsp;|- entry point: initiate ros node, mqtt client, configure authentication and TLS encryption, then set last will, then connect and start looping for message publish and subscription.
+robot_mqtt_client.py  
+&emsp;|- VDA_5050_header(header_id, version, manufacturer, serial_number):  
+&emsp;|-&emsp;generate the header contents for every topic.  
+&emsp;|- on_connect(client, userdata, flags, reason_code, properties): callback for connection with MQTT broker.  
+&emsp;|- state_callback(msg): receive msg from ros then convert to json then combine the header, publish at the end.  
+&emsp;|- online_notification(): send a MQTT connection topic to the backend to notify its online state.  
+&emsp;|- last_will_set(): set the last will function to notify the backend that the robot side disconnects.  
+&emsp;|- entry point: initiate ros node, mqtt client, configure authentication and TLS encryption, then set last will, then connect and start looping for message publish and subscription.  
 
 #### 3.3 How to run
 
