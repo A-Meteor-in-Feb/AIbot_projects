@@ -3,40 +3,37 @@
 ### Constants Configuration
 
 * MQTT Broker's address:  
-&emsp;BROKER_HOST = "127.0.0.1"  
-&emsp;BROKER_PORT = 8445  
+    * BROKER_HOST = "127.0.0.1"  
+    * BROKER_PORT = 8445  
 
 * URLs needed for testing:  
 
-&emsp;TEST_BACKEND_HOST = "127.0.0.1"  
-&emsp;TEST_BACKEND_PORT = 8444  
-&emsp;TEST_ROBOT_HOST = "127.0.0.1"  
-&emsp;TEST_ROBOT_PORT = 8443  
+    * TEST_BACKEND_HOST = "127.0.0.1"  
+    * TEST_BACKEND_PORT = 8444  
+    * TEST_ROBOT_HOST = "127.0.0.1"  
+    * TEST_ROBOT_PORT = 8443  
 
 * For image types:  
 
-&emsp;DELIVER_TYPE = '0'  
-&emsp;PICKUP_TYPE = '1'  
+    * DELIVER_TYPE = '0'  
+    * PICKUP_TYPE = '1'  
 
 * For authorization:  
-&emsp;DEVICE_TYPE = "robot"  
-&emsp;ROBOTID = "R1234"  
-&emsp;TOKEN = "ABCDEF12345"  
-&emsp;BACKEND_ID = "B1234"  
-&emsp;BACKEND_VALID_TOKENS = {  
-&emsp;&emsp;BACKEND_ID: "12345ABCDEF"  
-&emsp;}  
-
-&emsp;CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{ROBOTID}"  
+    * DEVICE_TYPE = "robot"  
+    * ROBOTID = "R1234"  
+    * TOKEN = "ABCDEF12345"  
+    * BACKEND_ID = "B1234"  
+    * BACKEND_VALID_TOKENS = {BACKEND_ID: "12345ABCDEF" }  
+    * CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{ROBOTID}"  
 
 * VDA 5050 header constants:  
 
-&emsp;ORG_ID = "AIbot"  
-&emsp;STATE_HEADER_ID = 0  
-&emsp;CONN_HEADER_ID = 0  
-&emsp;VERSION = "version"  
-&emsp;MANUFACTURER = "manu"  
-&emsp;SERIAL_NUMBER = "serial"  
+    * ORG_ID = "AIbot"  
+    * STATE_HEADER_ID = 0  
+    * CONN_HEADER_ID = 0  
+    * VERSION = "version"  
+    * MANUFACTURER = "manu"  
+    * SERIAL_NUMBER = "serial"  
 
 
 ### 1. robot_client.py

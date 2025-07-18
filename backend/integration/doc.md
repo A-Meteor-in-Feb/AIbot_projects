@@ -4,49 +4,46 @@
 
 * MQTT Broker's address:  
 
-&emsp;BROKER_HOST = "127.0.0.1"  
-&emsp;BROKER_PORT = 8445  
+    * BROKER_HOST = "127.0.0.1"  
+    * BROKER_PORT = 8445  
 
 * Parameter needed by VDA5050 protocol header:  
 
-&emsp;ORG_ID = "AIbot"  
+    * ORG_ID = "AIbot"  
 
 * URLs needed for testing:  
 
-&emsp;TEST_ROBOT_HOST = "127.0.0.1"  
-&emsp;TEST_ROBOT_PORT = 8443  
-&emsp;TEST_BACKEND_HOST = "127.0.0.1"  
-&emsp;TEST_BACKEND_PORT = 8444  
+    * TEST_ROBOT_HOST = "127.0.0.1"  
+    * TEST_ROBOT_PORT = 8443  
+    * TEST_BACKEND_HOST = "127.0.0.1"  
+    * TEST_BACKEND_PORT = 8444  
 
 * For control commands:  
 
-&emsp;COMMAND_MOVE = '0'  
-&emsp;COMMAND_DELIVER = '1'  
-&emsp;COMMAND_PAUSE = '2'  
-&emsp;COMMAND_RESUME = '3'  
-&emsp;COMMAND_ABORT = '4'  
+    * COMMAND_MOVE = '0'  
+    * COMMAND_DELIVER = '1'  
+    * COMMAND_PAUSE = '2'  
+    * COMMAND_RESUME = '3'  
+    * COMMAND_ABORT = '4'  
 
-&emsp;TASKID_MOVE = 1234  
-&emsp;TASKID_DELIVER = 1235  
+    * TASKID_MOVE = 1234  
+    * TASKID_DELIVER = 1235  
 
 * For authorization:  
 
-&emsp;ROBOT_ID_1 = "R1234"  
-&emsp;ROBOT_ID_2 = "R1235"  
-&emsp;ROBOT_VALID_TOKENS = {  
-&emsp;&emsp;ROBOT_ID_1: "ABCDEF12345",  
-&emsp;&emsp;ROBOT_ID_2: "1234567"  
-&emsp;}  
+    * ROBOT_ID_1 = "R1234"  
+    * ROBOT_ID_2 = "R1235"  
+    * ROBOT_VALID_TOKENS = { ROBOT_ID_1: "ABCDEF12345", ROBOT_ID_2: "1234567" }  
 
-&emsp;DEVICE_TYPE = "backend"  
-&emsp;BACKEND_ID = "B1234"  
-&emsp;BACKEND_TOKEN = "98765"  
+    * DEVICE_TYPE = "backend"  
+    * BACKEND_ID = "B1234"  
+    * BACKEND_TOKEN = "98765"  
 
-&emsp;CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
+    * CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
 
 * TLS configuration:  
-&emsp;cert.pem  
-&emsp;key.pem  
+    * cert.pem  
+    * key.pem  
 
 ### 1. backend_client.py
 
