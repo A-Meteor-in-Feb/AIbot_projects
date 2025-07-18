@@ -89,7 +89,7 @@ def handle_move_command(robotId, command):
     else:
         
         result = {"status": "This command is not defined."}
-        return jsonify(result), 422
+        return jsonify(result), 404
     
 
 def frame_generator():

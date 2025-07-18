@@ -68,13 +68,28 @@ python robot_client.py
 conda install -c conda-forge Flask
 ```
 
-#### 2.2 Structure
+#### 2.2 Get Control Commands (POST /api/robots/<robotId>/<command>)
+
+* Authentication: header `Authrntication: Bearer <token>`
+* Responses:
+    * `200 OK`
+    * `401 Unauthorized`
+    * `400 Bad Request`
+    * `404 Not Found`
+
+#### 2.3 Response Video Stream Request (GET /camera/stream)
+
+* Authentication: header `Authentication: Bearer <token>`
+* Resonses:
+    * `401 Unauthorized`
+    * video stream - 'multipart/x-mixed-replace;boundry=--frame'
 
 
+#### 2.4 How to run
 
-
-#### 2.3 How to run
-
+```bash
+python robot_server.py
+```
 
 ### 3. robot_mqtt_client.py
 
@@ -93,6 +108,21 @@ catkin_create_pkg robot std_msgs rospy message_generation
 
 #### 3.2 Structure
 
+robot_mqtt_client.py
+&emsp;|- VDA_5050_header(header_id, version, manufacturer, serial_number):
+&emsp;|-&emsp;generate the header contents for every topic.
+&emsp;|- on_connect(client, userdata, flags, reason_code, properties): callback for connection with MQTT broker.
+&emsp;|- state_callback(msg): receive msg from ros then convert to json then combine the header, publish at the end.
+&emsp;|- online_notification(): send a MQTT connection topic to the backend to notify its online state.
+&emsp;|- last_will_set(): set the last will function to notify the backend that the robot side disconnects.
+&emsp;|- entry point: initiate ros node, mqtt client, configure authentication and TLS encryption, then set last will, then connect and start looping for message publish and subscription.
 
 #### 3.3 How to run
 
+```bash
+~/catkin_ws
+catkin_make
+source devel/setup.bash
+~/catkin/src/robot/src
+python robot_mqtt_client.py
+```
