@@ -46,7 +46,7 @@ conda install -c conda-forge requests
 ```
 
 #### 1.2 Structure
-robot_client.py
+robot_client.py  
 &emsp;|-upload_image_base64(taskId, type, image_path): upload the specific image by base64.  
 &emsp;|-upload_image_form(taskId, type, image_path): upload the specific image by form-data.  
 &emsp;|-deliver_type(image_path): specify the deliver image.  
@@ -109,8 +109,7 @@ catkin_create_pkg robot std_msgs rospy message_generation
 #### 3.2 Structure
 
 robot_mqtt_client.py  
-&emsp;|- VDA_5050_header(header_id, version, manufacturer, serial_number):  
-&emsp;|-&emsp;generate the header contents for every topic.  
+&emsp;|- VDA_5050_header(header_id, version, manufacturer, serial_number): generate the header contents for every topic.  
 &emsp;|- on_connect(client, userdata, flags, reason_code, properties): callback for connection with MQTT broker.  
 &emsp;|- state_callback(msg): receive msg from ros then convert to json then combine the header, publish at the end.  
 &emsp;|- online_notification(): send a MQTT connection topic to the backend to notify its online state.  
