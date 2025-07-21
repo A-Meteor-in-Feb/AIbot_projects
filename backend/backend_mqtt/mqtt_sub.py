@@ -6,8 +6,8 @@ import paho.mqtt.client as mqtt
 
 #HOST = "192.168.123.61"
 #PORT = 1883
-HOST = "127.0.0.1"
-PORT = 8883
+HOST = "10.25.0.3"
+PORT = 1883
 
 ORG_ID = "AIbot"
 DEVICE_TYPE = "backend"
@@ -72,13 +72,13 @@ if __name__ == "__main__":
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
 
     #Authentication
-    mqtt_client.username_pw_set(username=BACKEND_ID, password=TOKEN)
+    #mqtt_client.username_pw_set(username=BACKEND_ID, password=TOKEN)
     
     #TLS
-    mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
+    #mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
     
     mqtt_client.on_connect = on_connect
-    mqtt_client.on_disconnect = on_connect
+    #mqtt_client.on_disconnect = on_connect
 
     mqtt_client.connect(HOST, PORT, 60)
 

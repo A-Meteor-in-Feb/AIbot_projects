@@ -21,3 +21,5 @@ robot_side/integration/cert.pem
 robot_side/integration/key.pem
 robot_side/integration/catkin_ws/build/*
 robot_side/integration/catkin_ws/devel/*
+robot_side/test/catkin_ws/build/*
+robot_side/test/catkin_ws/devel/*

@@ -9,8 +9,8 @@ from robot.msg import Connection
 from datetime import datetime
 from datetime import timezone
 
-HOST = "127.0.0.1"
-PORT = 8883
+HOST = "10.25.0.3"
+PORT = 1883
 
 ORG_ID = "AIbot"
 DEVICE_TYPE = "robot"
@@ -99,10 +99,10 @@ if __name__ == "__main__":
     mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
 
     #Authentication
-    mqtt_client.username_pw_set(username=ROBOTID, password=TOKEN)
+    #mqtt_client.username_pw_set(username=ROBOTID, password=TOKEN)
     
     #TLS
-    mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
+    #mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
     
     mqtt_client.on_connect = on_connect
 
