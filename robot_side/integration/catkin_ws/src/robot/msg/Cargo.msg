@@ -1,0 +1,9 @@
+string timestamp
+string doorStatus
+bool cargoPresent
+Slot[] slots
+float64 temperature
+float64 humidity
+bool tamperAlert
+string lastAccessMethod
+uint32 taskId

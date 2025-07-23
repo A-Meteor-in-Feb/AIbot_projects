@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -50,6 +51,9 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   State.msg
+  Error.msg
+  Cargo.msg
+  Slot.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -70,6 +74,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 ################################################
@@ -104,7 +109,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES robot
-  CATKIN_DEPENDS message_runtime std_msgs
+  CATKIN_DEPENDS message_runtime std_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
@@ -160,6 +165,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   src/robot_mqtt_client.py
+  src/ros_publisher_test.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

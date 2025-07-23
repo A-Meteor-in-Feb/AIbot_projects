@@ -5,6 +5,8 @@ import struct
 import ssl
 import paho.mqtt.client as mqtt
 from robot.msg import State
+from robot.msg import Error
+from robot.msg import Cargo
 from datetime import datetime
 from datetime import timezone
 
@@ -21,6 +23,8 @@ CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{ROBOTID}"
 
 STATE_HEADER_ID = 0
 CONN_HEADER_ID = 0
+ERROR_HEADER_ID = 0
+CARGO_HEADER_ID = 0
 VERSION = "version"
 MANUFACTURER = "manu"
 SERIAL_NUMBER = "serial"
@@ -58,22 +62,92 @@ def state_callback(msg):
     STATE_HEADER_ID += 1
 
     payload = {
-        "position": {"x": msg.x, "y": msg.y, "z": msg.z},
+        "position": {
+            "x": msg.position.x,
+            "y": msg.position.y,
+            "z": msg.position.z
+        },
+        "coordinateType": msg.coordinateType,
         "battery": msg.battery,
         "taskStatus": msg.taskStatus,
+        "taskId": msg.taskId,
         "connection": msg.connection,
+        "autonomousMode": msg.autonomousMode,
         "fault": msg.fault,
-        "cargoLoad": msg.cargoLoad
+        "binsNum": msg.binsNum
     }
+
+    print(f"state payload: {payload}")
     
     vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
     vda5050_body = json.dumps(payload).encode("utf-8")
 
     message = vda5050_header+vda5050_body
 
-    mqtt_client.publish(f"robot/{ROBOTID}/state", message, qos=0)
+    #mqtt_client.publish(f"robot/{ROBOTID}/state", message, qos=0)
 
     rospy.loginfo(f"Forwarded state topic to MQTT: {payload}")
+
+
+def error_callback(msg):
+
+    global ERROR_HEADER_ID
+    ERROR_HEADER_ID += 1
+
+    payload = {
+        "timestamp": msg.timestamp,
+        "errorCode": msg.errorCode,
+        "severity": msg.severity,
+        "message": msg.message,
+        "taskId": msg.taskId,
+        "position": {
+            "x": msg.position.x,
+            "y": msg.position.y,
+            "z": msg.position.z
+        },
+        "suggestion": msg.suggestion,
+        "retryable": msg.retryable
+    }
+
+    print(f"error payload {payload}")
+
+    vda5050_header = VDA_5050_header(ERROR_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
+    vda5050_body = json.dumps(payload).encode("utf-8")
+
+    message = vda5050_header+vda5050_body
+
+    #mqtt_client.publish(f"robot/{ROBOTID}/error", message, qos=0)
+
+    rospy.loginfo(f"Forwarded error topic to MQTT: {payload}")
+
+
+def cargo_callback(msg):
+
+    global CARGO_HEADER_ID
+    CARGO_HEADER_ID += 1
+
+    payload = {
+        "timestamp": msg.timestamp,
+        "doorStatus": msg.doorStatus,
+        "cargoPresent": msg.cargoPresent,
+        "slots": msg.slots,
+        "temperature": msg.temperature,
+        "humidity": msg.humidity,
+        "tamperAlert": msg.tamperAlert,
+        "lastAccessMethod": msg.lastAccessMethod,
+        "taskId": msg.taskId
+    }
+
+    print(f"cargo payload {payload}")
+
+    vda5050_header = VDA_5050_header(CARGO_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
+    vda5050_body = json.dumps(payload).encode("utf-8")
+
+    message = vda5050_header+vda5050_body
+
+    #mqtt_client.publish(f"robot/{ROBOTID}/cargo", message, qos=0)
+
+    rospy.loginfo(f"Forwarded cargo topic to MQTT: {payload}")
 
 
 def online_notification():
@@ -91,7 +165,7 @@ def online_notification():
 
     message = vda5050_header+vda5050_body
 
-    mqtt_client.publish(f"robot/{ROBOTID}/connection", message, qos=1, retain=True)
+    #mqtt_client.publish(f"robot/{ROBOTID}/connection", message, qos=1, retain=True)
 
 
 def last_will_set():
@@ -109,34 +183,36 @@ def last_will_set():
 
     message = vda5050_header+vda5050_body
 
-    mqtt_client.will_set(f"robot/{ROBOTID}/connection", message, qos=1, retain=True)
+    #mqtt_client.will_set(f"robot/{ROBOTID}/connection", message, qos=1, retain=True)
 
 
 if __name__ == "__main__":
 
     rospy.init_node('ros2mqtt_bridge', anonymous=True)
 
-    mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
+    #mqtt_client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
 
     #Authentication
-    mqtt_client.username_pw_set(username=ROBOTID, password=TOKEN)
+    #mqtt_client.username_pw_set(username=ROBOTID, password=TOKEN)
     
     #TLS
-    mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
+    #mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
     
-    mqtt_client.on_connect = on_connect
+    #mqtt_client.on_connect = on_connect
 
     #LAST WILL 
-    last_will_set()
+    #last_will_set()
 
-    mqtt_client.connect(host=BROKER_HOST, port=BROKER_PORT, keepalive=60)
-    mqtt_client.loop_start()
+    #mqtt_client.connect(host=BROKER_HOST, port=BROKER_PORT, keepalive=60)
+    #mqtt_client.loop_start()
 
-    online_notification()
+    #online_notification()
 
     rospy.Subscriber("state", State, state_callback)
+    rospy.Subscriber("error", Error, error_callback)
+    rospy.Subscriber("cargo", Cargo, cargo_callback)
 
     rospy.spin()
 
-    mqtt_client.loop_stop()
-    mqtt_client.disconnect()
+    #mqtt_client.loop_stop()
+    #mqtt_client.disconnect()
