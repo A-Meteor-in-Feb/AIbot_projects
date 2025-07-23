@@ -4,15 +4,25 @@ import requests
 TEST_ROBOT_HOST = "127.0.0.1"
 TEST_ROBOT_PORT = 8443
 
+COMMAND_TASK = '0'
+COMMAND_MOVE = '1'
+COMMAND_DELIVER = '2'
+COMMAND_PAUSE = '3'
+COMMAND_RESUME = '4'
+COMMAND_ABORT = '5'
+COMMAND_RESTOCK = '6'
+COMMAND_CHARGE = '7'
+COMMAND_TASKS = '8'
 
-COMMAND_MOVE = '0'
-COMMAND_DELIVER = '1'
-COMMAND_PAUSE = '2'
-COMMAND_RESUME = '3'
-COMMAND_ABORT = '4'
-
+TASKID_TASK = 1234
 TASKID_MOVE = 1234
-TASKID_DELIVER = 1235
+TASKID_DELIVER = 1234
+TASKID_PAUSE = 1234
+TASKID_RESUME = 1234
+TASKID_ABORT = 1234
+TASKID_RESTOCK = 1234
+TASKID_CHARGE = 1234
+TASKID_TASKS = 1234
 
 BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
@@ -21,7 +31,7 @@ ROBOT_ID_1 = "R1234"
 
 
 
-def send_command(base_url, command, robotId, parameters):
+def post_command(base_url, command, robotId, parameters):
     """
         send control commands to the specific robot
         base_url: url of the robot(https://ip:port)
@@ -36,15 +46,11 @@ def send_command(base_url, command, robotId, parameters):
         "Authorization": f"Bearer {BACKEND_TOKEN}"
     }
 
-    if parameters == {}:
-        payload = {
-            "command": command
-        }
-    else:
-        payload = {
-            "command": command,
-            "params": parameters
-        }
+    payload = {
+        "command": command,
+        "params": parameters
+    }
+        
     
     response = requests.post(
         url=url, 
@@ -59,6 +65,35 @@ def send_command(base_url, command, robotId, parameters):
         print(f"Got status code {response.status_code} \n data: {data}")
 
 
+def task_control():
+    """
+        Define the request details for posting task command.
+    """
+    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+
+    command = "task"
+    robotId = ROBOT_ID_1
+
+    parameters = {
+        "taskId": TASKID_TASK,
+        "binId": 2,
+        "number": 1,
+        "location":{
+            "address": "1-2-101",
+            "coordinateType": "geodetic",
+            "position":{
+                "x": 10.0,
+                "y": 5.0,
+                "z": 0.0
+            }
+        }
+    }
+
+    try:
+        post_command(base_url, command, robotId, parameters)
+    except requests.RequestException as e:
+        print("error: ", e)
+
 def move_control():
     """
         Define the request details for posting move command.
@@ -68,10 +103,16 @@ def move_control():
     command = "move"
     robotId = ROBOT_ID_1
 
-    parameters = {"taskId": TASKID_MOVE, "x": 11.11, "y": 22.22, "z": 33.33}
+    parameters = {
+        "taskId": TASKID_MOVE, 
+        "coordinateType": "gendetic",
+        "x": 11.11, 
+        "y": 22.22, 
+        "z": 33.33
+    }
 
     try:
-        send_command(base_url, command, robotId, parameters)
+        post_command(base_url, command, robotId, parameters)
     except requests.RequestException as e:
         print("error: ", e)
 
@@ -85,10 +126,14 @@ def deliver_control():
     command = "deliver"
     robotId = ROBOT_ID_1
 
-    parameters = {"taskId": TASKID_DELIVER, "binId": 100}
+    parameters = {
+        "taskId": TASKID_DELIVER, 
+        "binId": 100,
+        "number": 1
+    }
 
     try:
-        send_command(base_url, command, robotId, parameters)  
+        post_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
@@ -102,10 +147,10 @@ def pause_control():
     command = "pause"
     robotId = ROBOT_ID_1
 
-    parameters = {}
+    parameters = {"taskId": TASKID_PAUSE}
 
     try:
-        send_command(base_url, command, robotId, parameters)  
+        post_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
@@ -119,10 +164,10 @@ def resume_control():
     command = "resume"
     robotId = ROBOT_ID_1
 
-    parameters = {}
+    parameters = {"taskId": TASKID_RESUME}
 
     try:
-        send_command(base_url, command, robotId, parameters)  
+        post_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
 
@@ -136,12 +181,103 @@ def abort_control():
     command = "abort"
     robotId = ROBOT_ID_1
     
-    parameters = {}
+    parameters = {"taskId": TASKID_ABORT}
 
     try:
-        send_command(base_url, command, robotId, parameters)  
+        post_command(base_url, command, robotId, parameters)  
     except requests.RequestException as e:
         print("error", e)
+
+
+def restock_control():
+    """
+        Define the request details for posting restock command.
+    """
+    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    
+    command = "restock"
+    robotId = ROBOT_ID_1
+
+    parameters = {
+        "taskId": TASKID_RESTOCK,
+        "location":{
+            "address": "仓库A-补货区",
+            "coordinateType": "geodetic",
+            "position":{
+                "x": 1.2950,
+                "y": 103.7800,
+                "z": 0.0
+            }
+        }
+    }
+
+    try:
+        post_command(base_url, command, robotId, parameters)  
+    except requests.RequestException as e:
+        print("error", e)
+
+
+def charge_control():
+    """
+        Define the request details for posting charge command.
+    """
+
+    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    
+    command = "charge"
+    robotId = ROBOT_ID_1
+
+    parameters = {
+        "taskId": TASKID_CHARGE,
+        "location": {
+            "address": "充电站B-3号位",
+            "coordinateType": "geodetic",
+            "position":{
+                "x": 1.2930,
+                "y": 103.7850,
+                "z": 0.0
+            }
+        }
+    }
+
+    try:
+        post_command(base_url, command, robotId, parameters)  
+    except requests.RequestException as e:
+        print("error", e)
+
+
+def get_tasks():
+    """ 
+        Send GET request to the robot side to get the tasks' states.
+    """
+    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    robotId = ROBOT_ID_1
+    url = f"{base_url}/api/JKROBOT/{robotId}/tasks"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {BACKEND_TOKEN}"
+    }
+
+    parameters = {
+        "taskId": TASKID_TASKS
+    }
+
+    payload = {
+        "command": "tasks",
+        "params": parameters
+    }
+    
+    response = requests.get(
+        url=url, 
+        headers=headers, 
+        json=payload, 
+        timeout=5,
+        verify="cert.pem"
+    )
+
+    if response.ok:
+        data = response.json()
+        print(f"Got status code {response.status_code} \n data: {data}")
 
 
 if __name__ == "__main__":

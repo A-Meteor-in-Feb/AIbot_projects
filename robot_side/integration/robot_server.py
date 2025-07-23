@@ -16,8 +16,16 @@ BACKEND_VALID_TOKENS = {
 
 app = Flask(__name__)
 
+@app.route('/api/JKROBOT/<string:robotId>/tasks', methods=['GET'])
+def handle_command(robotId):
+    """
+        This part, we need get the accurate data from the execution part.
+        
+    """
+
+
 @app.route('/api/robots/<string:robotId>/<string:command>', methods=['POST'])
-def handle_move_command(robotId, command):
+def handle_command(robotId, command):
     """
         Process the command sent from the backend.
     """
@@ -87,6 +95,27 @@ def handle_move_command(robotId, command):
         result = {"status": "aborted"}
 
         return jsonify(result), 200 if result["status"] == "aborted" else 400
+    
+    elif cmd == "task":
+        print(f"Receive command {cmd}")
+
+        result = {"status": "accepted"}
+
+        return jsonify(result), 200 if result["status"] == "accepted" else 400
+
+    elif cmd == "restock":
+        print(f"Receive command {cmd}")
+
+        result = {"status": "accepted"}
+
+        return jsonify(result), 200 if result["status"] == "accepted" else 400
+
+    elif cmd == "charge":
+        print(f"Receive command {cmd}")
+
+        result = {"status": "accepted"}
+
+        return jsonify(result), 200 if result["status"] == "accepted" else 400
 
     else:
         
@@ -124,7 +153,7 @@ def frame_generator():
         cap.release()
 
 
-@app.route('/camera/stream')
+@app.route('/camera/stream', methods=['GET'])
 def video_stream():
     """
         Response to the video stream request.
