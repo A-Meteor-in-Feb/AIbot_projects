@@ -27,6 +27,8 @@ def publish_state():
 
     state_publisher.publish(state)
 
+    print("Publish state")
+
 
 def publish_error():
 
@@ -42,6 +44,8 @@ def publish_error():
     error.retryable = False
 
     error_publisher.publish(error)
+
+    print("Publish error")
 
 
 def publish_cargo():
@@ -61,6 +65,8 @@ def publish_cargo():
     cargo.taskId = 12345
 
     cargo_publisher.publish(cargo)
+
+    print("Publish cargo")
 
 if __name__ == "__main__":
 

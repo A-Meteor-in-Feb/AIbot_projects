@@ -2,8 +2,8 @@ import json
 import ssl
 import paho.mqtt.client as mqtt
 
-BROKER_HOST = "127.0.0.1"
-BROKER_PORT = 8445
+BROKER_HOST = "10.25.0.3"
+BROKER_PORT = 1883
 
 ORG_ID = "AIbot"
 
@@ -47,6 +47,7 @@ def parse_message(vda5050_msg:bytes):
 
     return (header, data)
 
+
 def state_handler(client, userdata, msg):
     """
         process robot/{robotId}/state message.
@@ -54,6 +55,7 @@ def state_handler(client, userdata, msg):
     """
     (header, data) = parse_message(msg)
     print(f"The state topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
+
 
 def connection_handler(client, userdata, msg):
     """
@@ -64,9 +66,27 @@ def connection_handler(client, userdata, msg):
     print(f"The connection topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
 
 
+def error_handler(client, userdata, msg):
+    (header, data) = parse_message(msg)
+    print(f"The error topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
+
+
+def cargo_handler(client, userdata, msg):
+    (header, data) = parse_message(msg)
+    print(f"The cargo topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
+
+
+def ip_handler(client, userdata, msg):
+    (header, data) = parse_message(msg)
+    print(f"The network/ip topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
+
+
 
 TOPICS = [
     (f"robot/{ROBOT_ID_1}/state", 0, state_handler),
+    (f"robot/{ROBOT_ID_1}/error", 0, error_handler),
+    (f"robot/{ROBOT_ID_1}/cargo", 0, cargo_handler),
+    (f"robot/{ROBOT_ID_1}/network/ip", 1, ip_handler),
     (f"robot/{ROBOT_ID_1}/connection", 1, connection_handler)
 ]
 
@@ -82,6 +102,7 @@ def on_connect(client, userdata, flags, reason_code, properties):
         client.message_callback_add(topic, handler)
         print(f"Subscribe to topic: {topic}; with QoS: {qos}.")
 
+
 def on_disconnect(client, userdata, reason_code):
     print(f"Disconnect with reason code {reason_code}, reconnecting ...")
     client.reconnect()
@@ -91,13 +112,12 @@ if __name__ == "__main__":
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
 
     #Authentication
-    mqtt_client.username_pw_set(username=BACKEND_ID, password=BACKEND_TOKEN)
+    #mqtt_client.username_pw_set(username=BACKEND_ID, password=BACKEND_TOKEN)
     
     #TLS
-    mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
+    #mqtt_client.tls_set(ca_certs="/home/avnuc/yangtianjiao/AIbot_projects/mqtt_certs/ca.crt", tls_version=ssl.PROTOCOL_TLSv1_2)
     
     mqtt_client.on_connect = on_connect
-    mqtt_client.on_disconnect = on_connect
 
     mqtt_client.connect(BROKER_HOST, BROKER_PORT, 60)
 
