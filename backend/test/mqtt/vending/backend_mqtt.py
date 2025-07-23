@@ -31,10 +31,8 @@ def subscribe_server_topic_handler(client, userdata, msg):
         #then publish the response topic
         data["r"] = 0
     
-    print(f"response data {msg}")
-    publish_client_topic(msg)
-
-def publish_client_topic(msg):
+    
+    
     payload = json.dumps(msg)
     mqtt_client.publish("vending/client", payload=payload)
 
