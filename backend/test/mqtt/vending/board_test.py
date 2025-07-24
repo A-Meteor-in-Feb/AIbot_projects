@@ -1,24 +1,26 @@
 import json
 import paho.mqtt.client as mqtt
 import time
-BROKER_HOST = "192.168.123.62"
+
+BROKER_HOST = "192.168.1.2"
 BROKER_PORT = 1883
-CLIENT_ID = "robot"
+CLIENT_ID = "test"
 
-USERNAME = "vending"
-PASSWORD = "administrator"
-
+COUNT = 0
 
 def on_connect(client, userdata, flags, reason_code, properties):
     print(f"Connected with the reason code {reason_code}")
-    client.subscribe("vending/client")
-    client.message_callback_add("vending/client", subscribe_client_topic_handler)
-    print("Subscribe to the topic - vending/client")
+    client.subscribe("vending/server")
+    client.message_callback_add("vending/server", subscribe_client_topic_handler)
+    print("Subscribe to the topic - vending/server\n\n")
 
 
 
-def publish_server_topic(cmd, parameters):
-    topic = "vending/server"
+def publish_topic(cmd, parameters):
+    global COUNT
+    COUNT += 1
+    print(f"num.{COUNT}")
+    topic = "vending/client"
     payload = {
         "msg": 101,
         "sn" : "SN25063001",
@@ -28,14 +30,14 @@ def publish_server_topic(cmd, parameters):
     
     payload = json.dumps(payload)
 
-    mqtt_client.publish("vending/server", payload=payload)
+    mqtt_client.publish("vending/client", payload=payload)
 
-    print(f"publish {payload}")
+    print(f"publish topic vending/client to the board\n {payload}\n\n")
 
 
 def subscribe_client_topic_handler(client, userdata, msg):
     msg = json.loads(msg.payload.decode())
-    print(f"Receive response from backend: {msg}")
+    print(f"Receive response vending/server from board: \n {msg}\n\n")
 
 
 if __name__ == "__main__":
@@ -52,8 +54,7 @@ if __name__ == "__main__":
     try:
         
         while True:
-            publish_server_topic("shipment", {"n": "1001"})
-            publish_server_topic("barcode", {"c": "sdfasdfqwerqefasdfqwerqwerasdf"})
+            publish_topic("shipment", {"n": "1001"})
             time.sleep(5)
     except KeyboardInterrupt:
         mqtt_client.loop_stop()
