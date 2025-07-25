@@ -17,11 +17,66 @@ BACKEND_VALID_TOKENS = {
 app = Flask(__name__)
 
 @app.route('/api/JKROBOT/<string:robotId>/tasks', methods=['GET'])
-def handle_command(robotId):
+def response_tasks(robotId):
     """
+        Resonse to the get request.
         This part, we need get the accurate data from the execution part.
-        
     """
+    
+    body = request.get_json(silent=True) or {}
+    params = body.get('params', {})
+
+    task_id = params.get('taskId') or request.args.get('taskId')
+
+    # TODO: according to the taskid to execute the module to get the real data
+    
+    # example response data:
+    current_task = {
+        "taskId": task_id,
+        "status": "delivering",
+        "startTime": "2025-07-02T10:30:00Z"
+    }
+
+    pending_tasks = [{
+        "taskId": "task_20250702_103100_robot001",
+        "binId": 3,
+        "location": {"x": 1.23, "y": 4.56, "z": 0.00},
+        "priority": 1
+    }]
+
+    completed_tasks = [{
+        "taskId": "task_20250702_102000_robot001",
+        "completedTime": "2025-07-02T10:25:00Z"
+    }]
+
+    queue = {
+        "currentTask": current_task,
+        "pendingTasks": pending_tasks,
+        "completedTasks": completed_tasks
+    }
+
+    config = {
+        "multiTaskMode": True,
+        "autonomousMode": False,
+        "maxQueueSize": 6
+    }
+
+    response_body = {
+        "success": True,
+        "robotId": robotId,
+        "queue": queue,
+        "config": config
+    }
+
+    return jsonify(response_body), 200
+
+    
+@app.route('/api/JKROBOT/<string:robotId>/tasks/<string:taskId>', methods=['DELETE'])
+def delete_task(robotId, taskId):
+    """
+        Delete the specific task if refered by the backend.
+    """
+    
 
 
 @app.route('/api/robots/<string:robotId>/<string:command>', methods=['POST'])

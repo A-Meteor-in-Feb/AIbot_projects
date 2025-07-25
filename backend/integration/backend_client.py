@@ -23,6 +23,7 @@ TASKID_ABORT = 1234
 TASKID_RESTOCK = 1234
 TASKID_CHARGE = 1234
 TASKID_TASKS = 1234
+TASKID_DELETE = 1234
 
 BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
@@ -278,6 +279,35 @@ def get_tasks():
     if response.ok:
         data = response.json()
         print(f"Got status code {response.status_code} \n data: {data}")
+
+
+def delete_task(taskId):
+    """
+        Delete the specific task
+        taskId: get the specific task id that will be deleted.
+    """
+    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    robotId = ROBOT_ID_1
+    url = f"{base_url}/api/JKROBOT/{robotId}/tasks/{taskId}"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {BACKEND_TOKEN}"
+    }
+
+    parameters = {
+        "taskId": TASKID_DELETE
+    }
+
+    payload = {
+        "command": "delete",
+        "params": parameters
+    }
+
+    try:
+        post_command(base_url, command, robotId, parameters)  
+    except requests.RequestException as e:
+        print("error", e)
 
 
 if __name__ == "__main__":
