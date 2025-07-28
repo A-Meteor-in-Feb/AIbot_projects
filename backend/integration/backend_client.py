@@ -350,4 +350,4 @@ if __name__ == "__main__":
         elif command == 'q':
             break
         else:
-            print("Invalid input, please input number from 0 - 4 :)")
+            print("Invalid input, please input number from 0 - 9 :)")
