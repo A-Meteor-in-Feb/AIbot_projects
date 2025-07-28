@@ -12,6 +12,9 @@ from datetime import datetime
 from datetime import timezone
 from datetime import timedelta
 
+# self-defined class
+from backend_cargoInfo import Item, CargoBin, Inventory
+
 
 HTTP_HEAD = "http"
 HTTPS_HEAD = "https"
@@ -94,31 +97,28 @@ def get_image(robotId):
 
 @app.route('/api/JKROBOT/<string:robotId>/cargo', methods=['GET'])
 def get_cargo_binId(robotId):
+    """
+        Return the cargo information of the specific bin
+    """
 
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
     binId = parameters.get("binId")
 
-    # TODO: call the function to get the specific info of the cargo
-
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
+    # call the function to get the specific info of the cargo bin's info
     result = {
         "success": True,
         "robotId": robotId,
         "binId": binId,
         "cargo": {
-            "items": [{
-                "name": "商品",
-                "quantity": 5,
-                "weight": 1.2,
-                "category": "food"
-            }],
-            "totalWeight": 6.0,
-            "capacity": 10,
-            "utilization": 0.5
+            "items": bin1.items if binId == 1 else bin2.items,
+            "totalWeight": bin1.total_weight if binId == 1 else bin2.total_weight,
+            "capacity": bin1.capacity if binId == 1 else bin2.capacity,
+            "utilization": bin1.utilization if binId == 1 else bin2.utilization
         },
         "timestamp": utc_timestamp
     }
@@ -131,37 +131,17 @@ def get_cargo_inventory(robotId):
     """
         Return the cargo information of the inventory
     """
-    # TODO: call the function to get the specific info of the cargo's inventory
-
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
+     # call the function to get the specific info of the cargo's inventory
     result = {
         "success": True,
         "robotId": "robot001",
         "inventory": {
-            "bins": [
-                {
-                    "binId": 1,
-                    "items": [],
-                    "totalWeight": 0,
-                    "capacity": 10,
-                    "utilization": 0
-                },
-                {
-                    "binId": 2,
-                    "items": [{
-                        "name": "商品A",
-                        "quantity": 5,
-                        "weight": 1.2
-                    }],
-                    "totalWeight": 6.0,
-                    "capacity": 10,
-                    "utilization": 0.5
-                }
-            ],
-            "totalCapacity": 60,
-            "totalUtilization": 0.1
+            "bins": inventory.bins,
+            "totalCapacity": inventory.total_capacity,
+            "totalUtilization": inventory.total_utilization
         },
         "timestamp": utc_timestamp
     }
@@ -281,24 +261,24 @@ def serve(path):
         abort(404)
 
 
-@app.route('/api/robots/<robotId>/video-stream', methods=['GET'])
+@app.route('/api/JKROBOT/<robotId>/video-stream', methods=['GET'])
 def proxy_mjpeg(robotId):
     """
         Get video stream from robot side, then forward to the fronend.
     """
    
-    url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}/camera/stream"
+    url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}/camera/stream"
 
     headers = {
         "Authorization": f"Bearer {BACKEND_TOKEN}"
     }
 
+    # ,verify="cert.pem"
     response = requests.get(
         url=url,
         headers=headers,
         stream=True,
-        timeout=(5, None),
-        verify="cert.pem"
+        timeout=(5, None)
     )
 
     if response.status_code != 200:
@@ -315,6 +295,15 @@ def proxy_mjpeg(robotId):
     )
 
 if __name__ == "__main__":
+
+    # Initialize the cargo info, bins and inventory
+    item1 = Item(name="商品A", quantity=5, weight=1.2, category="food")
+    item2 = Item(name="商品B", quantity=3, weight=2.0)
+
+    bin1 = CargoBin(bin_id=1, capacity=10.0, items=[item1, item2])  
+    bin2 = CargoBin(bin_id=2, capacity=15.0, items=[])
+    
+    inventory = Inventory(bins=[bin1, bin2])
 
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)

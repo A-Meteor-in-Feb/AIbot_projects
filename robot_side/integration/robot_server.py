@@ -3,6 +3,8 @@ from flask import request
 from flask import jsonify
 from flask import Response
 from flask import abort
+from pathlib import Path
+import base64
 import cv2
 import os
 
@@ -325,6 +327,34 @@ def frame_generator():
     finally:
         cap.release()
 
+
+# TODO: You haven't test for this function
+@app.route('/camera/snapshot', methods=['GET'])
+def snapshot():
+    """
+        Response to the snapshot request.
+    """
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        abort(401, description="Missing authorization header")
+
+    parts = auth_header.split()
+    token = parts[1]
+
+    if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
+        abort(401, description="Invalid token")
+
+    image_path = "images/test.jpg"
+    image_bytes = Path(image_path).read_bytes()
+    image_base64 = base64.b64encode(image_bytes).decode('ascii')
+    
+    result = {
+        "Content-Type": "application/json",
+        "image": image_base64
+    }
+
+    return jsonify(result), 200
+    
 
 @app.route('/camera/stream', methods=['GET'])
 def video_stream():

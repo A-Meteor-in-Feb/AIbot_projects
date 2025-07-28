@@ -26,3 +26,6 @@ robot_side/test/catkin_ws/devel/*
 .vscode/*
 robot_side/integration/__pycache__/*
 backend/integration/__pycache__/*
+.DS_Store
+robot_side/.DS_Store
+robot_side/integration/.DS_Store

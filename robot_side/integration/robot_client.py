@@ -7,6 +7,7 @@ from datetime import timezone
 #self-defined class
 from robot_cargoService import CargoService
 
+
 BACKEND_HTTP = 81
 BACKEND_HTTPS = 8444
 
@@ -28,13 +29,13 @@ TASK_NOTIFY = '5'
 TASK_AUTHCODE = '6'
 TASK_COMPLETE = '7'
 
-TASKID_IMAGE = 1010
-TASKID_BINID = 1011
-TASKID_INVENTORY = 1012
-TASKID_ORDERS = 1013
-TASKID_NOTIFY = 1014
-TASKID_AUTHCODE = 1015
-TASKID_COMPLETE = 1016
+TASKID_IMAGE = 1011
+TASKID_BINID = 1012
+TASKID_INVENTORY = 1013
+TASKID_ORDERS = 1014
+TASKID_NOTIFY = 1015
+TASKID_AUTHCODE = 1016
+TASKID_COMPLETE = 1017
 
 
 def upload_image_base64(taskId, type, image_path):
@@ -147,34 +148,49 @@ def search_cargo_binId(bin_id):
     binId = bin_id
     robotId = ROBOT_ID
 
-    base_url = f"{HTTP_HEAD}://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}"
-    url = f"{base_url}/api/JKROBOT/{robotId}/cargo"
+    # 1 - get the record from the cache
+    cargo = cargo_service.get_bin_cache(robotId=robotId, binId=binId)
 
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {ROBOT_TOKEN}"
-    }
+    if cargo != None:
+        print(f"Got the specific cargo {binId}'s information from the cache. \n Info: {cargo}")
+    else:
+        # 2 - get the bin info from the backend by RESTful API
+        base_url = f"{HTTP_HEAD}://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}"
+        url = f"{base_url}/api/JKROBOT/{robotId}/cargo"
 
-    parameters = {
-        "binId": binId
-    }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {ROBOT_TOKEN}"
+        }
 
-    payload = {
-        "taskId": taskId,
-        "params": parameters
-    }
+        parameters = {
+            "binId": binId
+        }
 
-    # ,verify="cert.pem"   
-    response = requests.get(
-        url=url,
-        headers=headers,
-        json=payload,
-        timeout=5
-    )
+        payload = {
+            "taskId": taskId,
+            "params": parameters
+        }
 
-    if response.ok:
-        data = response.json()
-        print(f"Got the specific cargo {binId}'s information. \n Info: {data}")
+        # ,verify="cert.pem"   
+        response = requests.get(
+            url=url,
+            headers=headers,
+            json=payload,
+            timeout=5
+        )
+
+        if response.ok:
+            data = response.json()
+            cargo = data.get("cargo")
+            print(f"Got the specific cargo {binId}'s information from the backend. \n Info: {data}")
+        else:
+            # 3 - use the backup cargo bin info
+            cargo = cargo_service.get_bin_backup()
+            print(f"Got the specific cargo {binId}'s information from the backup. \n Info: {cargo}")
+
+    # Store the inventory information in the cache:
+    cargo_service.set_cargo_bin_info(robotId=robotId, binId=binId, info=cargo)
 
 
 def search_cargo_inventory():
@@ -184,29 +200,43 @@ def search_cargo_inventory():
     taskId = TASKID_INVENTORY
     robotId = ROBOT_ID
 
-    base_url = f"{HTTP_HEAD}://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}"
-    url = f"{base_url}/api/JKROBOT/{robotId}/cargo/inventory"
+    # 1 - get the record from the cache
+    inventory = cargo_service.get_inventory_cache(robotId=robotId)
+    if inventory != None:
+        print(f"Got the inventory's information from the cache. \n Info: {inventory}")
+    else:
+        # 2 - - get the bin info from the backend by Restful API
+        base_url = f"{HTTP_HEAD}://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}"
+        url = f"{base_url}/api/JKROBOT/{robotId}/cargo/inventory"
 
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {ROBOT_TOKEN}"
-    }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {ROBOT_TOKEN}"
+        }
 
-    payload = {
-        "taskId": taskId
-    }
+        payload = {
+            "taskId": taskId
+        }
     
-    # ,verify="cert.pem"   
-    response = requests.get(
-        url=url,
-        headers=headers,
-        json=payload,
-        timeout=5
-    )
+        # ,verify="cert.pem"   
+        response = requests.get(
+            url=url,
+            headers=headers,
+            json=payload,
+            timeout=5
+        )
 
-    if response.ok:
-        data = response.json()
-        print(f"Got the cargo inventory's information. \n Info: {data}")
+        if response.ok:
+            data = response.json()
+            inventory = data.get("inventory")
+            print(f"Got the cargo inventory's information from the backend. \n Info: {data}")
+        else:
+            # 3 - use the backup cargo bin info
+            inventory = cargo_service.get_bin_backup()
+            print(f"Got the inventory's information from the backup. \n Info: {inventory}")
+
+    # Store the inventory information in the cache:
+    cargo_service.set_inventory_info(robotId=robotId, info=inventory)
 
 
 def get_orders():
@@ -405,10 +435,10 @@ if __name__ == "__main__":
         "totalUtilization": 0.1
     }
     cargo_service = CargoService(
-        backend_base_url=f"{HTTP_HEAD}://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}",
         backup_bin=backup_bin,
         backup_inventory=backup_inventory
     )
+
 
     while True:
         task = input("Please enter your command id (0-7): ")
@@ -419,7 +449,7 @@ if __name__ == "__main__":
             pickup_image_path = "images/pickup.jpg"
             pickup_type(pickup_image_path)
         elif task == TASK_BINID:
-            search_cargo_binId(1)
+            search_cargo_binId(2)
         elif task == TASK_INVENTORY:
             search_cargo_inventory()
         elif task == TASK_ORDERS:

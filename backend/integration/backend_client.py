@@ -30,6 +30,7 @@ TASKID_RESTOCK = 1006
 TASKID_CHARGE = 1007
 TASKID_TASKS = 1008
 TASKID_DELETE = 1009
+TASKID_SNAPSHOT = 1010
 
 BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
@@ -307,6 +308,41 @@ def delete_task(taskId):
 
     payload = {
         "command": "delete",
+        "params": parameters
+    }
+
+    #, verify="cert.pem"
+    response = requests.delete(
+        url=url,
+        headers=headers,
+        json=payload,
+        timeout=5
+    )
+
+    if response.ok:
+        data = response.json()
+        print(f"Got status code {response.status_code} \n data: {data}")
+
+
+# TODO: You haven't test for this function
+def get_current_snapshot():
+    """
+        Request for the current snapshot from the backend
+    """
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    robotId = ROBOT_ID_1
+    url = f"{base_url}/camera/snapshot"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {BACKEND_TOKEN}"
+    }
+
+    parameters = {
+        "taskId": TASKID_SNAPSHOT
+    }
+
+    payload = {
         "params": parameters
     }
 
