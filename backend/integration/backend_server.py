@@ -12,6 +12,10 @@ from datetime import datetime
 from datetime import timezone
 from datetime import timedelta
 
+
+HTTP_HEAD = "http"
+HTTPS_HEAD = "https"
+
 ROBOT_HTTP = 80
 ROBOT_HTTPS = 8443
 BACKEND_HTTP = 81
@@ -28,6 +32,7 @@ ROBOT_VALID_TOKENS = {
 }
 BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder=BASE_DIR, static_url_path='')
@@ -93,9 +98,10 @@ def get_cargo_binId(robotId):
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
-    bin_id = parameters.get("binId")
+    binId = parameters.get("binId")
 
-    #TODO: call the function to get the specific info of the cargo
+    # call the function to get the specific info of the cargo
+    cargo = cargo_service.get_bin(robotId=robotId , binId=binId)
 
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -103,18 +109,8 @@ def get_cargo_binId(robotId):
     result = {
         "success": True,
         "robotId": robotId,
-        "binId": bin_id,
-        "cargo":{
-            "items": [{
-                "name": "商品",
-                "quantity": 5,
-                "weight": 1.2,
-                "category": "food"
-            }],
-            "totalWeight": 6.0,
-            "capacity": 10,
-            "utilization": 0.5
-        },
+        "binId": binId,
+        "cargo": cargo,
         "timestamp": utc_timestamp
     }
 
@@ -126,7 +122,8 @@ def get_cargo_inventory(robotId):
     """
         Return the cargo information of the inventory
     """
-    #TODO: call the function to get the specific info of the cargo's inventory
+    # call the function to get the specific info of the cargo's inventory
+    inventory = cargo_service.get_inventory(robotId=robotId)
 
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -134,28 +131,7 @@ def get_cargo_inventory(robotId):
     result = {
         "success": True,
         "robotId": "robot001",
-        "inventory": {
-            "bins": [{
-                "binId": 1,
-                "items": [],
-                "totalWeight": 0,
-                "capacity": 10,
-                "utilization": 0
-            },
-            {
-                "binId": 2,
-                "items": [{
-                    "name": "商品A",
-                    "quantity": 5,
-                    "weight": 1.2
-                }],
-                "totalWeight": 6.0,
-                "capacity": 10,
-                "utilization": 0.5
-            }],
-            "totalCapacity": 60,
-            "totalUtilization": 0.1
-        },
+        "inventory": inventory,
         "timestamp": utc_timestamp
     }
 
@@ -308,6 +284,7 @@ def proxy_mjpeg(robotId):
     )
 
 if __name__ == "__main__":
+
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)
     app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT)

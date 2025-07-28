@@ -4,6 +4,9 @@ from pathlib import Path
 from datetime import datetime
 from datetime import timezone
 
+#self-defined class
+from robot_cargoService import CargoService
+
 BACKEND_HTTP = 81
 BACKEND_HTTPS = 8444
 
@@ -364,6 +367,48 @@ def notify_taskComplete(order_id):
 
 
 if __name__ == "__main__":
+
+    # backup_info defined here 
+    backup_bin = {
+        "items": [{
+            "name": "商品",
+            "quantity": 5,
+            "weight": 1.2,
+            "category": "food"
+        }],
+        "totalWeight": 6.0,
+        "capacity": 10,
+        "utilization": 0.5
+    }
+    backup_inventory = {
+        "bins": [
+            {
+                "binId": 1,
+                "items": [],
+                "totalWeight": 0,
+                "capacity": 10,
+                "utilization": 0
+            },
+            {
+                "binId": 2,
+                "items": [{
+                    "name": "商品A",
+                    "quantity": 5,
+                    "weight": 1.2
+                }],
+                "totalWeight": 6.0,
+                "capacity": 10,
+                "utilization": 0.5
+            }
+        ],
+        "totalCapacity": 60,
+        "totalUtilization": 0.1
+    }
+    cargo_service = CargoService(
+        backend_base_url=f"{HTTP_HEAD}://{TEST_BACKEND_HOST}:{TEST_BACKEND_PORT}",
+        backup_bin=backup_bin,
+        backup_inventory=backup_inventory
+    )
 
     while True:
         task = input("Please enter your command id (0-7): ")

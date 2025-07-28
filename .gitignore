@@ -25,3 +25,4 @@ robot_side/test/catkin_ws/build/*
 robot_side/test/catkin_ws/devel/*
 .vscode/*
 robot_side/integration/__pycache__/*
+backend/integration/__pycache__/*
