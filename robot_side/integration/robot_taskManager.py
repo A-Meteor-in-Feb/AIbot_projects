@@ -11,6 +11,7 @@ class TaskManager:
         self.pending = deque()
         self.current = None
         self.completed = []
+        self.result = {}
 
     # Robot restful side call this function to add tasks into the pending queue first
     def add_task2pending(self, task):
@@ -47,3 +48,11 @@ class TaskManager:
             "pendingTasks": list(self.pending),
             "completedTasks": self.completed
         }
+    
+    # Robbot execution side call this function to update the result
+    def set_result(self, result):
+        self.result = result
+
+    # Robot restful side call this function to get the corresponding result
+    def get_result(self):
+        return self.result

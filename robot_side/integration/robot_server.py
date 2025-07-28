@@ -128,6 +128,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {
             "status": "accepted",
@@ -156,6 +157,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {
             "status": "accepted",
@@ -177,6 +179,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {"status": "paused"}
 
@@ -195,6 +198,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {"status": "resumed"}
 
@@ -213,6 +217,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {"status": "aborted"}
 
@@ -237,6 +242,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {"status": "accepted"}
 
@@ -257,6 +263,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {"status": "accepted"}
 
@@ -277,6 +284,7 @@ def handle_command(robotId, command):
         task_manager.add_task2pending(task)
 
         #TODO: add another function call to get the real result back
+        #result_from_robot = task_manager.get_result()
 
         result = {"status": "accepted"}
 
