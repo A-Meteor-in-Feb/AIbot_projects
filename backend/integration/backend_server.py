@@ -100,8 +100,7 @@ def get_cargo_binId(robotId):
 
     binId = parameters.get("binId")
 
-    # call the function to get the specific info of the cargo
-    cargo = cargo_service.get_bin(robotId=robotId , binId=binId)
+    # TODO: call the function to get the specific info of the cargo
 
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -110,7 +109,17 @@ def get_cargo_binId(robotId):
         "success": True,
         "robotId": robotId,
         "binId": binId,
-        "cargo": cargo,
+        "cargo": {
+            "items": [{
+                "name": "商品",
+                "quantity": 5,
+                "weight": 1.2,
+                "category": "food"
+            }],
+            "totalWeight": 6.0,
+            "capacity": 10,
+            "utilization": 0.5
+        },
         "timestamp": utc_timestamp
     }
 
@@ -122,8 +131,7 @@ def get_cargo_inventory(robotId):
     """
         Return the cargo information of the inventory
     """
-    # call the function to get the specific info of the cargo's inventory
-    inventory = cargo_service.get_inventory(robotId=robotId)
+    # TODO: call the function to get the specific info of the cargo's inventory
 
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -131,7 +139,30 @@ def get_cargo_inventory(robotId):
     result = {
         "success": True,
         "robotId": "robot001",
-        "inventory": inventory,
+        "inventory": {
+            "bins": [
+                {
+                    "binId": 1,
+                    "items": [],
+                    "totalWeight": 0,
+                    "capacity": 10,
+                    "utilization": 0
+                },
+                {
+                    "binId": 2,
+                    "items": [{
+                        "name": "商品A",
+                        "quantity": 5,
+                        "weight": 1.2
+                    }],
+                    "totalWeight": 6.0,
+                    "capacity": 10,
+                    "utilization": 0.5
+                }
+            ],
+            "totalCapacity": 60,
+            "totalUtilization": 0.1
+        },
         "timestamp": utc_timestamp
     }
 
