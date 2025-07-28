@@ -1,8 +1,13 @@
 import requests
 
+HTTP = 80
+HTTPS = 8443
+
+HTTP_HEAD = "http"
+HTTPS_HEAD = "https"
 
 TEST_ROBOT_HOST = "127.0.0.1"
-TEST_ROBOT_PORT = 8443
+TEST_ROBOT_PORT = HTTP
 
 COMMAND_TASK = '0'
 COMMAND_MOVE = '1'
@@ -13,17 +18,18 @@ COMMAND_ABORT = '5'
 COMMAND_RESTOCK = '6'
 COMMAND_CHARGE = '7'
 COMMAND_TASKS = '8'
+COMMAND_DELETE = '9'
 
-TASKID_TASK = 1234
-TASKID_MOVE = 1234
-TASKID_DELIVER = 1234
-TASKID_PAUSE = 1234
-TASKID_RESUME = 1234
-TASKID_ABORT = 1234
-TASKID_RESTOCK = 1234
-TASKID_CHARGE = 1234
-TASKID_TASKS = 1234
-TASKID_DELETE = 1234
+TASKID_TASK = 1000
+TASKID_MOVE = 1001
+TASKID_DELIVER = 1002
+TASKID_PAUSE = 1003
+TASKID_RESUME = 1004
+TASKID_ABORT = 1005
+TASKID_RESTOCK = 1006
+TASKID_CHARGE = 1007
+TASKID_TASKS = 1008
+TASKID_DELETE = 1009
 
 BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
@@ -52,13 +58,12 @@ def post_command(base_url, command, robotId, parameters):
         "params": parameters
     }
         
-    
+    #,verify="cert.pem"
     response = requests.post(
         url=url, 
         headers=headers, 
         json=payload, 
-        timeout=5,
-        verify="cert.pem"
+        timeout=5
     )
 
     if response.ok:
@@ -70,7 +75,7 @@ def task_control():
     """
         Define the request details for posting task command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
 
     command = "task"
     robotId = ROBOT_ID_1
@@ -99,7 +104,7 @@ def move_control():
     """
         Define the request details for posting move command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
 
     command = "move"
     robotId = ROBOT_ID_1
@@ -122,7 +127,7 @@ def deliver_control():
     """
         Define the request details for posting deliver command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "deliver"
     robotId = ROBOT_ID_1
@@ -143,7 +148,7 @@ def pause_control():
     """
         Define the request details for posting pause command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "pause"
     robotId = ROBOT_ID_1
@@ -160,7 +165,7 @@ def resume_control():
     """
         Define the request details for posting resume command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "resume"
     robotId = ROBOT_ID_1
@@ -177,7 +182,7 @@ def abort_control():
     """
         Define the request details for posting abort command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "abort"
     robotId = ROBOT_ID_1
@@ -194,7 +199,7 @@ def restock_control():
     """
         Define the request details for posting restock command.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "restock"
     robotId = ROBOT_ID_1
@@ -223,7 +228,7 @@ def charge_control():
         Define the request details for posting charge command.
     """
 
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     
     command = "charge"
     robotId = ROBOT_ID_1
@@ -251,7 +256,7 @@ def get_tasks():
     """ 
         Send GET request to the robot side to get the tasks' states.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     robotId = ROBOT_ID_1
     url = f"{base_url}/api/JKROBOT/{robotId}/tasks"
     headers = {
@@ -268,17 +273,18 @@ def get_tasks():
         "params": parameters
     }
     
+    #,verify="cert.pem"
     response = requests.get(
         url=url, 
         headers=headers, 
         json=payload, 
-        timeout=5,
-        verify="cert.pem"
+        timeout=5
     )
 
     if response.ok:
         data = response.json()
-        print(f"Got status code {response.status_code} \n data: {data}")
+
+        print(f"Got status code {response.status_code} \n tasks' queue: {data}")
 
 
 def delete_task(taskId):
@@ -286,7 +292,7 @@ def delete_task(taskId):
         Delete the specific task
         taskId: get the specific task id that will be deleted.
     """
-    base_url = f"https://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     robotId = ROBOT_ID_1
     url = f"{base_url}/api/JKROBOT/{robotId}/tasks/{taskId}"
 
@@ -296,7 +302,7 @@ def delete_task(taskId):
     }
 
     parameters = {
-        "taskId": TASKID_DELETE
+        "taskId": taskId
     }
 
     payload = {
@@ -304,17 +310,26 @@ def delete_task(taskId):
         "params": parameters
     }
 
-    try:
-        post_command(base_url, command, robotId, parameters)  
-    except requests.RequestException as e:
-        print("error", e)
+    #, verify="cert.pem"
+    response = requests.delete(
+        url=url,
+        headers=headers,
+        json=payload,
+        timeout=5
+    )
+
+    if response.ok:
+        data = response.json()
+        print(f"Got status code {response.status_code} \n data: {data}")
 
 
 if __name__ == "__main__":
 
     while True:
         command = input("Please enter your command id: ")
-        if command == COMMAND_MOVE:
+        if command == COMMAND_TASK:
+            task_control()
+        elif command == COMMAND_MOVE:
             move_control()
         elif command == COMMAND_DELIVER:
             deliver_control()
@@ -324,6 +339,14 @@ if __name__ == "__main__":
             resume_control()
         elif command == COMMAND_ABORT:
             abort_control()
+        elif command == COMMAND_RESTOCK:
+            restock_control()
+        elif command == COMMAND_CHARGE:
+            charge_control()
+        elif command == COMMAND_TASKS:
+            get_tasks()
+        elif command == COMMAND_DELETE:
+            delete_task(taskId=1005)
         elif command == 'q':
             break
         else:

@@ -6,13 +6,20 @@ from flask import abort
 import cv2
 import os
 
+# self-defined class
+from robot_taskManager import TaskManager
+
+HTTP = 80
+HTTPS = 8443
+
 TEST_ROBOT_HOST = "127.0.0.1"
-TEST_ROBOT_PORT = 8443
+TEST_ROBOT_PORT = HTTP
 
 BACKEND_ID = "B1234"
 BACKEND_VALID_TOKENS = {
     BACKEND_ID: "12345ABCDEF"
 }
+
 
 app = Flask(__name__)
 
@@ -23,37 +30,13 @@ def response_tasks(robotId):
         This part, we need get the accurate data from the execution part.
     """
     
-    body = request.get_json(silent=True) or {}
-    params = body.get('params', {})
+    data = request.get_json(force=True)
+    parameters = data.get('params', {})
 
-    task_id = params.get('taskId') or request.args.get('taskId')
+    task_id = parameters.get('taskId')
 
-    # TODO: according to the taskid to execute the module to get the real data
-    
-    # example response data:
-    current_task = {
-        "taskId": task_id,
-        "status": "delivering",
-        "startTime": "2025-07-02T10:30:00Z"
-    }
-
-    pending_tasks = [{
-        "taskId": "task_20250702_103100_robot001",
-        "binId": 3,
-        "location": {"x": 1.23, "y": 4.56, "z": 0.00},
-        "priority": 1
-    }]
-
-    completed_tasks = [{
-        "taskId": "task_20250702_102000_robot001",
-        "completedTime": "2025-07-02T10:25:00Z"
-    }]
-
-    queue = {
-        "currentTask": current_task,
-        "pendingTasks": pending_tasks,
-        "completedTasks": completed_tasks
-    }
+    # get the queue from the robot side
+    queue = task_manager.get_queue()
 
     config = {
         "multiTaskMode": True,
@@ -61,14 +44,14 @@ def response_tasks(robotId):
         "maxQueueSize": 6
     }
 
-    response_body = {
+    result = {
         "success": True,
         "robotId": robotId,
         "queue": queue,
         "config": config
     }
 
-    return jsonify(response_body), 200
+    return jsonify(result), 200
 
     
 @app.route('/api/JKROBOT/<string:robotId>/tasks/<string:taskId>', methods=['DELETE'])
@@ -76,8 +59,36 @@ def delete_task(robotId, taskId):
     """
         Delete the specific task if refered by the backend.
     """
-    
+    # search the specifc task by task id and then delete it in the execution part.
+    task_deleted = int(taskId)
 
+    data = request.get_json(force=True)
+    parameters = data.get('params', {})
+    task_id = parameters.get("taskId")
+
+    # wait for the response from the robot's execution part.
+    response_from_robot = task_manager.delete_task(task_id=task_deleted)
+    print(f"task id is {task_deleted}")
+    
+    #if the task should be deleted is in the pending tasks' queue.
+    if response_from_robot:  
+        result = {
+            "status": "accepted",
+            "task_deleted": task_deleted,
+            "taskId": task_id,
+            "robotId": robotId
+        }
+    #if the task should be deleted is executing or have been done already.
+    else: 
+        result = {
+            "status": "denied",
+            "task_deleted": task_deleted,
+            "taskId": task_id,
+            "robotId": robotId
+        }
+
+    return jsonify(result), 200 if result["status"] == "accepted" else 400
+    
 
 @app.route('/api/robots/<string:robotId>/<string:command>', methods=['POST'])
 def handle_command(robotId, command):
@@ -93,23 +104,34 @@ def handle_command(robotId, command):
         print("Authentication Passed.")
 
     data = request.get_json(force=True)
-    print(data)
     cmd = data.get('command')
     parameters = data.get('params', {})
 
     if cmd == 'move':
         task_id = parameters.get("taskId")
+        coordinateType = parameters.get("coordinateType")
         x = parameters.get("x")
         y = parameters.get("y")
         z = parameters.get("z")
 
-        print(f"Command: {cmd}. Task: {task_id} \n x: {x}, y: {y}, z: {z}")
+        task = {
+            "taskId": task_id,
+            "coordinateType": coordinateType,
+            "x": x,
+            "y": y,
+            "z": z
+        }
 
-        #robot move function and get results/
+        print(f"Command: {cmd}. Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {
             "status": "accepted",
-            "taskId": 1234,
+            "taskId": task_id,
             "plannedPath": [{"x": 0.0, "y": 0.0, "z": 0.0},
                             {"x": 3.0, "y": 2.0, "z": 0.0},
                             {"x": 6.0, "y": 4.0, "z": 0.0},
@@ -121,59 +143,147 @@ def handle_command(robotId, command):
     elif cmd == "deliver":
         task_id = parameters.get("taskId")
         bin_id = parameters.get("binId")
-        print(f"Command: {cmd}, Task: {task_id}, Bin: {bin_id}")
+        number = parameters.get("number")
+
+        task = {
+            "taskId": task_id,
+            "binId": bin_id,
+            "number": number
+        }
+        print(f"Command: {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {
             "status": "accepted",
-            "taskId": 1235
+            "taskId": task_id
         }
 
         return jsonify(result), 200 if result["status"] == "accepted" else 400
 
     elif cmd == "pause":
-        print(f"Command {cmd}")
+        task_id = parameters.get("taskId")
+
+        task = {
+            "taskId": task_id
+        }
+
+        print(f"Command: {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {"status": "paused"}
 
         return jsonify(result), 200 if result["status"] == "paused" else 400
 
     elif cmd == "resume":
-        print(f"Command {cmd}")
+        task_id = parameters.get("taskId")
+
+        task = {
+            "taskId": task_id
+        }
+
+        print(f"Command {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {"status": "resumed"}
 
         return jsonify(result), 200 if result["status"] == "resumed" else 400
 
     elif cmd == "abort":
-        print(f"Command {cmd}")
+        task_id = parameters.get("taskId")
+
+        task = {
+            "taskId": task_id
+        }
+
+        print(f"Command {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {"status": "aborted"}
 
         return jsonify(result), 200 if result["status"] == "aborted" else 400
     
     elif cmd == "task":
-        print(f"Receive command {cmd}")
+        task_id = parameters.get("taskId")
+        bin_id = parameters.get("binId")
+        number = parameters.get("number")
+        location = parameters.get("location")
+
+        task = {
+            "taskId": task_id,
+            "binId": bin_id,
+            "number": number,
+            "location": location
+        }
+
+        print(f"Command {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {"status": "accepted"}
 
         return jsonify(result), 200 if result["status"] == "accepted" else 400
 
     elif cmd == "restock":
-        print(f"Receive command {cmd}")
+        task_id = parameters.get("taskId")
+        location = parameters.get("location")
+
+        task = {
+            "taskId": task_id,
+            "location": location
+        }
+
+        print(f"Command: {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {"status": "accepted"}
 
         return jsonify(result), 200 if result["status"] == "accepted" else 400
 
     elif cmd == "charge":
-        print(f"Receive command {cmd}")
+        task_id = parameters.get("taskId")
+        location = parameters.get("location")
+
+        task = {
+            "taskId": task_id,
+            "location": location
+        }
+
+        print(f"Command: {cmd}, Task: {task}")
+
+        #call the task manager pend this task into the pending queue
+        task_manager.add_task2pending(task)
+
+        #TODO: add another function call to get the real result back
 
         result = {"status": "accepted"}
 
         return jsonify(result), 200 if result["status"] == "accepted" else 400
 
     else:
-        
+
         result = {"status": "This command is not defined."}
         return jsonify(result), 404
     
@@ -230,5 +340,9 @@ def video_stream():
 
 
 if __name__ == "__main__":
-    context = ("cert.pem", "key.pem")
-    app.run(host=TEST_ROBOT_HOST, port=TEST_ROBOT_PORT, ssl_context=context)
+    task_manager = TaskManager()
+
+    #context = ("cert.pem", "key.pem")
+    #app.run(host=TEST_ROBOT_HOST, port=TEST_ROBOT_PORT, ssl_context=context)
+    app.run(host=TEST_ROBOT_HOST, port=TEST_ROBOT_PORT)
+
