@@ -135,6 +135,9 @@ backend_mqtt_client.py
 &emsp;|- parse_message(vda5050_msg): Parses a VDA5050 formatted MQTT message and return (header, data).  
 &emsp;|- state_handler(client, userdata, msg): callback for robot/{robotId}/state topic.  
 &emsp;|- connection_handler(client, userdata, msg): callback for robot/{robotId}/connection topic.  
+&emsp;|- error_handler(client, userdata, msg): callback for robot/{robotId}/error topic.  
+&emsp;|- cargo_handler(client, userdata, msg): callback for robot/{robotId}/cargo topic.  
+&emsp;|- ip_handler(client, userdata, msg): callback for robot/{robotId}/network/ip topic.  
 &emsp;|- on_connect(client, userdata, flags, rc, properties): subscribe to each topic in TOPICS and binds the corresponding callback.  
 &emsp;|- on_disconnect(client, userdata, rc): Automatically reconnect after a disconnect.  
 &emsp;|- entry point: create client, set username and password, configure TLS, attach on_connect, and topic callbacks, start loop_forever().  
@@ -159,7 +162,22 @@ conda install -c conda-forge Flask
 conda install -c conda-forge requests
 ```
 
-#### 3.2 Get Image (POST `/api/robots/<robotId>/images`)
+```Python
+import os
+import base64
+import requests
+from flask import Flask
+from flask import request
+from flask import jsonify
+from flask import Response
+from flask import abort
+from flask import send_from_directory
+from datetime import datetime
+from datetime import timezone
+from datetime import timedelta
+```
+
+#### 3.2 Get Image (POST `/api/JKROBOT/<string:robotId>/images`)
 
 * Authentication: header `Authentication: Bearer <token>`
 * Content-type:
@@ -171,12 +189,73 @@ conda install -c conda-forge requests
     * `400 Bad Request`
     * `415 Unsupported Media Type`
 
-#### 3.3 Static File Hosting (GET `/` or `/<path>`)
+
+#### 3.3 Respose Cargo Info of a Bin (GET `/api/JKROBOT/<string:robotId>/cargo`)
+
+* Authentication: header `Authentication: Bearer <token>`.  
+* Content-type: application/json: `binId`, `taskId`.  
+* Responses:  
+    * `200 OK` with the detailed cargo info of the specific bin.  
+    * `400 Bad Request`  
+    * `401 Unauthorized`  
+
+
+#### 3.4 Response Inventory Info (GET `/api/JKROBOT/<string:robotId/cargo/inventory`)
+
+* Authentication: header `Authentication: Bearer <token>`.  
+* Content-type: application/json: `taskId`.  
+* Responses:  
+    * `200 OK` with the detailed the whole inventory info.  
+    * `400 Bad Requst`  
+    * `401 Unauthorized`  
+
+
+#### 3.5 Response Orders Info (GET `/api/JKROBOT/orders`)
+
+* Authentication: header `Authentication: Bearer <token>`.  
+* Content-type: application/json: `taskId`, `robotId`, `status`.  
+* Responses:  
+    * `200 OK` with the detailed order info of the specific bin.  
+    * `400 Bad Request`.  
+    * `401 Unauthorized`.  
+
+
+#### 3.6 Response Notify-PickUp (POST `/api/JKROBOT/<string:robotId>/notify-pick-up`)
+
+* Authentication: header `Authentication: Bearer <token>`.  
+* Content-type: application/json: `taskId`, `order_id`.  
+* Responses:  
+    * `200 OK` with the detailed notification parameters.  
+    * `400 Bad Request`.  
+    * `401 Unauthorized`.  
+
+
+#### 3.7 Response Auth-Code (GET `/api/JKROBOT/<string:robotId>/auth-code`)
+
+* Authentication: header `Authentication: Bearer <token>`.  
+* Content-type: application/json: `taskId`, `order_id`.  
+* Responses:  
+    * `200 OK` with the new auth-code + new expiry time
+    * `400 Bad Request`.  
+    * `401 Unauthorized`.  
+
+
+#### 3.8 Record Completed Task (POST `/api/JKROBOT/<string:robotId>/task-complete`)
+
+* Authentication: header `Authentication: Bearer <token>`.  
+* Content-type: application/json: `taskId`, `order_id`.  
+* Responses:  
+    * `200 OK`.  
+    * `400 Bad Request`.  
+    * `401 Unauthorized`.  
+
+
+#### 3.9 Static File Hosting (GET `/` or `/<path>`)
 
 * A request to `/` or `test.html` will return the corresponding file from the projects's base directory.
 * If the file does not exist, the server will responds `404 Not Found`.
 
-#### 3.4 Proxy Video Stream (GET `/api/robots/<robotId>/video-stream`)
+#### 3.10 Proxy Video Stream (GET `/api/robots/<robotId>/video-stream`)
 
 * Authentication: header `Authentication: Bearer <token>` (forward to robot)
 * Forwarding: Issues an HTTPS GET to the robot's `/camera/stream` endpoint.
@@ -185,7 +264,7 @@ conda install -c conda-forge requests
     * otherwise, an error will be raised.
 
 
-#### 3.5 How to run
+#### 3.11 How to run
 
 ```bash
 python backend_server.py
