@@ -3,7 +3,9 @@ from flask import request
 from flask import jsonify
 from flask import Response
 from flask import abort
+from flask import make_response
 from pathlib import Path
+import threading
 import base64
 import cv2
 import os
@@ -326,34 +328,6 @@ def frame_generator():
             )
     finally:
         cap.release()
-
-
-# TODO: You haven't test for this function
-@app.route('/camera/snapshot', methods=['GET'])
-def snapshot():
-    """
-        Response to the snapshot request.
-    """
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        abort(401, description="Missing authorization header")
-
-    parts = auth_header.split()
-    token = parts[1]
-
-    if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
-        abort(401, description="Invalid token")
-
-    image_path = "images/test.jpg"
-    image_bytes = Path(image_path).read_bytes()
-    image_base64 = base64.b64encode(image_bytes).decode('ascii')
-    
-    result = {
-        "Content-Type": "application/json",
-        "image": image_base64
-    }
-
-    return jsonify(result), 200
     
 
 @app.route('/camera/stream', methods=['GET'])
@@ -376,8 +350,51 @@ def video_stream():
         mimetype='multipart/x-mixed-replace; boundary=--frame'
     )
 
+@app.route('/camera/snapshot', methods=['GET'])
+def snapshot():
+    data = request.get_json(force=True)
+    parameters = data.get('params', {})
+    base64_flag = parameters.get("base64")
+
+    # get a camera snapshot
+    with camera_lock:
+        success_read, frame = camera.read()
+    if not success_read:
+        abort(500, "Failed to capture image from camera")
+
+    # encode the frame into JPEG first
+    success_encode, binary_data = cv2.imencode(".jpg", frame)
+    if not success_encode:
+        abort(500, "Failed to encode frame as JPEG")
+    # convert the binary data in the arry into bytes
+    jpg_bytes = binary_data.tobytes()
+
+    # According to the base64 flag, decide the response format
+    if base64_flag:
+        base64_str = base64.b64encode(jpg_bytes).decode("utf-8")
+        result = {
+            "success": True,
+            "image": base64_str
+        }
+
+        response = make_response(jsonify(result), 200)
+        response.headers["Content-Type"] = "application/json"
+        return response
+    
+    else:
+
+        return Response(jpg_bytes,mimetype="image/jpeg")
+
 
 if __name__ == "__main__":
+    # Try to open the number 0, or the default camera
+    camera = cv2.VideoCapture(0)
+    # Check whether the camera start working or not
+    if not camera.isOpened():
+        raise RuntimeError("Cannot open camera")
+    # Use lock to protect the access of camera
+    camera_lock = threading.Lock()
+    
     task_manager = TaskManager()
 
     #context = ("cert.pem", "key.pem")

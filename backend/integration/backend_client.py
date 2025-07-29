@@ -1,4 +1,8 @@
 import requests
+import os
+import base64
+from datetime import datetime
+from datetime import timezone
 
 HTTP = 80
 HTTPS = 8443
@@ -19,6 +23,7 @@ COMMAND_RESTOCK = '6'
 COMMAND_CHARGE = '7'
 COMMAND_TASKS = '8'
 COMMAND_DELETE = '9'
+COMMAND_SNAPSHOT = '10'
 
 TASKID_TASK = 1000
 TASKID_MOVE = 1001
@@ -36,7 +41,8 @@ BACKEND_ID = "B1234"
 BACKEND_TOKEN = "12345ABCDEF"
 ROBOT_ID_1 = "R1234"
 
-
+UPLOAD_DIR = 'snapshots'
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 def post_command(base_url, command, robotId, parameters):
@@ -332,6 +338,7 @@ def get_current_snapshot():
     base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
     robotId = ROBOT_ID_1
     url = f"{base_url}/camera/snapshot"
+    base64_flag = True
 
     headers = {
         "Content-Type": "application/json",
@@ -339,7 +346,10 @@ def get_current_snapshot():
     }
 
     parameters = {
-        "taskId": TASKID_SNAPSHOT
+        "taskId": TASKID_SNAPSHOT,
+        # If it is True, then the robot upload the image by base64
+        # Otherwise, image/jpeg
+        "base64": base64_flag
     }
 
     payload = {
@@ -347,7 +357,7 @@ def get_current_snapshot():
     }
 
     #, verify="cert.pem"
-    response = requests.delete(
+    response = requests.get(
         url=url,
         headers=headers,
         json=payload,
@@ -355,8 +365,26 @@ def get_current_snapshot():
     )
 
     if response.ok:
-        data = response.json()
-        print(f"Got status code {response.status_code} \n data: {data}")
+        print(f"Got status code {response.status_code}")
+
+        utc_now = datetime.now(timezone.utc)
+        utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        file_name = f"{robotId}_snapshot_{utc_timestamp}.jpg"
+        path = os.path.join(UPLOAD_DIR, file_name)
+
+        if base64_flag:
+            data = response.json()
+            img_base64 = data.get("image")
+            img_data = base64.b64decode(img_base64)
+            
+            with open(path, 'wb') as f:
+                f.write(img_data)
+                print("stored snaphot image already")
+        else:
+            with open(path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
 
 
 if __name__ == "__main__":
@@ -383,6 +411,8 @@ if __name__ == "__main__":
             get_tasks()
         elif command == COMMAND_DELETE:
             delete_task(taskId=1005)
+        elif command == COMMAND_SNAPSHOT:
+            get_current_snapshot()
         elif command == 'q':
             break
         else:
