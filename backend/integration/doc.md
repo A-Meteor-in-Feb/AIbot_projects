@@ -5,7 +5,8 @@
 * MQTT Broker's address:  
 
     * BROKER_HOST = "10.25.0.3" 
-    * BROKER_PORT = 1883 
+    * BROKER_PORT = 1883  
+
     > This MQTT broker runs in the internal netork of the company, you have to connect to VPN first to use it. 
 
 
@@ -23,6 +24,7 @@
     * BACKEND_HTTPS = 8444
     * TEST_ROBOT_HOST = "127.0.0.1"  
     * TEST_BACKEND_HOST = "127.0.0.1"  
+
     > For testing, if you are using VPN now, change the host address and keep using HTTP head and ROBOT_HTTP and BACKEND_HTTP. If not and you wish to use https, then use the HTTPS head and ROBOT HTTPS and BACKEND HTTPS.
 
 * For control commands:  
@@ -65,11 +67,14 @@
 
     * CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
 
-    > 
+    > This part need more precise and practical data in the future. These are just test data.
 
 * TLS configuration:  
+
     * cert.pem  
     * key.pem  
+
+    > if you are using wireguard and connect to the internal network, then you don't need to use SSL.
 
 ### 1. backend_client.py
 
@@ -79,16 +84,29 @@
 ```bash
 conda install -c conda-forge requests
 ```
+```Python
+import requests
+import os
+import base64
+from datetime import datetime
+from datetime import timezone
+```
 
 #### 1.2 Structure
 
 backend_client.py  
-&emsp;|- send_command(): Basic HTTP POST encapsulation  
+&emsp;|- post_command(): Basic HTTP POST encapsulation  
+&emsp;|- task_control(): "task" action, the robot will deliver according to the command.  
 &emsp;|- move_control(): "move" action, the robot will move to the specific 3D coordinates.  
 &emsp;|- deliver_control(): "deliver" action, the robot will deliver the cargo.  
 &emsp;|- pause_control(): "pause" action, the robot will pause.  
-&emsp;|- resume_control(): "resume" action, the robot will continue doing tasks.  
+&emsp;|- resume_control(): "resume" action, the robot will resume doing one task.  
 &emsp;|- abort_control(): "abort" action, the robot will stop doing the task.  
+&emsp;|- restock_control(): "restock" action, the robot will conduct restock action.  
+&emsp;|- charge_control(): "charge" action, the robot will go to charge.  
+&emsp;|- get_tasks(): The backend requets to get the tasks' queue from the robot.  
+&emsp;|- delete_task(): The backend asks the robot to try to delete the specific task.  
+&emsp;|- get_current_snapshot(): The backend requests for the snapshot from robot's camera.  
 &emsp;|- main loop: Run the corresponding function according to the user's input.  
 
 #### 1.3 How to run
@@ -104,6 +122,11 @@ python backend_client.py
 `paho.mqtt.client`
 ```bash
 conda install -c conda-forge paho-mqtt
+```
+```Python
+import json
+import ssl
+import paho.mqtt.client as mqtt
 ```
 
 #### 2.2 Structure
