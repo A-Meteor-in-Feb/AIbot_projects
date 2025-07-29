@@ -2,6 +2,9 @@ import json
 import ssl
 import paho.mqtt.client as mqtt
 
+# self-defined class
+from backend_robotInfo import Robot, Robots
+
 BROKER_HOST = "10.25.0.3"
 BROKER_PORT = 1883
 
@@ -13,6 +16,7 @@ ROBOT_VALID_TOKENS = {
     ROBOT_ID_1: "ABCDEF12345",
     ROBOT_ID_2: "1234567"
 }
+ROBOT_IP = ""
 
 DEVICE_TYPE = "backend"
 BACKEND_ID = "B1234"
@@ -79,7 +83,12 @@ def cargo_handler(client, userdata, msg):
 def ip_handler(client, userdata, msg):
     (header, data) = parse_message(msg)
     print(f"The network/ip topic from robot {ROBOT_ID_1} side:\n", data, "\n", header)
-
+    
+    # Update and store the info
+    robot_ip = data.get("ip")
+    for robot_item in robots:
+        if robot_item.robotId == ROBOT_ID_1:
+            robot_item.robotIP = robot_ip
 
 
 TOPICS = [
@@ -109,6 +118,10 @@ def on_disconnect(client, userdata, reason_code):
 
 
 if __name__ == "__main__":
+    robot1 = Robot(robotId=ROBOT_ID_1, robotIP=None)
+    robot2 = Robot(robotId=ROBOT_ID_2, robotIP=None)
+    robots = Robots([robot1, robot2])
+
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
 
     #Authentication

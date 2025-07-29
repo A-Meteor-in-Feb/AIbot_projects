@@ -463,4 +463,4 @@ if __name__ == "__main__":
         elif task == 'q':
             break
         else:
-            print("Invalid input, please input number from 0 - 9 :)")
+            print("Invalid input, please input number from 0 - 7 :)")

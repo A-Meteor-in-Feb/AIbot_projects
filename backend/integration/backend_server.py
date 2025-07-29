@@ -14,7 +14,7 @@ from datetime import timedelta
 
 # self-defined class
 from backend_cargoInfo import Item, CargoBin, Inventory
-from backend_cargoInfo import Order, Orders
+from backend_cargoInfo import Order, Orders, OrderInfo
 
 
 HTTP_HEAD = "http"
@@ -101,6 +101,13 @@ def get_cargo_binId(robotId):
     """
         Return the cargo information of the specific bin
     """
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != ROBOT_VALID_TOKENS[robotId]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
 
     data = request.get_json(force=True)
     parameters = data.get('params', {})
@@ -132,6 +139,14 @@ def get_cargo_inventory(robotId):
     """
         Return the cargo information of the inventory
     """
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != ROBOT_VALID_TOKENS[robotId]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
@@ -152,12 +167,22 @@ def get_cargo_inventory(robotId):
 
 @app.route('/api/JKROBOT/orders', methods=['GET'])
 def get_orders():
+
+    header = request.headers
+    token = header.get('Authorization')[7:]
+
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
     robotId = parameters.get("robotId")
     taskId = parameters.get("taskId")
     status = parameters.get("status")
+
+    if token != ROBOT_VALID_TOKENS[robotId]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
 
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -173,24 +198,31 @@ def get_orders():
 
 @app.route('/api/JKROBOT/<string:robotId>/notify-pickup', methods=['POST'])
 def notify_pickup(robotId):
+
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != ROBOT_VALID_TOKENS[robotId]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
     order_id = parameters.get("order_id")
-
-    #TODO: call the function to get the specific info of the result
-
-    utc_now = datetime.now(timezone.utc)
-    # For now, set the message expiry time as 5 minutes later
-    expiry = utc_now + timedelta(minutes=5) 
-    expiry_timestamp = expiry.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
+    order_info = None
+    # Use a function to get the accurate order info by order_id
+    for order_info_item in orders.orders_info:
+        if order_info_item.order_id == order_id:
+            order_info = order_info_item
+    # call the function to get the specific info of the result
     result = {
         "success": True,
         "order_id": order_id,
-        "auth_code": "A1B2C3",
-        "expires_at": expiry_timestamp,
-        "message": "通知已发送, 验证码有效"
+        "auth_code": order_info.auth_code,
+        "expires_at": order_info.expires_at,
+        "message": order_info.message 
     }
 
     return jsonify(result), 200 if result["success"] == True else 400
@@ -199,23 +231,42 @@ def notify_pickup(robotId):
 @app.route('/api/JKROBOT/<string:robotId>/auth-code', methods=['GET'])
 def get_authCode(robotId):
 
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != ROBOT_VALID_TOKENS[robotId]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
     order_id = parameters.get("order_id")
 
-    #TODO: call the function to get the specific info of the result
+    # call the function to get the specific info of the result
+    order_info = None
+    # Use a function to get the accurate order info by order_id
+    for order_info_item in orders.orders_info:
+        if order_info_item.order_id == order_id:
+            order_info = order_info_item
 
     utc_now = datetime.now(timezone.utc)
     # For now, set the message expiry time as 5 minutes later
     expiry = utc_now + timedelta(minutes=5) 
     expiry_timestamp = expiry.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    
+    # Assign a new expiry timestamp and a new auth-code
+    new_expiry_timestamp = expiry_timestamp
+    new_auth_code = "AABBCC"
+    order_info.auth_code = new_auth_code
+    order_info.expires_at = new_expiry_timestamp
 
     result = {
         "success": True,
         "order_id": order_id,
-        "auth_code": "A1B2C3",
-        "expires_at": expiry_timestamp
+        "auth_code": order_info.auth_code,
+        "expires_at": order_info.expires_at
     }
 
     return jsonify(result), 200 if result["success"] == True else 400
@@ -224,12 +275,25 @@ def get_authCode(robotId):
 @app.route('/api/JKROBOT/<string:robotId>/task-complete', methods=['POST'])
 def taskComplete_notification(robotId):
 
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != ROBOT_VALID_TOKENS[robotId]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
     order_id = parameters.get("order_id")
 
-    #TODO: call the function to change the order's status and get the accurate result
+    # Update the task status
+    for order_info_item in orders.orders_info:
+        if order_info_item.order_id == order_id:
+            order_info_item.complete_flag = True
+    # Delete the record or not? for now I don't know
+    # call the function to change the order's status and get the accurate result
 
     result = {
         "success": True
@@ -304,8 +368,19 @@ if __name__ == "__main__":
                    quantity=2,
                    status="assigned",
                    assigned_robot_id="R1234")
+
+    utc_now = datetime.now(timezone.utc)
+    # For now, set the message expiry time as 5 minutes later
+    expiry = utc_now + timedelta(minutes=5) 
+    expiry_timestamp = expiry.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+    order1_info = OrderInfo(order_id="ORD20250707123001",
+                            auth_code="A1B2C3",
+                            expires_at=expiry_timestamp,
+                            message="通知已发送, 验证码有效",
+                            complete_flag=False)
     
-    orders = Orders(orders=[order1])
+    orders = Orders(orders=[order1], orders_info=[order1_info])
 
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)

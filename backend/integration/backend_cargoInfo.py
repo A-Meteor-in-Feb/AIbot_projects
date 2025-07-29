@@ -78,5 +78,15 @@ class Order:
     )
 
 @dataclass
+class OrderInfo:
+    order_id: str
+    auth_code: str
+    expires_at: str
+    message: str
+    complete_flag: bool
+
+    
+@dataclass
 class Orders:
     orders: List[Order] = field(default_factory=list)
+    orders_info: List[OrderInfo] = field(default_factory=list)

@@ -330,7 +330,6 @@ def delete_task(taskId):
         print(f"Got status code {response.status_code} \n data: {data}")
 
 
-# TODO: You haven't test for this function
 def get_current_snapshot():
     """
         Request for the current snapshot from the backend
@@ -416,4 +415,4 @@ if __name__ == "__main__":
         elif command == 'q':
             break
         else:
-            print("Invalid input, please input number from 0 - 9 :)")
+            print("Invalid input, please input number from 0 - 10 :)")

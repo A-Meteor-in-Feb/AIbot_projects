@@ -34,7 +34,14 @@ def response_tasks(robotId):
         Resonse to the get request.
         This part, we need get the accurate data from the execution part.
     """
-    
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     data = request.get_json(force=True)
     parameters = data.get('params', {})
 
@@ -64,6 +71,14 @@ def delete_task(robotId, taskId):
     """
         Delete the specific task if refered by the backend.
     """
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+
     # search the specifc task by task id and then delete it in the execution part.
     task_deleted = int(taskId)
 
@@ -378,6 +393,14 @@ def video_stream():
 
 @app.route('/camera/snapshot', methods=['GET'])
 def snapshot():
+    header = request.headers
+    token = header.get('Authorization')[7:]
+    if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
+        result = {"status": "Unauthorized"}
+        return jsonify(result), 401
+    else:
+        print("Authentication Passed.")
+        
     data = request.get_json(force=True)
     parameters = data.get('params', {})
     base64_flag = parameters.get("base64")
