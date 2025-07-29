@@ -14,6 +14,7 @@ from datetime import timedelta
 
 # self-defined class
 from backend_cargoInfo import Item, CargoBin, Inventory
+from backend_cargoInfo import Order, Orders
 
 
 HTTP_HEAD = "http"
@@ -158,25 +159,13 @@ def get_orders():
     taskId = parameters.get("taskId")
     status = parameters.get("status")
 
-    #TODO: call the function to get the specific info of the result
-
     utc_now = datetime.now(timezone.utc)
     utc_timestamp = utc_now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
+    # call the function to get the specific info of the result
     result = {
         "success": True,
-        "orders": [{
-            "order_id": "ORD20250707123001",
-            "cargo_bind_id": "COKE_001",
-            "customer_name": "张三",
-            "delivery_address": "1-2-101",
-            "delivery_lat": 1.2966,
-            "delivery_lng": 103.7764,
-            "quantity": 2,
-            "status": status,
-            "assigned_robot_id": robotId,
-            "created_at": utc_timestamp
-        }]
+        "orders": orders.orders
     }
 
     return jsonify(result), 200 if result["success"] == True else 400
@@ -304,6 +293,19 @@ if __name__ == "__main__":
     bin2 = CargoBin(bin_id=2, capacity=15.0, items=[])
     
     inventory = Inventory(bins=[bin1, bin2])
+
+    # Initialize the orders 
+    order1 = Order(order_id="ORD20250707123001",
+                   cargo_bind_id="COKE_001",
+                   customer_name="张三",
+                   delivery_address="1-2-101",
+                   delivery_lat=1.2966,
+                   delivery_lng=103.7764,
+                   quantity=2,
+                   status="assigned",
+                   assigned_robot_id="R1234")
+    
+    orders = Orders(orders=[order1])
 
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)

@@ -1,5 +1,8 @@
-from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass
+from dataclasses import field
+from typing import List
+from typing import Optional
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -53,3 +56,27 @@ class Inventory:
         
         cap = self.total_capacity
         return (self.total_weight / cap) if cap > 0 else 0.0
+
+
+@dataclass
+class Order:
+    order_id: str
+    cargo_bind_id: str
+    customer_name: str
+    delivery_address: str
+    delivery_lat: float
+    delivery_lng: float
+    quantity: int
+    status: str
+    assigned_robot_id: str
+    created_at: str = field(
+        default_factory=lambda: datetime
+        .now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+
+@dataclass
+class Orders:
+    orders: List[Order] = field(default_factory=list)
