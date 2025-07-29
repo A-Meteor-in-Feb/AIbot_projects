@@ -25,7 +25,7 @@
     * TEST_ROBOT_HOST = "127.0.0.1"  
     * TEST_BACKEND_HOST = "127.0.0.1"  
   
-    > For testing, if you are using VPN now, change the host address and keep using HTTP head and ROBOT_HTTP and BACKEND_HTTP. If not and you wish to use https, then use the HTTPS head and ROBOT HTTPS and BACKEND HTTPS.
+    > For testing, if you are using VPN now, change the host address and keep using HTTP head and ROBOT_HTTP and BACKEND_HTTP. If not and you wish to use https, then use the HTTPS head and ROBOT HTTPS and BACKEND HTTPS. 
 
 * For control commands:  
 
@@ -67,7 +67,7 @@
 
     * CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
   
-    > This part need more precise and practical data in the future. These are just test data.
+    > This part need more precise and practical data in the future. These are just test data.  
 
 * TLS configuration:  
 

@@ -4,13 +4,13 @@ import base64
 from datetime import datetime
 from datetime import timezone
 
-HTTP = 80
+HTTP = 8000
 HTTPS = 8443
 
 HTTP_HEAD = "http"
 HTTPS_HEAD = "https"
 
-TEST_ROBOT_HOST = "127.0.0.1"
+TEST_ROBOT_HOST = "10.25.0.6"
 TEST_ROBOT_PORT = HTTP
 
 COMMAND_TASK = '0'
