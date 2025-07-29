@@ -9,6 +9,7 @@ import threading
 import base64
 import cv2
 import os
+import time
 
 # self-defined class
 from robot_taskManager import TaskManager
@@ -303,7 +304,7 @@ def handle_command(robotId, command):
 def frame_generator():
     """
         generate the video frame
-    """
+    
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     VIDEO_PATH = os.path.join(BASE_DIR, "videos", "test_video.mp4")
     cap = cv2.VideoCapture(VIDEO_PATH)
@@ -328,6 +329,31 @@ def frame_generator():
             )
     finally:
         cap.release()
+    """
+    try:
+        while True:
+            
+            with camera_lock:
+                success_read, frame = camera.read()
+            if not success_read:
+                time.sleep(0.1)
+                continue
+
+            # frame = cv2.resize(frame, (640, 480))
+
+            success_encode, jpeg = cv2.imencode(".jpg", frame)
+            if not success_encode:
+                continue
+
+            jpg_bytes = jpeg.tobytes()
+
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n" + jpg_bytes + b"\r\n"
+            )
+
+    finally:
+        camera.release()
     
 
 @app.route('/camera/stream', methods=['GET'])
