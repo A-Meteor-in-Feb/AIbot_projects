@@ -4,8 +4,10 @@
 
 * MQTT Broker's address:  
 
-    * BROKER_HOST = "127.0.0.1"  
-    * BROKER_PORT = 8445  
+    * BROKER_HOST = "10.25.0.3" 
+    * BROKER_PORT = 1883 
+    > This MQTT broker runs in the internal netork of the company, you have to connect to VPN first to use it. 
+
 
 * Parameter needed by VDA5050 protocol header:  
 
@@ -13,21 +15,43 @@
 
 * URLs needed for testing:  
 
+    * HTTP_HEAD = "http"  
+    * HTTPS_HEAD = "https"  
+    * ROBOT_HTTP = 80  
+    * ROBOT_HTTPS = 8443  
+    * BACKEND_HTTP = 81  
+    * BACKEND_HTTPS = 8444
     * TEST_ROBOT_HOST = "127.0.0.1"  
-    * TEST_ROBOT_PORT = 8443  
     * TEST_BACKEND_HOST = "127.0.0.1"  
-    * TEST_BACKEND_PORT = 8444  
+    > For testing, if you are using VPN now, change the host address and keep using HTTP head and ROBOT_HTTP and BACKEND_HTTP. If not and you wish to use https, then use the HTTPS head and ROBOT HTTPS and BACKEND HTTPS.
 
 * For control commands:  
 
-    * COMMAND_MOVE = '0'  
-    * COMMAND_DELIVER = '1'  
-    * COMMAND_PAUSE = '2'  
-    * COMMAND_RESUME = '3'  
-    * COMMAND_ABORT = '4'  
+    * COMMAND_TASK = '0'  
+    * COMMAND_MOVE = '1'  
+    * COMMAND_DELIVER = '2'  
+    * COMMAND_PAUSE = '3'  
+    * COMMAND_RESUME = '4'  
+    * COMMAND_ABORT = '5'  
+    * COMMAND_RESTOCK = '6'  
+    * COMMAND_CHARGE = '7'  
+    * COMMAND_TASKS = '8'  
+    * COMMAND_DELETE = '9'  
+    * COMMAND_SNAPSHOT = '10'  
 
-    * TASKID_MOVE = 1234  
-    * TASKID_DELIVER = 1235  
+    * TASKID_TASK = 1000  
+    * TASKID_MOVE = 1001  
+    * TASKID_DELIVER = 1002  
+    * TASKID_PAUSE = 1003  
+    * TASKID_RESUME = 1004  
+    * TASKID_ABORT = 1005  
+    * TASKID_RESTOCK = 1006  
+    * TASKID_CHARGE = 1007  
+    * TASKID_TASKS = 1008  
+    * TASKID_DELETE = 1009  
+    * TASKID_SNAPSHOT = 1010  
+
+    > This part is not for practical use. Just use in tests. To test the interfaces. Enter the number then the corresponding interface will start working.
 
 * For authorization:  
 
@@ -40,6 +64,8 @@
     * BACKEND_TOKEN = "98765"  
 
     * CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
+
+    > 
 
 * TLS configuration:  
     * cert.pem  
