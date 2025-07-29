@@ -6,7 +6,7 @@
 
     * BROKER_HOST = "10.25.0.3" 
     * BROKER_PORT = 1883  
-
+  
     > This MQTT broker runs in the internal netork of the company, you have to connect to VPN first to use it. 
 
 
@@ -24,7 +24,7 @@
     * BACKEND_HTTPS = 8444
     * TEST_ROBOT_HOST = "127.0.0.1"  
     * TEST_BACKEND_HOST = "127.0.0.1"  
-
+  
     > For testing, if you are using VPN now, change the host address and keep using HTTP head and ROBOT_HTTP and BACKEND_HTTP. If not and you wish to use https, then use the HTTPS head and ROBOT HTTPS and BACKEND HTTPS.
 
 * For control commands:  
@@ -52,7 +52,7 @@
     * TASKID_TASKS = 1008  
     * TASKID_DELETE = 1009  
     * TASKID_SNAPSHOT = 1010  
-
+  
     > This part is not for practical use. Just use in tests. To test the interfaces. Enter the number then the corresponding interface will start working.
 
 * For authorization:  
@@ -66,14 +66,14 @@
     * BACKEND_TOKEN = "98765"  
 
     * CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{BACKEND_ID}"  
-
+  
     > This part need more precise and practical data in the future. These are just test data.
 
 * TLS configuration:  
 
     * cert.pem  
     * key.pem  
-
+  
     > if you are using wireguard and connect to the internal network, then you don't need to use SSL.
 
 ### 1. backend_client.py
