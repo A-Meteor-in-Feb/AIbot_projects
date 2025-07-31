@@ -29,3 +29,5 @@ backend/integration/__pycache__/*
 .DS_Store
 robot_side/.DS_Store
 robot_side/integration/.DS_Store
+robot_side/test/localization/build/*
+robot_side/test/localization/devel/*

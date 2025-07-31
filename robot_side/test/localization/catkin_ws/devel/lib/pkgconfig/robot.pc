@@ -1,0 +1,8 @@
+prefix=/home/ros/robot_side/test/localization/catkin_ws/devel
+
+Name: robot
+Description: Description of robot
+Version: 0.0.0
+Cflags: -I/home/ros/robot_side/test/localization/catkin_ws/devel/include
+Libs: -L${prefix}/lib 
+Requires: nav_msgs rospy std_msgs message_runtime

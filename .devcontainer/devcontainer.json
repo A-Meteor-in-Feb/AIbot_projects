@@ -1,0 +1,25 @@
+{
+  "name": "ROS Noetic Dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "../robot_side/test/localization"
+  },
+  "workspaceFolder": "/home/ros/robot_side/test/localization",
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "python.analysis.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/home/ros/robot_side/test/localization/catkin_ws/devel/lib/python3/dist-packages"
+    ]
+  },
+  "extensions": [
+    "ms-iot.vscode-ros",
+    "ms-vscode.cpptools"
+  ],
+  "forwardPorts": [11311],
+  "mounts": [
+    "source=${localWorkspaceFolder}/robot_side/test/localization,target=/home/ros/robot_side/test/localization,type=bind"
+  ],
+  "remoteUser": "root"
+}
+
