@@ -10,8 +10,8 @@ HTTPS = 8443
 HTTP_HEAD = "http"
 HTTPS_HEAD = "https"
 
-TEST_ROBOT_HOST = "10.25.0.6"
-TEST_ROBOT_PORT = HTTP
+TEST_ROBOT_HOST = "rob1.ibc-ai.com"
+TEST_ROBOT_PORT = HTTPS
 
 COMMAND_TASK = '0'
 COMMAND_MOVE = '1'
@@ -111,7 +111,7 @@ def move_control():
     """
         Define the request details for posting move command.
     """
-    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"{HTTPS_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
 
     command = "move"
     robotId = ROBOT_ID_1

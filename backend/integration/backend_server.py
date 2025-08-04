@@ -16,19 +16,9 @@ from datetime import timedelta
 from backend_cargoInfo import Item, CargoBin, Inventory
 from backend_cargoInfo import Order, Orders, OrderInfo
 
-
-HTTP_HEAD = "http"
-HTTPS_HEAD = "https"
-
-ROBOT_HTTP = 8000
-ROBOT_HTTPS = 8443
-BACKEND_HTTP = 8001
-BACKEND_HTTPS = 8444
-
-TEST_ROBOT_HOST = "10.25.0.6"
-TEST_ROBOT_PORT = ROBOT_HTTP
-TEST_BACKEND_HOST = "10.25.0.5"
-TEST_BACKEND_PORT = BACKEND_HTTP
+HTTP_HEAD = "https"
+SIMULATOR_HOST = "rob1.ibc-ai.com"
+SIMULATOR_PORT = 8443
 
 ROBOT_ID_1 = "R1234"
 ROBOT_VALID_TOKENS = {
@@ -320,7 +310,7 @@ def proxy_mjpeg(robotId):
         Get video stream from robot side, then forward to the fronend.
     """
    
-    url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}/camera/stream"
+    url = f"{HTTP_HEAD}://{SIMULATOR_HOST}:{SIMULATOR_PORT}/camera/stream"
 
     headers = {
         "Authorization": f"Bearer {BACKEND_TOKEN}"
@@ -384,4 +374,4 @@ if __name__ == "__main__":
 
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)
-    app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT)
+    app.run(host="0.0.0.0", port=8001)

@@ -11,7 +11,7 @@ from robot.msg import Cargo
 from datetime import datetime
 from datetime import timezone
 
-BROKER_HOST = "10.25.0.3"
+BROKER_HOST = "10.25.0.2"
 BROKER_PORT = 1883
 
 ORG_ID = "AIbot"
@@ -23,31 +23,6 @@ ROBOT_IP = ""
 
 CLIENT_ID = f"d:{ORG_ID}:{DEVICE_TYPE}:{ROBOT_ID}"
 
-CONN_HEADER_ID = 0
-STATE_HEADER_ID = 0
-ERROR_HEADER_ID = 0
-CARGO_HEADER_ID = 0
-IP_HEADER_ID = 0
-
-VERSION = "version"
-MANUFACTURER = "manu"
-SERIAL_NUMBER = "serial"
-
-
-def VDA_5050_header(header_id, version, manufacturer, serial_number) -> bytes:
-    """
-        Generate binary vda5050 message header.
-        header_id: the id number for every topic.
-        version: protocol's version.
-        manufacturer: the manufacturer.
-        serial_number: serial number
-        return header
-    """
-    header_id_bytes = struct.pack(">I", header_id)
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4]+"Z"
-    parts = [header_id_bytes, timestamp.encode("utf-8"), version.encode("utf-8"), manufacturer.encode("utf-8"), serial_number.encode("utf-8")]
-    header = b"\n".join(parts)+b"\n"
-    return header
 
 def on_connect(client, userdata, flags, reason_code, properties):
     """
@@ -60,9 +35,6 @@ def state_callback(msg):
     """
         callback function for robots/{robotId}/state topic.
     """
-
-    global STATE_HEADER_ID
-    STATE_HEADER_ID += 1
 
     payload = {
         "position": {
@@ -80,20 +52,15 @@ def state_callback(msg):
         "binsNum": msg.binsNum
     }
     
-    vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
-    vda5050_body = json.dumps(payload).encode("utf-8")
+    
+    message = json.dumps(payload).encode("utf-8")
 
-    message = vda5050_header+vda5050_body
-
-    mqtt_client.publish(f"robot/{ROBOT_ID}/state", message, qos=0)
+    mqtt_client.publish(f"robots/{ROBOT_ID}/state", message, qos=0)
 
     rospy.loginfo(f"Forwarded state topic to MQTT: {payload}")
 
 
 def error_callback(msg):
-
-    global ERROR_HEADER_ID
-    ERROR_HEADER_ID += 1
 
     payload = {
         "timestamp": msg.timestamp,
@@ -110,20 +77,14 @@ def error_callback(msg):
         "retryable": msg.retryable
     }
 
-    vda5050_header = VDA_5050_header(ERROR_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
-    vda5050_body = json.dumps(payload).encode("utf-8")
+    message = json.dumps(payload).encode("utf-8")
 
-    message = vda5050_header+vda5050_body
-
-    mqtt_client.publish(f"robot/{ROBOT_ID}/error", message, qos=0)
+    mqtt_client.publish(f"robots/{ROBOT_ID}/error", message, qos=0)
 
     rospy.loginfo(f"Forwarded error topic to MQTT: {payload}")
 
 
 def cargo_callback(msg):
-
-    global CARGO_HEADER_ID
-    CARGO_HEADER_ID += 1
 
     slots = []
     for item in msg.slots:
@@ -145,12 +106,9 @@ def cargo_callback(msg):
         "taskId": msg.taskId
     }
 
-    vda5050_header = VDA_5050_header(CARGO_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
-    vda5050_body = json.dumps(payload).encode("utf-8")
+    message = json.dumps(payload).encode("utf-8")
 
-    message = vda5050_header+vda5050_body
-
-    mqtt_client.publish(f"robot/{ROBOT_ID}/cargo", message, qos=0)
+    mqtt_client.publish(f"robots/{ROBOT_ID}/cargo", message, qos=0)
 
     rospy.loginfo(f"Forwarded cargo topic: {payload}")
 
@@ -160,17 +118,11 @@ def online_notification():
         publish the mqtt client (robot side) online state
     """
 
-    global CONN_HEADER_ID
-    CONN_HEADER_ID += 1
-
     payload = {"status": "online", "reason": "connect"}
 
-    vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
-    vda5050_body = json.dumps(payload).encode("utf-8")
+    message = json.dumps(payload).encode("utf-8")
 
-    message = vda5050_header+vda5050_body
-
-    mqtt_client.publish(f"robot/{ROBOT_ID}/connection", message, qos=1, retain=True)
+    mqtt_client.publish(f"robots/{ROBOT_ID}/connection", message, qos=1, retain=False)
 
     print(f"Publish connection topic {payload}")
 
@@ -180,17 +132,11 @@ def last_will_set():
         set last will for robot
     """
 
-    global CONN_HEADER_ID
-    CONN_HEADER_ID += 1
-
     payload = {"status": "offline", "reason": "disconnect"}
 
-    vda5050_header = VDA_5050_header(STATE_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
-    vda5050_body = json.dumps(payload).encode("utf-8")
+    message = json.dumps(payload).encode("utf-8")
 
-    message = vda5050_header+vda5050_body
-
-    mqtt_client.will_set(f"robot/{ROBOT_ID}/connection", message, qos=1, retain=True)
+    mqtt_client.will_set(f"robots/{ROBOT_ID}/connection", message, qos=1, retain=True)
 
 
 def get_ip():
@@ -206,8 +152,6 @@ def ip_notification():
     """
         Publish Robot's IP notification to the backend
     """
-    global IP_HEADER_ID
-    IP_HEADER_ID += 1
 
     global ROBOT_IP
     ROBOT_IP = get_ip()
@@ -220,12 +164,9 @@ def ip_notification():
         "timestamp": timestamp
     }
 
-    vda5050_header = VDA_5050_header(IP_HEADER_ID, VERSION, MANUFACTURER, SERIAL_NUMBER)
-    vda5050_body = json.dumps(payload).encode("utf-8")
+    message = json.dumps(payload).encode("utf-8")
 
-    message = vda5050_header+vda5050_body
-
-    mqtt_client.publish(f"robot/{ROBOT_ID}/network/ip", message, qos=1, retain=False)
+    mqtt_client.publish(f"robots/{ROBOT_ID}/network/ip", message, qos=1, retain=False)
 
     print(f"Publish network/ip topic {payload}")
 
