@@ -10,7 +10,7 @@ BROKER_PORT = 1883
 
 ORG_ID = "AIbot"
 
-ROBOT_ID_1 = "R1234"
+ROBOT_ID_1 = "robot03"
 ROBOT_ID_2 = "R1235"
 ROBOT_VALID_TOKENS = {
     ROBOT_ID_1: "ABCDEF12345",
@@ -62,11 +62,12 @@ def ip_handler(client, userdata, msg):
     data = json.loads(data_str)
     print(f"The network/ip topic from robot {ROBOT_ID_1} side:\n", data)
     
+
     # Update and store the info
-    robot_ip = data.get("ip")
-    for robot_item in robots:
-        if robot_item.robotId == ROBOT_ID_1:
-            robot_item.robotIP = robot_ip
+    # robot_ip = data.get("ip")
+    # for robot_item in robots:
+        # if robot_item.robotId == ROBOT_ID_1:
+            # robot_item.robotIP = robot_ip
 
 
 TOPICS = [
@@ -96,9 +97,7 @@ def on_disconnect(client, userdata, reason_code):
 
 
 if __name__ == "__main__":
-    robot1 = Robot(robotId=ROBOT_ID_1, robotIP=None)
-    robot2 = Robot(robotId=ROBOT_ID_2, robotIP=None)
-    robots = Robots([robot1, robot2])
+    
 
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=CLIENT_ID)
 
