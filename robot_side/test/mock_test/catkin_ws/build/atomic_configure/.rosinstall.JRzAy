@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/ros/robot_side/test/mock_test/catkin_ws/devel/setup.sh

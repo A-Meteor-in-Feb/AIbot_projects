@@ -374,4 +374,4 @@ if __name__ == "__main__":
 
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_BACKEND_HOST, port=TEST_BACKEND_PORT, ssl_context=context)
-    app.run(host="0.0.0.0", port=8001)
+    app.run(host="0.0.0.0", port=8889)

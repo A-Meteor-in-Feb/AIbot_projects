@@ -1,0 +1,8 @@
+prefix=/home/ros/robot_side/test/mock_test/catkin_ws/install
+
+Name: robot
+Description: Description of robot
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs

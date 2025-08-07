@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 BROKER_HOST = "10.25.0.3"
 BROKER_PORT = 1883
 
-TOPIC = "mqtt_backend/goal"
+TOPIC = "goal"
 
 
 def on_connect(client, userdata, flags, reason_code, properties):

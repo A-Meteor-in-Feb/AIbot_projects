@@ -10,14 +10,14 @@ from tf.transformations import quaternion_from_euler
 BROKER_HOST = "10.25.0.3"
 BROKER_PORT = 1883
 
-TOPIC = "mqtt_backend/goal"
+TOPIC = "goal"
 
 
 def on_connect(client, userdata, flags, reason_code, properties):
     print(f"Connected with reason code={reason_code}")
     client.subscribe(TOPIC)
     client.message_callback_add(TOPIC, goal_handler)
-    print("subscribe to topic - mqtt_backend/goal")
+    print("subscribe to topic - goal")
 
 
 def goal_handler(client, userdata, msg):

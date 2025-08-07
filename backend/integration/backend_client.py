@@ -82,7 +82,7 @@ def task_control():
     """
         Define the request details for posting task command.
     """
-    base_url = f"{HTTP_HEAD}://{TEST_ROBOT_HOST}:{TEST_ROBOT_PORT}"
+    base_url = f"http://127.0.0.1:8888"
 
     command = "task"
     robotId = ROBOT_ID_1
