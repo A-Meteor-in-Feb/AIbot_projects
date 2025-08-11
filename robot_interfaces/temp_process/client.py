@@ -5,19 +5,27 @@ import secrets
 import hashlib
 import json
 import base64
+from datetime import datetime
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 #connection detailed parameters
 HEAD = "http" #protocol
 HOST = "10.25.0.15" #backend ip address
-PORT = 18001 #backend port
+PORT = "18001" #backend port
 BASE_URL = f"{HEAD}://{HOST}:{PORT}"
+
 
 class TaskStatus(Enum):
     PENDING_RECEIPT = 40 #待签收
     DELIVERY_FAILED = 50 #配送失败
     DELIVERY_COMPLETE = 70 #配送完成
+
+def time_now():
+    now = datetime.now()    
+    timestamp_str = now.strftime("%Y-%m-%d %H:%M:%S")
+    return timestamp_str
+
 
 def md5_hex(s: str) -> str:
     return hashlib.md5(s.encode("utf-8")).hexdigest()
@@ -38,19 +46,25 @@ def build_auth_headers(robot_id: int, private_key: str) -> dict:
 
 
 def aes_cbc_encrypt(plaintext: bytes, key: bytes, iv: bytes) -> bytes:
+    #创建AES加密器, 模式为CBC
     cipher = AES.new(key, AES.MODE_CBC, iv)
+    #返回密文, 如果加密长度不是16字节的倍数, 要用PKCS#7规则填充
     return cipher.encrypt(pad(plaintext, AES.block_size))
+
+
+def encrypted_data(payload: dict):
+    #首先把字典转为json字符串, 然后再转为字节串
+    plaintext = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    #AES CBC 加密字节串得到密文
+    cipher_bytes = aes_cbc_encrypt(plaintext, KEY, IV)
+    #把密文转为可传输的字符串
+    cipher_b64 = base64.b64encode(cipher_bytes).decode("ascii")
+    return cipher_b64
+
 
 def aes_cbc_decrypt(cipher_bytes: bytes, key: bytes, iv: bytes) -> bytes:
     cipher = AES.new(key, AES.MODE_CBC, iv)
     return unpad(cipher.decrypt(cipher_bytes), AES.block_size)
-
-
-def encrypted_data(payload: dict):
-    plaintext = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    cipher_bytes = aes_cbc_encrypt(plaintext, KEY, IV)
-    cipher_b64 = base64.b64encode(cipher_bytes).decode("ascii")
-    return cipher_b64
 
 
 def decrypt_response_data(data_b64: str) -> dict:
@@ -63,24 +77,32 @@ def select_taskInfo():
     """
         接口1: 机器人主动获取任务信息
     """
-    url = "http://10.25.0.15:18001/api/robot/client/selectTaskInfo"
+    url = f"{BASE_URL}/api/robot/client/selectTaskInfo"
 
-    payload = {"taskId": 1234}
+    payload = {"taskId": 18959715166}
     data = encrypted_data(payload)
     body = {"data": data}
 
-    for i in range(5):
+    #只发一次
+    for i in range(1):
         try: 
+            #每次发送都更新header
             HEADER = build_auth_headers(ROBOT_ID, PRIVATE_KEY)
             print("\n", HEADER, data, "\n\n")
-            response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
+            response = requests.post(url = url, headers = HEADER, json = body, timeout = 20)
 
             if response.ok:
+                print(response.status_code)
                 # 获取到相关data然后解析数据
-                data = response.json().get("data")
-                result = decrypt_response_data(data)
-                print(result)
-                return result
+                #data = response.json().get("data")
+                data = response.text
+                if isinstance(data, str):
+                    print(3)
+                    result = decrypt_response_data(data)
+                    print(result)
+                    return result
+                else:
+                    print(2)
             else:
                 print(f"第{i}次请求后台主动获取任务信息失败, 状态码: {response.status_code}")
         
@@ -99,24 +121,27 @@ def update_taskStatus(taskStatus):
         parameters:
             taskStatus: the number represents the status of the task.
     """
-    url = f"{BASE_URL}/api/JKROBOT/{ROBOT_ID}/reportTaskProcess"
+    url = f"{BASE_URL}/api/robot/client/reportTaskProcess"
 
     payload = {
-        "taskID": 1234,
+        "taskId": 18959715166,
         "taskStatus": taskStatus, 
-        "step": "step"
+        "step": "step",
+        "createTime": time_now()
     }
     data = encrypted_data(payload)
+    body = {"data": data}
 
     if taskStatus != 40:
         #对于接口3和4 请求失败要重试
         for i in range(5):
             try:
                 HEADER = build_auth_headers(ROBOT_ID, PRIVATE_KEY)
-                response = requests.post(url = url, headers = HEADER, json = data,timeout = 5)
+                response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
                 if not response.ok:
                     print(f"第{i}次向后台更新任务进度失败, 状态码: {response.status_code}")
                 else:
+                    print(response.text)
                     return response.ok
             except requests.RequestException as e:
                 print(f"第{i}次请求异常: {e}")
@@ -128,7 +153,8 @@ def update_taskStatus(taskStatus):
     else:
         #接口2 请求失败不需要重试
         HEADER = build_auth_headers(ROBOT_ID, PRIVATE_KEY)
-        response = requests.post(url = url, headers = HEADER, json = data, timeout = 5)
+        response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
+        print(response.text)
         return response.ok
 
 
@@ -142,8 +168,15 @@ if __name__ == "__main__":
 
     try:
         while True:
-            select_taskInfo()
-            time.sleep(3)
+            enter = input("interface: ")
+            if enter == '1':
+                select_taskInfo()
+            elif enter == '2':
+                update_taskStatus(TaskStatus.PENDING_RECEIPT.value)
+            elif enter == '3':
+                update_taskStatus(TaskStatus.DELIVERY_FAILED.value)
+            elif enter == '4':
+                update_taskStatus(TaskStatus.DELIVERY_FAILED.value)
     except KeyboardInterrupt:
         print("exiting")
 
