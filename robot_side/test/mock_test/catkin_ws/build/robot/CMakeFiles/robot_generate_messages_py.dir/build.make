@@ -54,6 +54,7 @@ CMAKE_BINARY_DIR = /home/ros/robot_side/test/mock_test/catkin_ws/build
 include robot/CMakeFiles/robot_generate_messages_py.dir/progress.make
 
 robot/CMakeFiles/robot_generate_messages_py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_State.py
+robot/CMakeFiles/robot_generate_messages_py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_Goal.py
 robot/CMakeFiles/robot_generate_messages_py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/__init__.py
 
 
@@ -63,13 +64,20 @@ robot/CMakeFiles/robot_generate_messages_py: /home/ros/robot_side/test/mock_test
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Python from MSG robot/State"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg
 
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_Goal.py: /opt/ros/noetic/lib/genpy/genmsg_py.py
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_Goal.py: /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Python from MSG robot/Goal"
+	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg
+
 /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/__init__.py: /opt/ros/noetic/lib/genpy/genmsg_py.py
 /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/__init__.py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_State.py
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Python msg __init__.py for robot"
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/__init__.py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_Goal.py
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating Python msg __init__.py for robot"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg --initpy
 
 robot_generate_messages_py: robot/CMakeFiles/robot_generate_messages_py
 robot_generate_messages_py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_State.py
+robot_generate_messages_py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_Goal.py
 robot_generate_messages_py: /home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/__init__.py
 robot_generate_messages_py: robot/CMakeFiles/robot_generate_messages_py.dir/build.make
 

@@ -31,3 +31,6 @@ robot_side/.DS_Store
 robot_side/integration/.DS_Store
 robot_side/test/localization/build/*
 robot_side/test/localization/devel/*
+robot_side/test/mock_test/robot_services/__pycache__/*
+robot_interfaces/catkin_ws/build/*
+robot_interfaces/catkin_ws/devel/*

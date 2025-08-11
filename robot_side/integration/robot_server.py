@@ -114,7 +114,7 @@ def delete_task(robotId, taskId):
 def handle_command(robotId, command):
     """
         Process the command sent from the backend.
-    """
+    
     header = request.headers
     token = header.get('Authorization')[7:]
     if token != BACKEND_VALID_TOKENS[BACKEND_ID]:
@@ -122,9 +122,10 @@ def handle_command(robotId, command):
         return jsonify(result), 401
     else:
         print("Authentication Passed.")
-
+    """
     data = request.get_json(force=True)
-    cmd = data.get('command')
+    #cmd = data.get('command')
+    cmd = command
     parameters = data.get('params', {})
 
     if cmd == 'move':
@@ -244,10 +245,10 @@ def handle_command(robotId, command):
         return jsonify(result), 200 if result["status"] == "aborted" else 400
     
     elif cmd == "task":
-        task_id = parameters.get("taskId")
-        bin_id = parameters.get("binId")
-        number = parameters.get("number")
-        location = parameters.get("location")
+        task_id = data.get("taskId")
+        bin_id = data.get("binId")
+        number = data.get("number")
+        location = data.get("location")
 
         task = {
             "taskId": task_id,
@@ -448,5 +449,5 @@ if __name__ == "__main__":
 
     #context = ("cert.pem", "key.pem")
     #app.run(host=TEST_ROBOT_HOST, port=TEST_ROBOT_PORT, ssl_context=context)
-    app.run(host=TEST_ROBOT_HOST, port=TEST_ROBOT_PORT)
+    app.run(host="10.25.0.5", port=8888)
 

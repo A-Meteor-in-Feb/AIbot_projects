@@ -9,11 +9,18 @@ import struct
 import geometry_msgs.msg
 
 class State(genpy.Message):
-  _md5sum = "c5c770faa938bccc8c5b6ab129729e91"
+  _md5sum = "e969d27b0a93712a250988f2dbe8e279"
   _type = "robot/State"
   _has_header = False  # flag to mark the presence of a Header object
   _full_text = """geometry_msgs/Point position
+string coordinateType
+uint8 battery
 string taskStatus
+uint32 taskId
+string connection
+bool autonomousMode
+bool fault
+uint32 binsNum
 ================================================================================
 MSG: geometry_msgs/Point
 # This contains the position of a point in free space
@@ -21,8 +28,8 @@ float64 x
 float64 y
 float64 z
 """
-  __slots__ = ['position','taskStatus']
-  _slot_types = ['geometry_msgs/Point','string']
+  __slots__ = ['position','coordinateType','battery','taskStatus','taskId','connection','autonomousMode','fault','binsNum']
+  _slot_types = ['geometry_msgs/Point','string','uint8','string','uint32','string','bool','bool','uint32']
 
   def __init__(self, *args, **kwds):
     """
@@ -32,7 +39,7 @@ float64 z
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       position,taskStatus
+       position,coordinateType,battery,taskStatus,taskId,connection,autonomousMode,fault,binsNum
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -43,11 +50,32 @@ float64 z
       # message fields cannot be None, assign default values for those that are
       if self.position is None:
         self.position = geometry_msgs.msg.Point()
+      if self.coordinateType is None:
+        self.coordinateType = ''
+      if self.battery is None:
+        self.battery = 0
       if self.taskStatus is None:
         self.taskStatus = ''
+      if self.taskId is None:
+        self.taskId = 0
+      if self.connection is None:
+        self.connection = ''
+      if self.autonomousMode is None:
+        self.autonomousMode = False
+      if self.fault is None:
+        self.fault = False
+      if self.binsNum is None:
+        self.binsNum = 0
     else:
       self.position = geometry_msgs.msg.Point()
+      self.coordinateType = ''
+      self.battery = 0
       self.taskStatus = ''
+      self.taskId = 0
+      self.connection = ''
+      self.autonomousMode = False
+      self.fault = False
+      self.binsNum = 0
 
   def _get_types(self):
     """
@@ -63,12 +91,30 @@ float64 z
     try:
       _x = self
       buff.write(_get_struct_3d().pack(_x.position.x, _x.position.y, _x.position.z))
+      _x = self.coordinateType
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
+      _x = self.battery
+      buff.write(_get_struct_B().pack(_x))
       _x = self.taskStatus
       length = len(_x)
       if python3 or type(_x) == unicode:
         _x = _x.encode('utf-8')
         length = len(_x)
       buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
+      _x = self.taskId
+      buff.write(_get_struct_I().pack(_x))
+      _x = self.connection
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
+      _x = self
+      buff.write(_get_struct_2BI().pack(_x.autonomousMode, _x.fault, _x.binsNum))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -93,9 +139,39 @@ float64 z
       start = end
       end += length
       if python3:
+        self.coordinateType = str[start:end].decode('utf-8', 'rosmsg')
+      else:
+        self.coordinateType = str[start:end]
+      start = end
+      end += 1
+      (self.battery,) = _get_struct_B().unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
         self.taskStatus = str[start:end].decode('utf-8', 'rosmsg')
       else:
         self.taskStatus = str[start:end]
+      start = end
+      end += 4
+      (self.taskId,) = _get_struct_I().unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
+        self.connection = str[start:end].decode('utf-8', 'rosmsg')
+      else:
+        self.connection = str[start:end]
+      _x = self
+      start = end
+      end += 6
+      (_x.autonomousMode, _x.fault, _x.binsNum,) = _get_struct_2BI().unpack(str[start:end])
+      self.autonomousMode = bool(self.autonomousMode)
+      self.fault = bool(self.fault)
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill
@@ -110,12 +186,30 @@ float64 z
     try:
       _x = self
       buff.write(_get_struct_3d().pack(_x.position.x, _x.position.y, _x.position.z))
+      _x = self.coordinateType
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
+      _x = self.battery
+      buff.write(_get_struct_B().pack(_x))
       _x = self.taskStatus
       length = len(_x)
       if python3 or type(_x) == unicode:
         _x = _x.encode('utf-8')
         length = len(_x)
       buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
+      _x = self.taskId
+      buff.write(_get_struct_I().pack(_x))
+      _x = self.connection
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
+      _x = self
+      buff.write(_get_struct_2BI().pack(_x.autonomousMode, _x.fault, _x.binsNum))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -141,9 +235,39 @@ float64 z
       start = end
       end += length
       if python3:
+        self.coordinateType = str[start:end].decode('utf-8', 'rosmsg')
+      else:
+        self.coordinateType = str[start:end]
+      start = end
+      end += 1
+      (self.battery,) = _get_struct_B().unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
         self.taskStatus = str[start:end].decode('utf-8', 'rosmsg')
       else:
         self.taskStatus = str[start:end]
+      start = end
+      end += 4
+      (self.taskId,) = _get_struct_I().unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
+        self.connection = str[start:end].decode('utf-8', 'rosmsg')
+      else:
+        self.connection = str[start:end]
+      _x = self
+      start = end
+      end += 6
+      (_x.autonomousMode, _x.fault, _x.binsNum,) = _get_struct_2BI().unpack(str[start:end])
+      self.autonomousMode = bool(self.autonomousMode)
+      self.fault = bool(self.fault)
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill
@@ -152,9 +276,21 @@ _struct_I = genpy.struct_I
 def _get_struct_I():
     global _struct_I
     return _struct_I
+_struct_2BI = None
+def _get_struct_2BI():
+    global _struct_2BI
+    if _struct_2BI is None:
+        _struct_2BI = struct.Struct("<2BI")
+    return _struct_2BI
 _struct_3d = None
 def _get_struct_3d():
     global _struct_3d
     if _struct_3d is None:
         _struct_3d = struct.Struct("<3d")
     return _struct_3d
+_struct_B = None
+def _get_struct_B():
+    global _struct_B
+    if _struct_B is None:
+        _struct_B = struct.Struct("<B")
+    return _struct_B

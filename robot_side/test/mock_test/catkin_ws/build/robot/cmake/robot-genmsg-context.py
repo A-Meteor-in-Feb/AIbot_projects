@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.context.in
 
-messages_str = "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg"
+messages_str = "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg;/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg"
 services_str = ""
 pkg_name = "robot"
 dependencies_str = "std_msgs;geometry_msgs"

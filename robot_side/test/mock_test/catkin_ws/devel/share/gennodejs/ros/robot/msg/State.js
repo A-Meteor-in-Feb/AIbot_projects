@@ -20,7 +20,14 @@ class State {
     if (initObj === null) {
       // initObj === null is a special case for deserialization where we don't initialize fields
       this.position = null;
+      this.coordinateType = null;
+      this.battery = null;
       this.taskStatus = null;
+      this.taskId = null;
+      this.connection = null;
+      this.autonomousMode = null;
+      this.fault = null;
+      this.binsNum = null;
     }
     else {
       if (initObj.hasOwnProperty('position')) {
@@ -29,11 +36,53 @@ class State {
       else {
         this.position = new geometry_msgs.msg.Point();
       }
+      if (initObj.hasOwnProperty('coordinateType')) {
+        this.coordinateType = initObj.coordinateType
+      }
+      else {
+        this.coordinateType = '';
+      }
+      if (initObj.hasOwnProperty('battery')) {
+        this.battery = initObj.battery
+      }
+      else {
+        this.battery = 0;
+      }
       if (initObj.hasOwnProperty('taskStatus')) {
         this.taskStatus = initObj.taskStatus
       }
       else {
         this.taskStatus = '';
+      }
+      if (initObj.hasOwnProperty('taskId')) {
+        this.taskId = initObj.taskId
+      }
+      else {
+        this.taskId = 0;
+      }
+      if (initObj.hasOwnProperty('connection')) {
+        this.connection = initObj.connection
+      }
+      else {
+        this.connection = '';
+      }
+      if (initObj.hasOwnProperty('autonomousMode')) {
+        this.autonomousMode = initObj.autonomousMode
+      }
+      else {
+        this.autonomousMode = false;
+      }
+      if (initObj.hasOwnProperty('fault')) {
+        this.fault = initObj.fault
+      }
+      else {
+        this.fault = false;
+      }
+      if (initObj.hasOwnProperty('binsNum')) {
+        this.binsNum = initObj.binsNum
+      }
+      else {
+        this.binsNum = 0;
       }
     }
   }
@@ -42,8 +91,22 @@ class State {
     // Serializes a message object of type State
     // Serialize message field [position]
     bufferOffset = geometry_msgs.msg.Point.serialize(obj.position, buffer, bufferOffset);
+    // Serialize message field [coordinateType]
+    bufferOffset = _serializer.string(obj.coordinateType, buffer, bufferOffset);
+    // Serialize message field [battery]
+    bufferOffset = _serializer.uint8(obj.battery, buffer, bufferOffset);
     // Serialize message field [taskStatus]
     bufferOffset = _serializer.string(obj.taskStatus, buffer, bufferOffset);
+    // Serialize message field [taskId]
+    bufferOffset = _serializer.uint32(obj.taskId, buffer, bufferOffset);
+    // Serialize message field [connection]
+    bufferOffset = _serializer.string(obj.connection, buffer, bufferOffset);
+    // Serialize message field [autonomousMode]
+    bufferOffset = _serializer.bool(obj.autonomousMode, buffer, bufferOffset);
+    // Serialize message field [fault]
+    bufferOffset = _serializer.bool(obj.fault, buffer, bufferOffset);
+    // Serialize message field [binsNum]
+    bufferOffset = _serializer.uint32(obj.binsNum, buffer, bufferOffset);
     return bufferOffset;
   }
 
@@ -53,15 +116,31 @@ class State {
     let data = new State(null);
     // Deserialize message field [position]
     data.position = geometry_msgs.msg.Point.deserialize(buffer, bufferOffset);
+    // Deserialize message field [coordinateType]
+    data.coordinateType = _deserializer.string(buffer, bufferOffset);
+    // Deserialize message field [battery]
+    data.battery = _deserializer.uint8(buffer, bufferOffset);
     // Deserialize message field [taskStatus]
     data.taskStatus = _deserializer.string(buffer, bufferOffset);
+    // Deserialize message field [taskId]
+    data.taskId = _deserializer.uint32(buffer, bufferOffset);
+    // Deserialize message field [connection]
+    data.connection = _deserializer.string(buffer, bufferOffset);
+    // Deserialize message field [autonomousMode]
+    data.autonomousMode = _deserializer.bool(buffer, bufferOffset);
+    // Deserialize message field [fault]
+    data.fault = _deserializer.bool(buffer, bufferOffset);
+    // Deserialize message field [binsNum]
+    data.binsNum = _deserializer.uint32(buffer, bufferOffset);
     return data;
   }
 
   static getMessageSize(object) {
     let length = 0;
+    length += _getByteLength(object.coordinateType);
     length += _getByteLength(object.taskStatus);
-    return length + 28;
+    length += _getByteLength(object.connection);
+    return length + 47;
   }
 
   static datatype() {
@@ -71,14 +150,21 @@ class State {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return 'c5c770faa938bccc8c5b6ab129729e91';
+    return 'e969d27b0a93712a250988f2dbe8e279';
   }
 
   static messageDefinition() {
     // Returns full string definition for message
     return `
     geometry_msgs/Point position
+    string coordinateType
+    uint8 battery
     string taskStatus
+    uint32 taskId
+    string connection
+    bool autonomousMode
+    bool fault
+    uint32 binsNum
     ================================================================================
     MSG: geometry_msgs/Point
     # This contains the position of a point in free space
@@ -102,11 +188,60 @@ class State {
       resolved.position = new geometry_msgs.msg.Point()
     }
 
+    if (msg.coordinateType !== undefined) {
+      resolved.coordinateType = msg.coordinateType;
+    }
+    else {
+      resolved.coordinateType = ''
+    }
+
+    if (msg.battery !== undefined) {
+      resolved.battery = msg.battery;
+    }
+    else {
+      resolved.battery = 0
+    }
+
     if (msg.taskStatus !== undefined) {
       resolved.taskStatus = msg.taskStatus;
     }
     else {
       resolved.taskStatus = ''
+    }
+
+    if (msg.taskId !== undefined) {
+      resolved.taskId = msg.taskId;
+    }
+    else {
+      resolved.taskId = 0
+    }
+
+    if (msg.connection !== undefined) {
+      resolved.connection = msg.connection;
+    }
+    else {
+      resolved.connection = ''
+    }
+
+    if (msg.autonomousMode !== undefined) {
+      resolved.autonomousMode = msg.autonomousMode;
+    }
+    else {
+      resolved.autonomousMode = false
+    }
+
+    if (msg.fault !== undefined) {
+      resolved.fault = msg.fault;
+    }
+    else {
+      resolved.fault = false
+    }
+
+    if (msg.binsNum !== undefined) {
+      resolved.binsNum = msg.binsNum;
+    }
+    else {
+      resolved.binsNum = 0
     }
 
     return resolved;

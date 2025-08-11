@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "/home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/Goal.h"
   "/home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/State.h"
   "CMakeFiles/robot_generate_messages_cpp"
 )

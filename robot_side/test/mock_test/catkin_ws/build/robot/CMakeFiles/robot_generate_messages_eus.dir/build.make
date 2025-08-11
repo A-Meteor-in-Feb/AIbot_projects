@@ -54,6 +54,7 @@ CMAKE_BINARY_DIR = /home/ros/robot_side/test/mock_test/catkin_ws/build
 include robot/CMakeFiles/robot_generate_messages_eus.dir/progress.make
 
 robot/CMakeFiles/robot_generate_messages_eus: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg/State.l
+robot/CMakeFiles/robot_generate_messages_eus: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg/Goal.l
 robot/CMakeFiles/robot_generate_messages_eus: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/manifest.l
 
 
@@ -63,12 +64,18 @@ robot/CMakeFiles/robot_generate_messages_eus: /home/ros/robot_side/test/mock_tes
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating EusLisp code from robot/State.msg"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg
 
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg/Goal.l: /opt/ros/noetic/lib/geneus/gen_eus.py
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg/Goal.l: /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating EusLisp code from robot/Goal.msg"
+	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg
+
 /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/manifest.l: /opt/ros/noetic/lib/geneus/gen_eus.py
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating EusLisp manifest code for robot"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating EusLisp manifest code for robot"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot robot std_msgs geometry_msgs
 
 robot_generate_messages_eus: robot/CMakeFiles/robot_generate_messages_eus
 robot_generate_messages_eus: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg/State.l
+robot_generate_messages_eus: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/msg/Goal.l
 robot_generate_messages_eus: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/roseus/ros/robot/manifest.l
 robot_generate_messages_eus: robot/CMakeFiles/robot_generate_messages_eus.dir/build.make
 

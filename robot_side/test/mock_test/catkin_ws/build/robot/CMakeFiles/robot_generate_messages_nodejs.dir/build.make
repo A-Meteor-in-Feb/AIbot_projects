@@ -54,6 +54,7 @@ CMAKE_BINARY_DIR = /home/ros/robot_side/test/mock_test/catkin_ws/build
 include robot/CMakeFiles/robot_generate_messages_nodejs.dir/progress.make
 
 robot/CMakeFiles/robot_generate_messages_nodejs: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/State.js
+robot/CMakeFiles/robot_generate_messages_nodejs: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/Goal.js
 
 
 /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/State.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
@@ -62,8 +63,14 @@ robot/CMakeFiles/robot_generate_messages_nodejs: /home/ros/robot_side/test/mock_
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Javascript code from robot/State.msg"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg
 
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/Goal.js: /opt/ros/noetic/lib/gennodejs/gen_nodejs.py
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/Goal.js: /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Javascript code from robot/Goal.msg"
+	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gennodejs/cmake/../../../lib/gennodejs/gen_nodejs.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg
+
 robot_generate_messages_nodejs: robot/CMakeFiles/robot_generate_messages_nodejs
 robot_generate_messages_nodejs: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/State.js
+robot_generate_messages_nodejs: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/Goal.js
 robot_generate_messages_nodejs: robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make
 
 .PHONY : robot_generate_messages_nodejs

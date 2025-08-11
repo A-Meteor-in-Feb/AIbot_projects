@@ -146,28 +146,29 @@ robot/preinstall:
 .PHONY : robot/preinstall
 
 # Recursive "clean" directory target.
+robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean
+robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_py.dir/clean
+robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
+robot/clean: robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
+robot/clean: robot/CMakeFiles/robot_genpy.dir/clean
+robot/clean: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean
+robot/clean: robot/CMakeFiles/robot_generate_messages.dir/clean
+robot/clean: robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean
+robot/clean: robot/CMakeFiles/robot_geneus.dir/clean
+robot/clean: robot/CMakeFiles/robot_generate_messages_lisp.dir/clean
+robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean
+robot/clean: robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean
+robot/clean: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/clean
+robot/clean: robot/CMakeFiles/robot_generate_messages_cpp.dir/clean
+robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/clean
+robot/clean: robot/CMakeFiles/robot_generate_messages_py.dir/clean
+robot/clean: robot/CMakeFiles/robot_gencpp.dir/clean
+robot/clean: robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean
+robot/clean: robot/CMakeFiles/robot_generate_messages_eus.dir/clean
+robot/clean: robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean
+robot/clean: robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean
 robot/clean: robot/CMakeFiles/robot_gennodejs.dir/clean
 robot/clean: robot/CMakeFiles/robot_genlisp.dir/clean
-robot/clean: robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean
-robot/clean: robot/CMakeFiles/robot_generate_messages_eus.dir/clean
-robot/clean: robot/CMakeFiles/robot_gencpp.dir/clean
-robot/clean: robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean
-robot/clean: robot/CMakeFiles/robot_generate_messages_py.dir/clean
-robot/clean: robot/CMakeFiles/robot_generate_messages_cpp.dir/clean
-robot/clean: robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean
-robot/clean: robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean
-robot/clean: robot/CMakeFiles/robot_generate_messages_lisp.dir/clean
-robot/clean: robot/CMakeFiles/robot_geneus.dir/clean
-robot/clean: robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean
-robot/clean: robot/CMakeFiles/robot_generate_messages.dir/clean
-robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean
-robot/clean: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean
-robot/clean: robot/CMakeFiles/robot_genpy.dir/clean
-robot/clean: robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
-robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
-robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_py.dir/clean
-robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/clean
-robot/clean: robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean
 
 .PHONY : robot/clean
 
@@ -416,531 +417,31 @@ gtest/googletest/CMakeFiles/gtest.dir/clean:
 .PHONY : gtest/googletest/CMakeFiles/gtest.dir/clean
 
 #=============================================================================
-# Target rules for target robot/CMakeFiles/robot_gennodejs.dir
+# Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir
 
 # All Build rule for target.
-robot/CMakeFiles/robot_gennodejs.dir/all: robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_gennodejs.dir/build.make robot/CMakeFiles/robot_gennodejs.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_gennodejs.dir/build.make robot/CMakeFiles/robot_gennodejs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_gennodejs"
-.PHONY : robot/CMakeFiles/robot_gennodejs.dir/all
+robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all:
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/depend
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target geometry_msgs_generate_messages_nodejs"
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all
 
 # Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_gennodejs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_gennodejs.dir/all
+robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_gennodejs.dir/rule
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
 
 # Convenience name for target.
-robot_gennodejs: robot/CMakeFiles/robot_gennodejs.dir/rule
+geometry_msgs_generate_messages_nodejs: robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
 
-.PHONY : robot_gennodejs
-
-# clean rule for target.
-robot/CMakeFiles/robot_gennodejs.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_gennodejs.dir/build.make robot/CMakeFiles/robot_gennodejs.dir/clean
-.PHONY : robot/CMakeFiles/robot_gennodejs.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_genlisp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_genlisp.dir/all: robot/CMakeFiles/robot_generate_messages_lisp.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_genlisp.dir/build.make robot/CMakeFiles/robot_genlisp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_genlisp.dir/build.make robot/CMakeFiles/robot_genlisp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_genlisp"
-.PHONY : robot/CMakeFiles/robot_genlisp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_genlisp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_genlisp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_genlisp.dir/rule
-
-# Convenience name for target.
-robot_genlisp: robot/CMakeFiles/robot_genlisp.dir/rule
-
-.PHONY : robot_genlisp
+.PHONY : geometry_msgs_generate_messages_nodejs
 
 # clean rule for target.
-robot/CMakeFiles/robot_genlisp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_genlisp.dir/build.make robot/CMakeFiles/robot_genlisp.dir/clean
-.PHONY : robot/CMakeFiles/robot_genlisp.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_generate_messages_nodejs.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all
-robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make robot/CMakeFiles/robot_generate_messages_nodejs.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make robot/CMakeFiles/robot_generate_messages_nodejs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=13 "Built target robot_generate_messages_nodejs"
-.PHONY : robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_generate_messages_nodejs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_generate_messages_nodejs.dir/rule
-
-# Convenience name for target.
-robot_generate_messages_nodejs: robot/CMakeFiles/robot_generate_messages_nodejs.dir/rule
-
-.PHONY : robot_generate_messages_nodejs
-
-# clean rule for target.
-robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean
-.PHONY : robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_generate_messages_eus.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
-robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_eus.dir/build.make robot/CMakeFiles/robot_generate_messages_eus.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_eus.dir/build.make robot/CMakeFiles/robot_generate_messages_eus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=10,11 "Built target robot_generate_messages_eus"
-.PHONY : robot/CMakeFiles/robot_generate_messages_eus.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_generate_messages_eus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_eus.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_generate_messages_eus.dir/rule
-
-# Convenience name for target.
-robot_generate_messages_eus: robot/CMakeFiles/robot_generate_messages_eus.dir/rule
-
-.PHONY : robot_generate_messages_eus
-
-# clean rule for target.
-robot/CMakeFiles/robot_generate_messages_eus.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_eus.dir/build.make robot/CMakeFiles/robot_generate_messages_eus.dir/clean
-.PHONY : robot/CMakeFiles/robot_generate_messages_eus.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_gencpp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_gencpp.dir/all: robot/CMakeFiles/robot_generate_messages_cpp.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_gencpp.dir/build.make robot/CMakeFiles/robot_gencpp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_gencpp.dir/build.make robot/CMakeFiles/robot_gencpp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_gencpp"
-.PHONY : robot/CMakeFiles/robot_gencpp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_gencpp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_gencpp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_gencpp.dir/rule
-
-# Convenience name for target.
-robot_gencpp: robot/CMakeFiles/robot_gencpp.dir/rule
-
-.PHONY : robot_gencpp
-
-# clean rule for target.
-robot/CMakeFiles/robot_gencpp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_gencpp.dir/build.make robot/CMakeFiles/robot_gencpp.dir/clean
-.PHONY : robot/CMakeFiles/robot_gencpp.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_cpp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_cpp"
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_cpp: robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
-
-.PHONY : std_msgs_generate_messages_cpp
-
-# clean rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_generate_messages_py.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/std_msgs_generate_messages_py.dir/all
-robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_py.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_py.dir/build.make robot/CMakeFiles/robot_generate_messages_py.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_py.dir/build.make robot/CMakeFiles/robot_generate_messages_py.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=14,15 "Built target robot_generate_messages_py"
-.PHONY : robot/CMakeFiles/robot_generate_messages_py.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_generate_messages_py.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_py.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_generate_messages_py.dir/rule
-
-# Convenience name for target.
-robot_generate_messages_py: robot/CMakeFiles/robot_generate_messages_py.dir/rule
-
-.PHONY : robot_generate_messages_py
-
-# clean rule for target.
-robot/CMakeFiles/robot_generate_messages_py.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_py.dir/build.make robot/CMakeFiles/robot_generate_messages_py.dir/clean
-.PHONY : robot/CMakeFiles/robot_generate_messages_py.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_generate_messages_cpp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
-robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make robot/CMakeFiles/robot_generate_messages_cpp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make robot/CMakeFiles/robot_generate_messages_cpp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=9 "Built target robot_generate_messages_cpp"
-.PHONY : robot/CMakeFiles/robot_generate_messages_cpp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_generate_messages_cpp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_cpp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_generate_messages_cpp.dir/rule
-
-# Convenience name for target.
-robot_generate_messages_cpp: robot/CMakeFiles/robot_generate_messages_cpp.dir/rule
-
-.PHONY : robot_generate_messages_cpp
-
-# clean rule for target.
-robot/CMakeFiles/robot_generate_messages_cpp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make robot/CMakeFiles/robot_generate_messages_cpp.dir/clean
-.PHONY : robot/CMakeFiles/robot_generate_messages_cpp.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_lisp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_lisp"
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_lisp: robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
-
-.PHONY : std_msgs_generate_messages_lisp
-
-# clean rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir
-
-# All Build rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/depend
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_nodejs"
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_nodejs: robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
-
-.PHONY : std_msgs_generate_messages_nodejs
-
-# clean rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_generate_messages_lisp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
-robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make robot/CMakeFiles/robot_generate_messages_lisp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make robot/CMakeFiles/robot_generate_messages_lisp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=12 "Built target robot_generate_messages_lisp"
-.PHONY : robot/CMakeFiles/robot_generate_messages_lisp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_generate_messages_lisp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_lisp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_generate_messages_lisp.dir/rule
-
-# Convenience name for target.
-robot_generate_messages_lisp: robot/CMakeFiles/robot_generate_messages_lisp.dir/rule
-
-.PHONY : robot_generate_messages_lisp
-
-# clean rule for target.
-robot/CMakeFiles/robot_generate_messages_lisp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make robot/CMakeFiles/robot_generate_messages_lisp.dir/clean
-.PHONY : robot/CMakeFiles/robot_generate_messages_lisp.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_geneus.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_geneus.dir/all: robot/CMakeFiles/robot_generate_messages_eus.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_geneus.dir/build.make robot/CMakeFiles/robot_geneus.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_geneus.dir/build.make robot/CMakeFiles/robot_geneus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_geneus"
-.PHONY : robot/CMakeFiles/robot_geneus.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_geneus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_geneus.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_geneus.dir/rule
-
-# Convenience name for target.
-robot_geneus: robot/CMakeFiles/robot_geneus.dir/rule
-
-.PHONY : robot_geneus
-
-# clean rule for target.
-robot/CMakeFiles/robot_geneus.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_geneus.dir/build.make robot/CMakeFiles/robot_geneus.dir/clean
-.PHONY : robot/CMakeFiles/robot_geneus.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_py.dir
-
-# All Build rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_py.dir/all:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_py.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_py.dir/depend
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_py.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_py.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_py"
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_py.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/std_msgs_generate_messages_py.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_py.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_py.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_py: robot/CMakeFiles/std_msgs_generate_messages_py.dir/rule
-
-.PHONY : std_msgs_generate_messages_py
-
-# clean rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_py.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_generate_messages.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
-robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_eus.dir/all
-robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_py.dir/all
-robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_cpp.dir/all
-robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_lisp.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages.dir/build.make robot/CMakeFiles/robot_generate_messages.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages.dir/build.make robot/CMakeFiles/robot_generate_messages.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_generate_messages"
-.PHONY : robot/CMakeFiles/robot_generate_messages.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_generate_messages.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 7
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_generate_messages.dir/rule
-
-# Convenience name for target.
-robot_generate_messages: robot/CMakeFiles/robot_generate_messages.dir/rule
-
-.PHONY : robot_generate_messages
-
-# clean rule for target.
-robot/CMakeFiles/robot_generate_messages.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_generate_messages.dir/build.make robot/CMakeFiles/robot_generate_messages.dir/clean
-.PHONY : robot/CMakeFiles/robot_generate_messages.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir
-
-# All Build rule for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all:
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/depend
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target geometry_msgs_generate_messages_eus"
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_eus: robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_eus
-
-# clean rule for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir
-
-# All Build rule for target.
-robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all:
-	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/depend
-	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target _robot_generate_messages_check_deps_State"
-.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/rule
-
-# Convenience name for target.
-_robot_generate_messages_check_deps_State: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/rule
-
-.PHONY : _robot_generate_messages_check_deps_State
-
-# clean rule for target.
-robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean
-.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/robot_genpy.dir
-
-# All Build rule for target.
-robot/CMakeFiles/robot_genpy.dir/all: robot/CMakeFiles/robot_generate_messages_py.dir/all
-	$(MAKE) -f robot/CMakeFiles/robot_genpy.dir/build.make robot/CMakeFiles/robot_genpy.dir/depend
-	$(MAKE) -f robot/CMakeFiles/robot_genpy.dir/build.make robot/CMakeFiles/robot_genpy.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_genpy"
-.PHONY : robot/CMakeFiles/robot_genpy.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/robot_genpy.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_genpy.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/robot_genpy.dir/rule
-
-# Convenience name for target.
-robot_genpy: robot/CMakeFiles/robot_genpy.dir/rule
-
-.PHONY : robot_genpy
-
-# clean rule for target.
-robot/CMakeFiles/robot_genpy.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/robot_genpy.dir/build.make robot/CMakeFiles/robot_genpy.dir/clean
-.PHONY : robot/CMakeFiles/robot_genpy.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_eus.dir
-
-# All Build rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_eus.dir/depend
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_eus"
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/std_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_eus: robot/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
-
-.PHONY : std_msgs_generate_messages_eus
-
-# clean rule for target.
-robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
-.PHONY : robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
-
-#=============================================================================
-# Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir
-
-# All Build rule for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all:
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/depend
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target geometry_msgs_generate_messages_lisp"
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all
-
-# Build rule for subdir invocation for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_lisp: robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_lisp
-
-# clean rule for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
+robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean
 
 #=============================================================================
 # Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_py.dir
@@ -970,6 +471,340 @@ robot/CMakeFiles/geometry_msgs_generate_messages_py.dir/clean:
 .PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_py.dir/clean
 
 #=============================================================================
+# Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all:
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target geometry_msgs_generate_messages_lisp"
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
+
+# Convenience name for target.
+geometry_msgs_generate_messages_lisp: robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
+
+.PHONY : geometry_msgs_generate_messages_lisp
+
+# clean rule for target.
+robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_eus.dir
+
+# All Build rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_eus.dir/depend
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_eus"
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/std_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
+
+# Convenience name for target.
+std_msgs_generate_messages_eus: robot/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
+
+.PHONY : std_msgs_generate_messages_eus
+
+# clean rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_genpy.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_genpy.dir/all: robot/CMakeFiles/robot_generate_messages_py.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_genpy.dir/build.make robot/CMakeFiles/robot_genpy.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_genpy.dir/build.make robot/CMakeFiles/robot_genpy.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_genpy"
+.PHONY : robot/CMakeFiles/robot_genpy.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_genpy.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 3
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_genpy.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_genpy.dir/rule
+
+# Convenience name for target.
+robot_genpy: robot/CMakeFiles/robot_genpy.dir/rule
+
+.PHONY : robot_genpy
+
+# clean rule for target.
+robot/CMakeFiles/robot_genpy.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_genpy.dir/build.make robot/CMakeFiles/robot_genpy.dir/clean
+.PHONY : robot/CMakeFiles/robot_genpy.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir
+
+# All Build rule for target.
+robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all:
+	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/depend
+	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target _robot_generate_messages_check_deps_State"
+.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/rule
+
+# Convenience name for target.
+_robot_generate_messages_check_deps_State: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/rule
+
+.PHONY : _robot_generate_messages_check_deps_State
+
+# clean rule for target.
+robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean
+.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_generate_messages.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_lisp.dir/all
+robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_cpp.dir/all
+robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_py.dir/all
+robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_eus.dir/all
+robot/CMakeFiles/robot_generate_messages.dir/all: robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages.dir/build.make robot/CMakeFiles/robot_generate_messages.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages.dir/build.make robot/CMakeFiles/robot_generate_messages.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_generate_messages"
+.PHONY : robot/CMakeFiles/robot_generate_messages.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_generate_messages.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 12
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_generate_messages.dir/rule
+
+# Convenience name for target.
+robot_generate_messages: robot/CMakeFiles/robot_generate_messages.dir/rule
+
+.PHONY : robot_generate_messages
+
+# clean rule for target.
+robot/CMakeFiles/robot_generate_messages.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages.dir/build.make robot/CMakeFiles/robot_generate_messages.dir/clean
+.PHONY : robot/CMakeFiles/robot_generate_messages.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_py.dir
+
+# All Build rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_py.dir/all:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_py.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_py.dir/depend
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_py.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_py.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_py"
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_py.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/std_msgs_generate_messages_py.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_py.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_py.dir/rule
+
+# Convenience name for target.
+std_msgs_generate_messages_py: robot/CMakeFiles/std_msgs_generate_messages_py.dir/rule
+
+.PHONY : std_msgs_generate_messages_py
+
+# clean rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_py.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_py.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_geneus.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_geneus.dir/all: robot/CMakeFiles/robot_generate_messages_eus.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_geneus.dir/build.make robot/CMakeFiles/robot_geneus.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_geneus.dir/build.make robot/CMakeFiles/robot_geneus.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_geneus"
+.PHONY : robot/CMakeFiles/robot_geneus.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_geneus.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 3
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_geneus.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_geneus.dir/rule
+
+# Convenience name for target.
+robot_geneus: robot/CMakeFiles/robot_geneus.dir/rule
+
+.PHONY : robot_geneus
+
+# clean rule for target.
+robot/CMakeFiles/robot_geneus.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_geneus.dir/build.make robot/CMakeFiles/robot_geneus.dir/clean
+.PHONY : robot/CMakeFiles/robot_geneus.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_generate_messages_lisp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/all
+robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+robot/CMakeFiles/robot_generate_messages_lisp.dir/all: robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make robot/CMakeFiles/robot_generate_messages_lisp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make robot/CMakeFiles/robot_generate_messages_lisp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=14,15 "Built target robot_generate_messages_lisp"
+.PHONY : robot/CMakeFiles/robot_generate_messages_lisp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_generate_messages_lisp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_lisp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_generate_messages_lisp.dir/rule
+
+# Convenience name for target.
+robot_generate_messages_lisp: robot/CMakeFiles/robot_generate_messages_lisp.dir/rule
+
+.PHONY : robot_generate_messages_lisp
+
+# clean rule for target.
+robot/CMakeFiles/robot_generate_messages_lisp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make robot/CMakeFiles/robot_generate_messages_lisp.dir/clean
+.PHONY : robot/CMakeFiles/robot_generate_messages_lisp.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir
+
+# All Build rule for target.
+robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all:
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/depend
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target geometry_msgs_generate_messages_eus"
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
+
+# Convenience name for target.
+geometry_msgs_generate_messages_eus: robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
+
+.PHONY : geometry_msgs_generate_messages_eus
+
+# clean rule for target.
+robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean
+.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir
+
+# All Build rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/depend
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_nodejs"
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
+
+# Convenience name for target.
+std_msgs_generate_messages_nodejs: robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
+
+.PHONY : std_msgs_generate_messages_nodejs
+
+# clean rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir
+
+# All Build rule for target.
+robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all:
+	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/depend
+	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target _robot_generate_messages_check_deps_Goal"
+.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/rule
+
+# Convenience name for target.
+_robot_generate_messages_check_deps_Goal: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/rule
+
+.PHONY : _robot_generate_messages_check_deps_Goal
+
+# clean rule for target.
+robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/build.make robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/clean
+.PHONY : robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_generate_messages_cpp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/all
+robot/CMakeFiles/robot_generate_messages_cpp.dir/all: robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make robot/CMakeFiles/robot_generate_messages_cpp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make robot/CMakeFiles/robot_generate_messages_cpp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=9,10 "Built target robot_generate_messages_cpp"
+.PHONY : robot/CMakeFiles/robot_generate_messages_cpp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_generate_messages_cpp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_cpp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_generate_messages_cpp.dir/rule
+
+# Convenience name for target.
+robot_generate_messages_cpp: robot/CMakeFiles/robot_generate_messages_cpp.dir/rule
+
+.PHONY : robot_generate_messages_cpp
+
+# clean rule for target.
+robot/CMakeFiles/robot_generate_messages_cpp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make robot/CMakeFiles/robot_generate_messages_cpp.dir/clean
+.PHONY : robot/CMakeFiles/robot_generate_messages_cpp.dir/clean
+
+#=============================================================================
 # Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir
 
 # All Build rule for target.
@@ -997,31 +832,229 @@ robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/clean:
 .PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/clean
 
 #=============================================================================
-# Target rules for target robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir
+# Target rules for target robot/CMakeFiles/robot_generate_messages_py.dir
 
 # All Build rule for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all:
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/depend
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target geometry_msgs_generate_messages_nodejs"
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all
+robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_py.dir/all
+robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/std_msgs_generate_messages_py.dir/all
+robot/CMakeFiles/robot_generate_messages_py.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_py.dir/build.make robot/CMakeFiles/robot_generate_messages_py.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_py.dir/build.make robot/CMakeFiles/robot_generate_messages_py.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=18,19,20 "Built target robot_generate_messages_py"
+.PHONY : robot/CMakeFiles/robot_generate_messages_py.dir/all
 
 # Build rule for subdir invocation for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule: cmake_check_build_system
+robot/CMakeFiles/robot_generate_messages_py.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 3
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_py.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
+.PHONY : robot/CMakeFiles/robot_generate_messages_py.dir/rule
 
 # Convenience name for target.
-geometry_msgs_generate_messages_nodejs: robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
+robot_generate_messages_py: robot/CMakeFiles/robot_generate_messages_py.dir/rule
 
-.PHONY : geometry_msgs_generate_messages_nodejs
+.PHONY : robot_generate_messages_py
 
 # clean rule for target.
-robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean:
-	$(MAKE) -f robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean
-.PHONY : robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/clean
+robot/CMakeFiles/robot_generate_messages_py.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_py.dir/build.make robot/CMakeFiles/robot_generate_messages_py.dir/clean
+.PHONY : robot/CMakeFiles/robot_generate_messages_py.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_gencpp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_gencpp.dir/all: robot/CMakeFiles/robot_generate_messages_cpp.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_gencpp.dir/build.make robot/CMakeFiles/robot_gencpp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_gencpp.dir/build.make robot/CMakeFiles/robot_gencpp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_gencpp"
+.PHONY : robot/CMakeFiles/robot_gencpp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_gencpp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_gencpp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_gencpp.dir/rule
+
+# Convenience name for target.
+robot_gencpp: robot/CMakeFiles/robot_gencpp.dir/rule
+
+.PHONY : robot_gencpp
+
+# clean rule for target.
+robot/CMakeFiles/robot_gencpp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_gencpp.dir/build.make robot/CMakeFiles/robot_gencpp.dir/clean
+.PHONY : robot/CMakeFiles/robot_gencpp.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_lisp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_lisp"
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
+
+# Convenience name for target.
+std_msgs_generate_messages_lisp: robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
+
+.PHONY : std_msgs_generate_messages_lisp
+
+# clean rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_lisp.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_generate_messages_eus.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/std_msgs_generate_messages_eus.dir/all
+robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_eus.dir/all
+robot/CMakeFiles/robot_generate_messages_eus.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_eus.dir/build.make robot/CMakeFiles/robot_generate_messages_eus.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_eus.dir/build.make robot/CMakeFiles/robot_generate_messages_eus.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=11,12,13 "Built target robot_generate_messages_eus"
+.PHONY : robot/CMakeFiles/robot_generate_messages_eus.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_generate_messages_eus.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 3
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_eus.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_generate_messages_eus.dir/rule
+
+# Convenience name for target.
+robot_generate_messages_eus: robot/CMakeFiles/robot_generate_messages_eus.dir/rule
+
+.PHONY : robot_generate_messages_eus
+
+# clean rule for target.
+robot/CMakeFiles/robot_generate_messages_eus.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_eus.dir/build.make robot/CMakeFiles/robot_generate_messages_eus.dir/clean
+.PHONY : robot/CMakeFiles/robot_generate_messages_eus.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_generate_messages_nodejs.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/all
+robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_State.dir/all
+robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/std_msgs_generate_messages_nodejs.dir/all
+robot/CMakeFiles/robot_generate_messages_nodejs.dir/all: robot/CMakeFiles/_robot_generate_messages_check_deps_Goal.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make robot/CMakeFiles/robot_generate_messages_nodejs.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make robot/CMakeFiles/robot_generate_messages_nodejs.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=16,17 "Built target robot_generate_messages_nodejs"
+.PHONY : robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_generate_messages_nodejs.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_generate_messages_nodejs.dir/rule
+
+# Convenience name for target.
+robot_generate_messages_nodejs: robot/CMakeFiles/robot_generate_messages_nodejs.dir/rule
+
+.PHONY : robot_generate_messages_nodejs
+
+# clean rule for target.
+robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_generate_messages_nodejs.dir/build.make robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean
+.PHONY : robot/CMakeFiles/robot_generate_messages_nodejs.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/std_msgs_generate_messages_cpp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target std_msgs_generate_messages_cpp"
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
+
+# Convenience name for target.
+std_msgs_generate_messages_cpp: robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
+
+.PHONY : std_msgs_generate_messages_cpp
+
+# clean rule for target.
+robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean
+.PHONY : robot/CMakeFiles/std_msgs_generate_messages_cpp.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_gennodejs.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_gennodejs.dir/all: robot/CMakeFiles/robot_generate_messages_nodejs.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_gennodejs.dir/build.make robot/CMakeFiles/robot_gennodejs.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_gennodejs.dir/build.make robot/CMakeFiles/robot_gennodejs.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_gennodejs"
+.PHONY : robot/CMakeFiles/robot_gennodejs.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_gennodejs.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_gennodejs.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_gennodejs.dir/rule
+
+# Convenience name for target.
+robot_gennodejs: robot/CMakeFiles/robot_gennodejs.dir/rule
+
+.PHONY : robot_gennodejs
+
+# clean rule for target.
+robot/CMakeFiles/robot_gennodejs.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_gennodejs.dir/build.make robot/CMakeFiles/robot_gennodejs.dir/clean
+.PHONY : robot/CMakeFiles/robot_gennodejs.dir/clean
+
+#=============================================================================
+# Target rules for target robot/CMakeFiles/robot_genlisp.dir
+
+# All Build rule for target.
+robot/CMakeFiles/robot_genlisp.dir/all: robot/CMakeFiles/robot_generate_messages_lisp.dir/all
+	$(MAKE) -f robot/CMakeFiles/robot_genlisp.dir/build.make robot/CMakeFiles/robot_genlisp.dir/depend
+	$(MAKE) -f robot/CMakeFiles/robot_genlisp.dir/build.make robot/CMakeFiles/robot_genlisp.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num= "Built target robot_genlisp"
+.PHONY : robot/CMakeFiles/robot_genlisp.dir/all
+
+# Build rule for subdir invocation for target.
+robot/CMakeFiles/robot_genlisp.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 robot/CMakeFiles/robot_genlisp.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles 0
+.PHONY : robot/CMakeFiles/robot_genlisp.dir/rule
+
+# Convenience name for target.
+robot_genlisp: robot/CMakeFiles/robot_genlisp.dir/rule
+
+.PHONY : robot_genlisp
+
+# clean rule for target.
+robot/CMakeFiles/robot_genlisp.dir/clean:
+	$(MAKE) -f robot/CMakeFiles/robot_genlisp.dir/build.make robot/CMakeFiles/robot_genlisp.dir/clean
+.PHONY : robot/CMakeFiles/robot_genlisp.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

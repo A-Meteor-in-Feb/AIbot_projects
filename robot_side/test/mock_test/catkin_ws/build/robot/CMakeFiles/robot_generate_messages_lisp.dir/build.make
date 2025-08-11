@@ -54,6 +54,7 @@ CMAKE_BINARY_DIR = /home/ros/robot_side/test/mock_test/catkin_ws/build
 include robot/CMakeFiles/robot_generate_messages_lisp.dir/progress.make
 
 robot/CMakeFiles/robot_generate_messages_lisp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/State.lisp
+robot/CMakeFiles/robot_generate_messages_lisp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/Goal.lisp
 
 
 /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/State.lisp: /opt/ros/noetic/lib/genlisp/gen_lisp.py
@@ -62,8 +63,14 @@ robot/CMakeFiles/robot_generate_messages_lisp: /home/ros/robot_side/test/mock_te
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Lisp code from robot/State.msg"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genlisp/cmake/../../../lib/genlisp/gen_lisp.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg
 
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/Goal.lisp: /opt/ros/noetic/lib/genlisp/gen_lisp.py
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/Goal.lisp: /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Lisp code from robot/Goal.msg"
+	cd /home/ros/robot_side/test/mock_test/catkin_ws/build/robot && ../catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/genlisp/cmake/../../../lib/genlisp/gen_lisp.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg
+
 robot_generate_messages_lisp: robot/CMakeFiles/robot_generate_messages_lisp
 robot_generate_messages_lisp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/State.lisp
+robot_generate_messages_lisp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/Goal.lisp
 robot_generate_messages_lisp: robot/CMakeFiles/robot_generate_messages_lisp.dir/build.make
 
 .PHONY : robot_generate_messages_lisp

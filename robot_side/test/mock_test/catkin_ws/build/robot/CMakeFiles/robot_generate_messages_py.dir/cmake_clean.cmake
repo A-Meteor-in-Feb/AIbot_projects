@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "/home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_Goal.py"
   "/home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/_State.py"
   "/home/ros/robot_side/test/mock_test/catkin_ws/devel/lib/python3/dist-packages/robot/msg/__init__.py"
   "CMakeFiles/robot_generate_messages_py"

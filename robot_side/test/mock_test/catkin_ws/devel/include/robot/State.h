@@ -26,11 +26,25 @@ struct State_
 
   State_()
     : position()
-    , taskStatus()  {
+    , coordinateType()
+    , battery(0)
+    , taskStatus()
+    , taskId(0)
+    , connection()
+    , autonomousMode(false)
+    , fault(false)
+    , binsNum(0)  {
     }
   State_(const ContainerAllocator& _alloc)
     : position(_alloc)
-    , taskStatus(_alloc)  {
+    , coordinateType(_alloc)
+    , battery(0)
+    , taskStatus(_alloc)
+    , taskId(0)
+    , connection(_alloc)
+    , autonomousMode(false)
+    , fault(false)
+    , binsNum(0)  {
   (void)_alloc;
     }
 
@@ -39,8 +53,29 @@ struct State_
    typedef  ::geometry_msgs::Point_<ContainerAllocator>  _position_type;
   _position_type position;
 
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _coordinateType_type;
+  _coordinateType_type coordinateType;
+
+   typedef uint8_t _battery_type;
+  _battery_type battery;
+
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _taskStatus_type;
   _taskStatus_type taskStatus;
+
+   typedef uint32_t _taskId_type;
+  _taskId_type taskId;
+
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _connection_type;
+  _connection_type connection;
+
+   typedef uint8_t _autonomousMode_type;
+  _autonomousMode_type autonomousMode;
+
+   typedef uint8_t _fault_type;
+  _fault_type fault;
+
+   typedef uint32_t _binsNum_type;
+  _binsNum_type binsNum;
 
 
 
@@ -72,7 +107,14 @@ template<typename ContainerAllocator1, typename ContainerAllocator2>
 bool operator==(const ::robot::State_<ContainerAllocator1> & lhs, const ::robot::State_<ContainerAllocator2> & rhs)
 {
   return lhs.position == rhs.position &&
-    lhs.taskStatus == rhs.taskStatus;
+    lhs.coordinateType == rhs.coordinateType &&
+    lhs.battery == rhs.battery &&
+    lhs.taskStatus == rhs.taskStatus &&
+    lhs.taskId == rhs.taskId &&
+    lhs.connection == rhs.connection &&
+    lhs.autonomousMode == rhs.autonomousMode &&
+    lhs.fault == rhs.fault &&
+    lhs.binsNum == rhs.binsNum;
 }
 
 template<typename ContainerAllocator1, typename ContainerAllocator2>
@@ -129,12 +171,12 @@ struct MD5Sum< ::robot::State_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "c5c770faa938bccc8c5b6ab129729e91";
+    return "e969d27b0a93712a250988f2dbe8e279";
   }
 
   static const char* value(const ::robot::State_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0xc5c770faa938bcccULL;
-  static const uint64_t static_value2 = 0x8c5b6ab129729e91ULL;
+  static const uint64_t static_value1 = 0xe969d27b0a93712aULL;
+  static const uint64_t static_value2 = 0x250988f2dbe8e279ULL;
 };
 
 template<class ContainerAllocator>
@@ -154,7 +196,14 @@ struct Definition< ::robot::State_<ContainerAllocator> >
   static const char* value()
   {
     return "geometry_msgs/Point position\n"
+"string coordinateType\n"
+"uint8 battery\n"
 "string taskStatus\n"
+"uint32 taskId\n"
+"string connection\n"
+"bool autonomousMode\n"
+"bool fault\n"
+"uint32 binsNum\n"
 "================================================================================\n"
 "MSG: geometry_msgs/Point\n"
 "# This contains the position of a point in free space\n"
@@ -180,7 +229,14 @@ namespace serialization
     template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
     {
       stream.next(m.position);
+      stream.next(m.coordinateType);
+      stream.next(m.battery);
       stream.next(m.taskStatus);
+      stream.next(m.taskId);
+      stream.next(m.connection);
+      stream.next(m.autonomousMode);
+      stream.next(m.fault);
+      stream.next(m.binsNum);
     }
 
     ROS_DECLARE_ALLINONE_SERIALIZER
@@ -205,8 +261,36 @@ struct Printer< ::robot::State_<ContainerAllocator> >
     Printer< ::geometry_msgs::Point_<ContainerAllocator> >::stream(s, indent + "  ", v.position);
     if (true || !indent.empty())
       s << std::endl;
+    s << indent << "coordinateType: ";
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.coordinateType);
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "battery: ";
+    Printer<uint8_t>::stream(s, indent + "  ", v.battery);
+    if (true || !indent.empty())
+      s << std::endl;
     s << indent << "taskStatus: ";
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.taskStatus);
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "taskId: ";
+    Printer<uint32_t>::stream(s, indent + "  ", v.taskId);
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "connection: ";
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.connection);
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "autonomousMode: ";
+    Printer<uint8_t>::stream(s, indent + "  ", v.autonomousMode);
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "fault: ";
+    Printer<uint8_t>::stream(s, indent + "  ", v.fault);
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "binsNum: ";
+    Printer<uint32_t>::stream(s, indent + "  ", v.binsNum);
   }
 };
 

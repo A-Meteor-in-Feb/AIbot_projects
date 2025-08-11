@@ -59,17 +59,17 @@ def post_command(base_url, command, robotId, parameters):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {BACKEND_TOKEN}"
     }
-
+    """
     payload = {
         "command": command,
         "params": parameters
     }
-        
-    #,verify="cert.pem"
+    """
+    #,verify="cert.pem" json = payload
     response = requests.post(
         url=url, 
         headers=headers, 
-        json=payload, 
+        json=parameters, 
         timeout=5
     )
 
@@ -82,11 +82,10 @@ def task_control():
     """
         Define the request details for posting task command.
     """
-    base_url = f"http://127.0.0.1:8888"
-
+    #base_url = f"http://10.25.0.15:18001"
+    base_url = "http://10.25.0.6:8888"
     command = "task"
     robotId = ROBOT_ID_1
-
     parameters = {
         "taskId": TASKID_TASK,
         "binId": 2,
@@ -95,13 +94,12 @@ def task_control():
             "address": "1-2-101",
             "coordinateType": "geodetic",
             "position":{
-                "x": 10.0,
-                "y": 5.0,
+                "x": 1.996903419494629,
+                "y": -3.4358625411987305,
                 "z": 0.0
             }
         }
     }
-
     try:
         post_command(base_url, command, robotId, parameters)
     except requests.RequestException as e:

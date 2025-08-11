@@ -54,6 +54,7 @@ CMAKE_BINARY_DIR = /home/ros/robot_side/test/mock_test/catkin_ws/build
 include robot/CMakeFiles/robot_generate_messages_cpp.dir/progress.make
 
 robot/CMakeFiles/robot_generate_messages_cpp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/State.h
+robot/CMakeFiles/robot_generate_messages_cpp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/Goal.h
 
 
 /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/State.h: /opt/ros/noetic/lib/gencpp/gen_cpp.py
@@ -63,8 +64,15 @@ robot/CMakeFiles/robot_generate_messages_cpp: /home/ros/robot_side/test/mock_tes
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating C++ code from robot/State.msg"
 	cd /home/ros/robot_side/test/mock_test/catkin_ws/src/robot && /home/ros/robot_side/test/mock_test/catkin_ws/build/catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot -e /opt/ros/noetic/share/gencpp/cmake/..
 
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/Goal.h: /opt/ros/noetic/lib/gencpp/gen_cpp.py
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/Goal.h: /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg
+/home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/Goal.h: /opt/ros/noetic/share/gencpp/msg.h.template
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ros/robot_side/test/mock_test/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating C++ code from robot/Goal.msg"
+	cd /home/ros/robot_side/test/mock_test/catkin_ws/src/robot && /home/ros/robot_side/test/mock_test/catkin_ws/build/catkin_generated/env_cached.sh /usr/bin/python3 /opt/ros/noetic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg -Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg -Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg -p robot -o /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot -e /opt/ros/noetic/share/gencpp/cmake/..
+
 robot_generate_messages_cpp: robot/CMakeFiles/robot_generate_messages_cpp
 robot_generate_messages_cpp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/State.h
+robot_generate_messages_cpp: /home/ros/robot_side/test/mock_test/catkin_ws/devel/include/robot/Goal.h
 robot_generate_messages_cpp: robot/CMakeFiles/robot_generate_messages_cpp.dir/build.make
 
 .PHONY : robot_generate_messages_cpp

@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/Goal.js"
   "/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/gennodejs/ros/robot/msg/State.js"
   "CMakeFiles/robot_generate_messages_nodejs"
 )

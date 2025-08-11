@@ -14,3 +14,5 @@ def error_response(message, code, timestamp):
             "timestamp": timestamp
         }
     }
+
+def error_response(bin)

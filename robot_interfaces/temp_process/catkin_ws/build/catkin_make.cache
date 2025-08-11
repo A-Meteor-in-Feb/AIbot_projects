@@ -1,0 +1,2 @@
+robot_v1
+-DCATKIN_DEVEL_PREFIX=/home/ros/robot_interfaces/temp_process/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ros/robot_interfaces/temp_process/catkin_ws/install -G Unix Makefiles

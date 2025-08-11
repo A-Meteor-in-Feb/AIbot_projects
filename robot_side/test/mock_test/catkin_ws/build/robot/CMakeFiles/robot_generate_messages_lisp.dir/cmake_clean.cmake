@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/Goal.lisp"
   "/home/ros/robot_side/test/mock_test/catkin_ws/devel/share/common-lisp/ros/robot/msg/State.lisp"
   "CMakeFiles/robot_generate_messages_lisp"
 )

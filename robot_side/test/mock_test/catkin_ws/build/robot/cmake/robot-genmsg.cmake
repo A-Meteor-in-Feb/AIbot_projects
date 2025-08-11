@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.cmake.em
 
-message(STATUS "robot: 1 messages, 0 services")
+message(STATUS "robot: 2 messages, 0 services")
 
 set(MSG_I_FLAGS "-Irobot:/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg;-Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg;-Igeometry_msgs:/opt/ros/noetic/share/geometry_msgs/cmake/../msg")
 
@@ -22,6 +22,11 @@ add_custom_target(_robot_generate_messages_check_deps_${_filename}
   COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "robot" "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg" "geometry_msgs/Point"
 )
 
+get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" NAME_WE)
+add_custom_target(_robot_generate_messages_check_deps_${_filename}
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "robot" "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" ""
+)
+
 #
 #  langs = gencpp;geneus;genlisp;gennodejs;genpy
 #
@@ -32,6 +37,12 @@ _generate_msg_cpp(robot
   "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg"
+  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/robot
+)
+_generate_msg_cpp(robot
+  "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg"
+  "${MSG_I_FLAGS}"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/robot
 )
 
@@ -51,6 +62,8 @@ add_dependencies(robot_generate_messages robot_generate_messages_cpp)
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg" NAME_WE)
 add_dependencies(robot_generate_messages_cpp _robot_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" NAME_WE)
+add_dependencies(robot_generate_messages_cpp _robot_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
 add_custom_target(robot_gencpp)
@@ -65,6 +78,12 @@ _generate_msg_eus(robot
   "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg"
+  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/robot
+)
+_generate_msg_eus(robot
+  "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg"
+  "${MSG_I_FLAGS}"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/robot
 )
 
@@ -84,6 +103,8 @@ add_dependencies(robot_generate_messages robot_generate_messages_eus)
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg" NAME_WE)
 add_dependencies(robot_generate_messages_eus _robot_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" NAME_WE)
+add_dependencies(robot_generate_messages_eus _robot_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
 add_custom_target(robot_geneus)
@@ -98,6 +119,12 @@ _generate_msg_lisp(robot
   "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/robot
+)
+_generate_msg_lisp(robot
+  "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg"
+  "${MSG_I_FLAGS}"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/robot
 )
 
@@ -117,6 +144,8 @@ add_dependencies(robot_generate_messages robot_generate_messages_lisp)
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg" NAME_WE)
 add_dependencies(robot_generate_messages_lisp _robot_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" NAME_WE)
+add_dependencies(robot_generate_messages_lisp _robot_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
 add_custom_target(robot_genlisp)
@@ -131,6 +160,12 @@ _generate_msg_nodejs(robot
   "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg"
+  ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/robot
+)
+_generate_msg_nodejs(robot
+  "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg"
+  "${MSG_I_FLAGS}"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/robot
 )
 
@@ -150,6 +185,8 @@ add_dependencies(robot_generate_messages robot_generate_messages_nodejs)
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg" NAME_WE)
 add_dependencies(robot_generate_messages_nodejs _robot_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" NAME_WE)
+add_dependencies(robot_generate_messages_nodejs _robot_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility
 add_custom_target(robot_gennodejs)
@@ -164,6 +201,12 @@ _generate_msg_py(robot
   "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg"
   "${MSG_I_FLAGS}"
   "/opt/ros/noetic/share/geometry_msgs/cmake/../msg/Point.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/robot
+)
+_generate_msg_py(robot
+  "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg"
+  "${MSG_I_FLAGS}"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/robot
 )
 
@@ -182,6 +225,8 @@ add_dependencies(robot_generate_messages robot_generate_messages_py)
 
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/State.msg" NAME_WE)
+add_dependencies(robot_generate_messages_py _robot_generate_messages_check_deps_${_filename})
+get_filename_component(_filename "/home/ros/robot_side/test/mock_test/catkin_ws/src/robot/msg/Goal.msg" NAME_WE)
 add_dependencies(robot_generate_messages_py _robot_generate_messages_check_deps_${_filename})
 
 # target for backward compatibility

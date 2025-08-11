@@ -1,0 +1,25 @@
+{
+  "name": "ROS Noetic Dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/home/ros/robot_interfaces/temp_process",
+  "settings": {
+    "terminal.integrated.shell.linux": "bash",
+    "python.analysis.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/home/ros/robot_interfaces/temp_process/catkin_ws/devel/lib/python3/dist-packages"
+    ]
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-iot.vscode-ros",
+    "ms-vscode.cpptools"
+  ],
+  "forwardPorts": [11311],
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/home/ros/robot_interfaces/temp_process,type=bind"
+  ],
+  "remoteUser": "root"
+}

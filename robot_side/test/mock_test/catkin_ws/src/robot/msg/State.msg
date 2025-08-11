@@ -1,2 +1,9 @@
 geometry_msgs/Point position
+string coordinateType
+uint8 battery
 string taskStatus
+uint32 taskId
+string connection
+bool autonomousMode
+bool fault
+uint32 binsNum
