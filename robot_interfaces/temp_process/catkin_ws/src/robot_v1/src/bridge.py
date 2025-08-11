@@ -4,12 +4,8 @@ import socket
 from datetime import datetime,timezone
 import paho.mqtt.client as mqtt
 import ros_sub
-        
 
-BROKER_HOST = "10.25.0.2"
-BROKER_PORT = 1883
-ROBOT_ID = "robot01"
-ROBOT_IP = ""
+
 
 
 def utc_now_ms():
@@ -23,7 +19,7 @@ def on_connect(client, userdata, reason_code, properties):
 
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
-    print("Robot MQTT disconnected with {reason_code}, reconnecting...")
+    print(f"Robot MQTT disconnected with {reason_code}, reconnecting...")
 
 
 def online_notification():
@@ -85,6 +81,11 @@ def publish_state(state):
 
 if __name__ == "__main__":
     rospy.init_node("ros_mqtt_bridge", anonymous=False)
+
+    BROKER_HOST = rospy.get_param("~mqtt_host")
+    BROKER_PORT = int(rospy.get_param("~mqtt_port"))
+    ROBOT_ID = rospy.get_param("~robot_id")
+
     robot_node = ros_sub.RobotStateSubscriber()
 
     robot_mqtt = mqtt.Client(
@@ -133,5 +134,5 @@ if __name__ == "__main__":
         robot_mqtt.disconnect()
 
 """
-测试要测: 连通性, last will, 以及 断线重连情况.
+测试要测: 连通性(正常情况 & 网络落后于代码执行看能不能成功连上), last will, 以及 断线重连情况.
 """

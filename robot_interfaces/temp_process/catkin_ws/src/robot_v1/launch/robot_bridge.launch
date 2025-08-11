@@ -1,0 +1,33 @@
+<launch>
+
+    <arg name="robot_id" default="robot01"/>
+    <arg name="mqtt_host" default="10.25.0.2"/>
+    <arg name="mqtt_port" default="1883"/>
+    <arg name="mqtt_keepalive" default="60"/>
+    <arg name="use_tls" default="false"/>
+    <arg name="tls_ca" default=""/>
+    <arg name="tls_cert" default=""/>
+    <arg name="tls_key" default=""/>
+
+    <arg name="topic_pose2d" default="/movebase_pose2d"/>
+    <arg name="topic_battery" default="/battery"/>
+    <arg name="topic_status" default="/status_code"/>
+
+    <node pkg="robot_v1" type="ros_sub.py" name="robot_state_subscriber" output="screen">
+        <param name="topic_pose2d" value="$(arg topic_pose2d)"/>
+        <param name="topic_battery" value="$(arg topic_battery)"/>
+        <param name="topic_status" value="$(arg topic_status)"/>
+    </node>
+
+    <node pkg="robot_v1" type="bridge.py" name="ros_mqtt_bridge" output="screen">
+        <param name="robot_id" value="$(arg robot_id)"/>
+        <param name="mqtt_host" value="$(arg mqtt_host)"/>
+        <param name="mqtt_port" value="$(arg mqtt_port)"/>
+        <param name="mqtt_keepalive" value="$(arg mqtt_keepalive)"/>
+        <param name="use_tls" value="$(arg use_tls)"/>
+        <param name="tls_ca" value="$(arg tls_ca)"/>
+        <param name="tls_cert" value="$(arg tls_cert)"/>
+        <param name="tls_key" value="$(arg tls_key)"/>
+    </node>
+
+</launch>
