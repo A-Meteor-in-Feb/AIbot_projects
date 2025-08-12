@@ -1,12 +1,19 @@
 from datetime import datetime
 import threading
 import copy
+from enum import Enum
 
 
 def utc_now_ms():
     now = datetime.now()    
     timestamp_str = now.strftime("%Y-%m-%d %H:%M:%S")
     return timestamp_str
+
+
+class TaskStatus(Enum):
+    PENDING_RECEIPT = 40 #待签收
+    DELIVERY_FAILED = 50 #配送失败
+    DELIVERY_COMPLETE = 70 #配送完成
 
 
 class StateInfo:
@@ -26,7 +33,7 @@ class StateInfo:
 
     def get_state(self):
         with self.lock:
-            return copy.deepcopy(self.state)
+            return copy.deepcopy(self.state)    
         
     def update_position(self, new_x, new_y, new_theta):
         """ 
@@ -62,4 +69,40 @@ class StateInfo:
         with self.lock:
             self.state["fault"] = b_fault
 
-    #def 
+    def update_taskStatus(self, status):
+        """
+        用来更新机器人的工作状态
+        参数:
+            status: string, 代表机器人的状态
+            目前是4个状态: idle, delivering, arrived, delivered
+        """
+        with self.lock:
+            self.state["taskStatus"] = status
+
+    def update_taskId(self, task_id):
+        """
+        用来更新机器人执行的任务的任务代号
+        参数:
+            task_id: 一个数字, 代表任务
+        """
+        with self.lock:
+            self.state["taskId"] = task_id
+
+    def update_connection(self, connection):
+        """
+        用来更新机器人的网络连接状态
+        参数:
+            connection: string - "online" or "offline"
+            "offile"为初始值, 上线后更新为online, 然后等到正常退出, 在变为offline.
+        """
+        with self.lock:
+            self.state["connection"] = connection
+
+    def update_binsNum(self, bins_num):
+        """
+        用来更新机器人的货仓数量, 但是其实我个人认为这应该是一个固定值
+        参数:
+            bins_num: int, 表示有多少货仓
+        """
+        with self.lock:
+            self.state["binsNum"] = bins_num
