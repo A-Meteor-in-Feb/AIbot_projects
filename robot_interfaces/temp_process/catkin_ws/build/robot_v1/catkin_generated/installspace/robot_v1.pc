@@ -1,8 +1,0 @@
-prefix=/home/ros/robot_interfaces/temp_process/catkin_ws/install
-
-Name: robot_v1
-Description: Description of robot_v1
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

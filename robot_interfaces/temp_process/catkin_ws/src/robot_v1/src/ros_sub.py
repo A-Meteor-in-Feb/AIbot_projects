@@ -32,7 +32,7 @@ class RobotStateSubscriber:
             self.state["position"].update({
                 "x": msg.x,
                 "y": msg.y,
-                "theta": msg.theta #要不要直接改成z还是沿用theta呢???
+                "theta": msg.theta 
             })
     
     def callback_battery(self, msg: Battery):

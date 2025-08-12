@@ -6,8 +6,6 @@ import paho.mqtt.client as mqtt
 import ros_sub
 
 
-
-
 def utc_now_ms():
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 

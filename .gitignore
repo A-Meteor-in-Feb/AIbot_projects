@@ -34,3 +34,4 @@ robot_side/test/localization/devel/*
 robot_side/test/mock_test/robot_services/__pycache__/*
 robot_interfaces/temp_process/catkin_ws/build/*
 robot_interfaces/temp_process/catkin_ws/devel/*
+robot_interfaces/temp_process/.vscode/*
