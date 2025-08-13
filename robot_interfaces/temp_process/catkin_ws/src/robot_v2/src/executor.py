@@ -89,10 +89,10 @@ class InteractionThread(threading.Thread):
                     if self.qr_checkSuccess:
                         #TODO-开启货仓门让用户取货
                         #TODO-一定时间后关闭货仓门
-                        #通知后台配送成功
+                        #通知后台配送成功, 并更改机器人任务配送状态为 delivered
                         self.notify_deliveryComplete()
                     else:
-                        # 超时则通知后台配送失败
+                        # 超时则通知后台配送失败, 并更改机器人任务配送状态为 delivered_failed
                         self.notify_deliveryFailed()
 
                 # 然后无论配送失败或者成功,
