@@ -92,7 +92,10 @@ class HttpClient:
     
     def select_taskInfo(self):
         """
-            接口1: 机器人主动获取任务信息
+        接口1: 机器人主动获取任务信息
+        返回值:
+            正常情况下: 会返回后台响应数据, 且数据类型为dict; 可以在executor.py中直接使用, 无需类型转换.
+            异常情况下: 尝试从后台获取任务信息连续5次都失败, 返回None; 供executor.py中主逻辑做异常判断
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
 
@@ -129,9 +132,12 @@ class HttpClient:
 
     def update_taskStatus(self, taskStatus):
         """
-            接口2,3,4: 机器人主动向后台更新任务进度
-            parameters:
-                taskStatus: the number represents the status of the task.
+        接口2,3,4: 机器人主动向后台更新任务进度
+        参数:
+            taskStatus: 代表不同任务执行情况的数字值
+        返回:
+            正常情况下成功响应:
+            异常情况下: 
         """
         url = f"{self.base_url}/api/robot/client/reportTaskProcess"
 
