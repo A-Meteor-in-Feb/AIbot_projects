@@ -31,4 +31,6 @@ class RosStateSub:
 
     
 # 这里可能还需要再订阅一个话题 from tianxin, 用来接收小车是否到达目的地的信号
-# 然后你可以通过这个信号来修改状态
+# 然后你可以通过这个信号来修改状态 为 arrived (from delivering to arrived)
+# 再订阅一个话题 from tianxin, 用来接收小车是否返回可以可以进行下一轮配送的路径规划的点位
+# 然后你可以通过这个信号来修改状态 为 idle (from delivered/ delivery_failed to idle)

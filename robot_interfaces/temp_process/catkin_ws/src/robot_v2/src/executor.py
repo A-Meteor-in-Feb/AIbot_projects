@@ -58,33 +58,53 @@ class InteractionThread(threading.Thread):
         self.ros_pub = ros_pub
         self.stop_event = stop_event
 
+        #运行时需要的参数
+        self.taskId = 0
+        self.next_fetch = 0.0
+        self.fetch_interval = 30.0
+        self.qr_deadline = 0.0
+        self.qr_checkSuccess = False
+
     def run(self):
+        """
+        逻辑控制部分
+        """
         while not self.stop_event.is_set() and not rospy.is_shutdown():
-
-            taskStatus = self.state.get_state().get("taskStatus")
-
-            next_fetch = time.monotonic()
-            while taskStatus == "idle":
-                now = time.monotonic
-                if now >= next_fetch:
-                    success_fetch = self.fetch_taskInfo()
-                    if success_fetch:
-                        break
-                    else:
-                        next_fetch = time.monotonic() + 30
-                        continue
-
-            if taskStatus == "arrived":
-                success_process = self.delivery_process()
-
-                if success_process:
-                    #开启货仓门让用户取货
-                    #一定时间后关闭货仓门
-                    success_complete = self.notify_deliveryComplete()
+            
+            try:
+                taskStatus = self.state.get_state().get("taskStatus")
+                now = time.monotonic()
                 
-                else:
-                    #通知后台配送失败
-                    success_notify = self.notify_deliveryFailed()
+                # 机器人为空闲状态, 则到时间就拉取任务
+                if taskStatus == "idle" and self.taskId == 0 and now >= self.next_fetch:
+                    success_fetch = self.fetch_taskInfo()
+                    # 如果拉取任务失败, 则等待30秒后继续主动从后台拉取任务
+                    if not success_fetch:
+                        self.next_fetch = time.monotonic() + 30
+    
+                # 机器人到达以后向后台发布到达通知, 并开始核对QR code
+                if taskStatus == "arrived" and self.taskId != 0:
+                    self.qr_checkSuccess = self.delivery_process()
+                    # 在一定时间内二维码验证成功
+                    if self.qr_checkSuccess:
+                        #TODO-开启货仓门让用户取货
+                        #TODO-一定时间后关闭货仓门
+                        #通知后台配送成功
+                        self.notify_deliveryComplete()
+                    else:
+                        # 超时则通知后台配送失败
+                        self.notify_deliveryFailed()
+
+                # 然后无论配送失败或者成功,
+                # 1- 先发一个信号给tianxin表示小车可以返回初始点位(可以加个状态delivery_end之类的)
+                # 2- 等到机器人返回可以重新规划路径的初始点位后 tianxin 发送信号给我
+                # 然后更新机器人状态为 idle, 清空 taskId, 以及其他运行时参数
+                # 然后就可以通过判断开始下一轮拉取任务信息以及配送
+
+            except Exception as e:
+                rospy.loginfo(f"Error happens in the main execution loop as {e}")
+
+            self.stop_event.wait(0.1)
 
     def fetch_taskInfo(self):
         """
@@ -101,18 +121,20 @@ class InteractionThread(threading.Thread):
         response_data = self.http_client.select_taskInfo()
 
         if response_data:
-            taskId = response_data.get("taskInfo").get("id")
-            dock = response_data.get("taskInfo").get("addressParams").get("pose").get("dock")
-            floor = response_data.get("taskInfo").get("addressParams").get("floor")
+            taskInfo = response_data.get("data").get("taskInfo")
+            taskId = taskInfo.get("id")
+            dock = taskInfo.get("addressParams").get("pose").get("dock")
+            floor = taskInfo.get("addressParams").get("floor")
             
             #先给tianxin发布话题
             try:
                 self.publish_goal(dock, floor)
             except Exception as e:
-                rospy.loginfo("Error happens when try to publish Goal topic to tianxin.\n Error:", e)
+                rospy.loginfo(f"Error happens when try to publish Goal topic to tianxin.\n Error: {e}")
                 return False
             
             #更新机器人相关状态
+            self.taskId = taskId
             self.state.update_taskId(taskId)
             self.state.update_taskStatus("delivering")
             
@@ -120,7 +142,7 @@ class InteractionThread(threading.Thread):
             try:
                 self.robot_mqtt.publish_state()
             except Exception as e:
-                rospy.loginfo("Error happens when try to publish state topic to the backend.\n Error:", e)
+                rospy.loginfo(f"Error happens when try to publish state topic to the backend.\n Error: {e}")
 
             rospy.loginfo(f"Assigned task: {taskId}, addr={dock}, floor={floor}")
             return True
@@ -166,9 +188,9 @@ class InteractionThread(threading.Thread):
         response = self.http_client.update_taskStatus(dataInfo.TaskStatus.PENDING_RECEIPT.value)
         
         #设置超时时间
-        deadline = time.monotonic + TIMEOUT
+        self.qr_deadline = time.monotonic() + TIMEOUT
 
-        while time.monotonic() <= deadline:
+        while time.monotonic() <= self.qr_deadline:
 
             # 核对二维码
             # 核对不成功则一直尝试
@@ -252,6 +274,7 @@ if __name__ == "__main__":
         stop_event.set()
         state_thread.join(timeout=1)
         interaction_thread.join(timeout=1)
+        
         #正常退出发布离线消息
         robot_mqtt.publish_connection(status="offline", reason="shutdown")
         robot_mqtt.stop()
