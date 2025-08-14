@@ -91,7 +91,7 @@ class InteractionThread(threading.Thread):
                     success_fetch = self.fetch_taskInfo()
                     # 如果拉取任务失败, 则等待30秒后继续主动从后台拉取任务
                     if not success_fetch:
-                        self.next_fetch = time.monotonic() + 5
+                        self.next_fetch = time.monotonic() + self.fetch_interval
     
                 # 机器人到达以后向后台发布到达通知, 并开始核对QR code
                 if taskStatus == "arrived" and taskId != 0:
