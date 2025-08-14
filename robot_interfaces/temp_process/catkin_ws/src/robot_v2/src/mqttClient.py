@@ -102,6 +102,8 @@ class MqttClient:
         self.state.update_connection(connection=status)
         if status == "online":
             self.state.update_taskStatus(status="idle")
+        elif status == "offline":
+            self.state.update_taskStatus(status="offline")
 
         payload = {
             "status": status,

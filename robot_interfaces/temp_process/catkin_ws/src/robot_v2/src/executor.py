@@ -4,6 +4,7 @@ import rospy
 from robot_v2.msg import Goal
 from geometry_msgs.msg import PoseStamped
 from tf.transformations import quaternion_from_euler
+from std_msgs.msg import String
 
 import mqttClient
 import rosSub
@@ -41,21 +42,23 @@ class StateThread(threading.Thread):
 
 
 class InteractionThread(threading.Thread):
-    def __init__(self, state, robot_mqtt, http_client, ros_pub, stop_event: threading.Event):
+    def __init__(self, state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event: threading.Event):
         """
         这个类主要用来运行与后台通过HTTP交互
         参数:
             state: 用于根据后台的交互更新机器人相应状态
             robot_mqtt: 已初始化并且连接 MQTT broker的客户端实例, 用于随时发布更新的状态消息
             http_client: HTTP 客户端实例, 用于调用后台任务相关的接口
-            ros_pub: ROS publisher, 用于向路径规划模块发送 goal & floor 等信息
+            ros_pub_goal: ROS publisher for topic 'goal', 用于向路径规划模块发送 goal & floor 等信息
+            ros_pub_returnSignal: ROS publisher for topic 'signal/return', 用于向tianxin发送返回初始化点位信号
             stop_event: 线程终止事件标志
         """
         super().__init__(daemon=True)
         self.state = state
         self.robot_mqtt = robot_mqtt
         self.http_client = http_client
-        self.ros_pub = ros_pub
+        self.ros_pub_goal = ros_pub_goal
+        self.ros_pub_returnSignal = ros_pub_returnSignal
         self.stop_event = stop_event
 
         #运行时需要的参数
@@ -97,7 +100,9 @@ class InteractionThread(threading.Thread):
 
                 # 然后无论配送失败或者成功,
                 # 1- 先发一个信号给tianxin表示小车可以返回初始点位(可以加个状态delivery_end之类的)
-                # 2- 等到机器人返回可以重新规划路径的初始点位后 tianxin 发送信号给我
+                if taskStatus == "delivered" or taskStatus == "delivered_failed":
+                    self.publish_returnSignal()
+                # 2- 等到机器人返回可以重新规划路径的初始点位后 tianxin 发送信号给我 (实现在rosSub里面)
                 # 然后更新机器人状态为 idle, 清空 taskId, 以及其他运行时参数
                 # 然后就可以通过判断开始下一轮拉取任务信息以及配送
 
@@ -233,6 +238,13 @@ class InteractionThread(threading.Thread):
         self.robot_mqtt.publish_state()
 
         return True
+    
+    def publish_returnSignal(self):
+        """
+        给tianxin发送小车可以开回做下一次路径规划的初始化点位
+        """
+        self.ros_pub_returnSignal.publish("RETURN")
+        print("Forwarded the return signal to the planning and localization part")
 
                 
 if __name__ == "__main__":
@@ -250,7 +262,8 @@ if __name__ == "__main__":
 
 
     rospy.init_node("robot_commNode", anonymous=False)
-    ros_pub = rospy.Publisher("goal", Goal, queue_size=1)
+    ros_pub_goal = rospy.Publisher("goal", Goal, queue_size=1)
+    ros_pub_returnSignal = rospy.Publisher("signal/return", String, queue_size=1)
     state = dataInfo.StateInfo()
     robot_mqtt = mqttClient.MqttClient(BROKER_HOST, BROKER_PORT, ROBOTID, state)
     robot_mqtt.connect()
@@ -261,7 +274,7 @@ if __name__ == "__main__":
     
     stop_event = threading.Event()
     state_thread = StateThread(robot_mqtt, stop_event)
-    interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub, stop_event)
+    interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event)
     state_thread.start()
     interaction_thread.start()
     
