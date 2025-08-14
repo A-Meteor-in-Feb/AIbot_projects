@@ -1,8 +1,10 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
-from woosh_msgs.msg import Battery
+#from woosh_msgs.msg import Battery
+from robot_v2.msg import Battery
 import dataInfo
+from std_msgs.msg import String
 
 class RosStateSub:
     def __init__(self, state: dataInfo.StateInfo):
@@ -16,6 +18,8 @@ class RosStateSub:
         
         self.state = state
 
+        self.sub_arrived = rospy.Subscriber("signal/arrived", String, self.callback_arrived, queue_size=1)
+        self.sub_canReplan = rospy.Subscriber("signal/canReplan", String, self.callback_canReplan, queue_size=1)
     def callback_pose2d(self, msg: Pose2D):
         self.state.update_position(msg.x, msg.y, msg.theta)
 
@@ -28,6 +32,17 @@ class RosStateSub:
             self.state.update_fault(False)
         else:
             self.state.update_fault(True)
+
+    def callback_arrived(self, msg: String):
+        signal = msg.data
+        if signal == "ARRIVED":
+            self.state.update_taskStatus("arrived")
+
+    def callback_canReplan(self, msg: String):
+        signal = msg.data
+        if signal == "CAN_REPLAN":
+            self.state.update_taskStatus("idle")
+            self.state.update_taskId(0)
 
     
 # 这里可能还需要再订阅一个话题 from tianxin, 用来接收小车是否到达目的地的信号

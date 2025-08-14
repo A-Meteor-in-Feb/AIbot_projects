@@ -26,8 +26,16 @@ class StateThread(threading.Thread):
 
     def run(self):
         """
+        要先判断MQTTclient有没有成功连接到broker, 然后再开始运行!
         每间隔 HEARTBEAT 时间(5秒) 发布一次 robots/{robotId}/state 主题消息
         """
+
+        rospy.loginfo("Waiting for MQTT connection...")
+        while not self.robot_mqtt.connected and not self.stop_event.is_set() and not rospy.is_shutdown():
+            time.sleep(0.1)
+
+        rospy.loginfo("MQTT connected. Starting state publish loop.")
+
         next_time = time.monotonic()
         while not self.stop_event.is_set() and not rospy.is_shutdown():
             now = time.monotonic()
@@ -62,7 +70,6 @@ class InteractionThread(threading.Thread):
         self.stop_event = stop_event
 
         #运行时需要的参数
-        self.taskId = 0
         self.next_fetch = 0.0
         self.fetch_interval = 30.0
         self.qr_deadline = 0.0
@@ -76,17 +83,18 @@ class InteractionThread(threading.Thread):
             
             try:
                 taskStatus = self.state.get_state().get("taskStatus")
+                taskId = self.state.get_state().get("taskId")
                 now = time.monotonic()
-                
+
                 # 机器人为空闲状态, 则到时间就拉取任务
-                if taskStatus == "idle" and self.taskId == 0 and now >= self.next_fetch:
+                if taskStatus == "idle" and taskId == 0 and now >= self.next_fetch:
                     success_fetch = self.fetch_taskInfo()
                     # 如果拉取任务失败, 则等待30秒后继续主动从后台拉取任务
                     if not success_fetch:
-                        self.next_fetch = time.monotonic() + 30
+                        self.next_fetch = time.monotonic() + 5
     
                 # 机器人到达以后向后台发布到达通知, 并开始核对QR code
-                if taskStatus == "arrived" and self.taskId != 0:
+                if taskStatus == "arrived" and taskId != 0:
                     self.qr_checkSuccess = self.delivery_process()
                     # 在一定时间内二维码验证成功
                     if self.qr_checkSuccess:
@@ -139,7 +147,6 @@ class InteractionThread(threading.Thread):
                 return False
             
             #更新机器人相关状态
-            self.taskId = taskId
             self.state.update_taskId(taskId)
             self.state.update_taskStatus("delivering")
             
@@ -179,7 +186,7 @@ class InteractionThread(threading.Thread):
         goal.pose = ps
         goal.floor = floor
 
-        self.ros_pub.publish(goal)
+        self.ros_pub_goal.publish(goal)
         print("Forwarded the goal info to the planning and localization part")
 
     def delivery_process(self):
@@ -253,8 +260,8 @@ if __name__ == "__main__":
     TIMEOUT = 180
     BROKER_HOST = "10.25.0.2"
     BROKER_PORT = 1883
-    BACKEND_HOST = "10.25.0.15"
-    BACKEND_PORT = "18001"
+    BACKEND_HOST = "192.168.10.249"   #"10.25.0.15"
+    BACKEND_PORT = "8889"             #"18001"
     HTTP_HEAD = "http"
     ROBOTID = "18950214603"
     PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="

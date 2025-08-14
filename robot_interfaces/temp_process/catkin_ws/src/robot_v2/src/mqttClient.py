@@ -18,6 +18,7 @@ class MqttClient:
         self.port = port
         self.robotId = robot_id
         self.state = state
+        self.connected = False
 
         self.mqtt_client = mqtt.Client(client_id=robot_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
         self.mqtt_client.on_connect = self.on_connect
@@ -32,14 +33,16 @@ class MqttClient:
         若成功连接, 会发布上线通知以及ip通知给后台
         """
         print(f"MQTT client connected with rc: {reason_code}")
+        self.connected = True
         self.publish_connection(status="online", reason="connect")
         self.publish_ip()
 
-    def on_disconnect(self, client, userdata, flags, reason_cond, properties):
+    def on_disconnect(self, client, userdata, flags, reason_code, properties):
         """
         掉线重连的回调函数
         """
-        print(f"MQTT disconnected with {reason_cond}, reconnecting...")
+        self.connected = False
+        print(f"MQTT disconnected with {reason_code}")
 
     def set_lastWill(self):
         """
@@ -53,15 +56,17 @@ class MqttClient:
         """
         控制机器人MQTT部分开始执行
         """
-        self.mqtt_client.connect_async(self.host, self.port, keepalive=60)
+        self.mqtt_client.connect_async(self.host, self.port, keepalive=10)
         self.mqtt_client.loop_start()
 
     def stop(self):
         """
         控制机器人MQTT部分停止并退出执行
         """
+        self.connected = False
         self.mqtt_client.loop_stop()
         self.mqtt_client.disconnect()
+        print("shutdown, exiting...")
 
     def get_ip(self):
         """

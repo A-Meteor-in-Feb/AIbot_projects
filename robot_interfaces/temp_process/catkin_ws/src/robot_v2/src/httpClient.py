@@ -104,18 +104,19 @@ class HttpClient:
         body = {"data": data}
 
         #只发一次
-        for i in range(5):
+        for i in range(1):
             try: 
                 #每次发送都更新header
-                HEADER = self.build_auth_headers()
-                print("\n", HEADER, data, "\n\n")
-                response = requests.post(url = url, headers = HEADER, json = body, timeout = 20)
+                #HEADER = self.build_auth_headers()
+                #response = requests.post(url = url, headers = HEADER, json = body, timeout = 1)
+                response = requests.post(url = url, json = body, timeout = 1)
 
                 if response.ok:
                     print(response.status_code)
                     # 获取到相关data然后解析数据
-                    data = response.text
-                    result = self.decrypt_response_data(data)
+                    #data = response.text
+                    #result = self.decrypt_response_data(data)
+                    result = response.json()
                     print(result)
                     return result
                         
@@ -153,12 +154,13 @@ class HttpClient:
         #请求失败要重试
         for i in range(5):
             try:
-                HEADER = self.build_auth_headers(self.robotId, self.private_key)
-                response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
+                #HEADER = self.build_auth_headers(self.robotId, self.private_key)
+                #response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
+                response = requests.post(url = url, json = body, timeout = 5)
                 if not response.ok:
                     print(f"第{i}次向后台更新任务进度失败, 状态码: {response.status_code}")
                 else:
-                    print(response.text)
+                    print(response)
                     return response.ok
             except requests.RequestException as e:
                 print(f"第{i}次请求异常: {e}")
