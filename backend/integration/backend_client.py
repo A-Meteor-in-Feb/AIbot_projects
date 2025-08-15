@@ -54,7 +54,8 @@ def post_command(base_url, command, robotId, parameters):
         parameters: the request parameters
     """
 
-    url = f"{base_url}/api/robots/{robotId}/{command}"
+    #url = f"{base_url}/api/robots/{robotId}/{command}"
+    url = f"{base_url}/api/robot/server/task"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {BACKEND_TOKEN}"
@@ -83,7 +84,7 @@ def task_control():
         Define the request details for posting task command.
     """
     #base_url = f"http://10.25.0.15:18001"
-    base_url = "http://10.25.0.6:8888"
+    base_url = "http://10.25.0.5:8000"
     command = "task"
     robotId = ROBOT_ID_1
     parameters = {

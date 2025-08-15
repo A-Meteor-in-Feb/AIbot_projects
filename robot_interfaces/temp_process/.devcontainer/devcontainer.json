@@ -5,19 +5,24 @@
     "context": ".."
   },
   "workspaceFolder": "/home/ros/robot_interfaces/temp_process",
-  "settings": {
-    "terminal.integrated.shell.linux": "bash",
-    "python.analysis.extraPaths": [
-        "/opt/ros/noetic/lib/python3/dist-packages",
-        "/home/ros/robot_interfaces/temp_process/catkin_ws/devel/lib/python3/dist-packages"
-    ]
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "bash",
+        "python.analysis.extraPaths": [
+          "/opt/ros/noetic/lib/python3/dist-packages",
+          "/home/ros/robot_interfaces/temp_process/catkin_ws/devel/lib/python3/dist-packages"
+        ]
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-iot.vscode-ros",
+        "ms-vscode.cpptools"
+      ]
+    }
   },
-  "extensions": [
-    "ms-python.python",
-    "ms-iot.vscode-ros",
-    "ms-vscode.cpptools"
-  ],
-  "forwardPorts": [11311],
+  "runArgs": ["-p", "8000:8000"],
+  "forwardPorts": [11311, 8000],
   "mounts": [
     "source=${localWorkspaceFolder},target=/home/ros/robot_interfaces/temp_process,type=bind"
   ],

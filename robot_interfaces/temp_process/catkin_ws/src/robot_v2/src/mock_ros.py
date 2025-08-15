@@ -14,6 +14,7 @@ def goal_callback(msg: Goal):
 
 def return_callback(msg: String):
     print(f"receive return signal {msg}")
+    time.sleep(3)
     publish_canReplan()
 
 
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     arrived_publisher = rospy.Publisher("/signal/arrived", String, queue_size=1)
     canReplan_publisher = rospy.Publisher("signal/canReplan", String, queue_size=1)
     #每两秒执行一次
-    rate = rospy.Rate(0.5)
+    rate = rospy.Rate(0.1)
     while not rospy.is_shutdown():
         publish_pose()
         publish_battery()

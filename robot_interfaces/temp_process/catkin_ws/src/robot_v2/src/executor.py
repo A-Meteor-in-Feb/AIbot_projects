@@ -12,6 +12,12 @@ import httpClient
 import dataInfo
 
 
+from flask import Flask, jsonify
+from werkzeug.serving import make_server
+from threading import Thread
+import httpServer
+
+
 class StateThread(threading.Thread):
     def __init__(self, robot_mqtt, stop_event: threading.Event):
         """
@@ -74,6 +80,7 @@ class InteractionThread(threading.Thread):
         self.fetch_interval = 30.0
         self.qr_deadline = 0.0
         self.qr_checkSuccess = False
+        self.returning = False
 
     def run(self):
         """
@@ -97,18 +104,18 @@ class InteractionThread(threading.Thread):
                 if taskStatus == "arrived" and taskId != 0:
                     self.qr_checkSuccess = self.delivery_process()
                     # 在一定时间内二维码验证成功
-                    if self.qr_checkSuccess:
+                    #if self.qr_checkSuccess:
                         #TODO-开启货仓门让用户取货
                         #TODO-一定时间后关闭货仓门
                         #通知后台配送成功, 并更改机器人任务配送状态为 delivered
-                        self.notify_deliveryComplete()
-                    else:
+                        #self.notify_deliveryComplete()
+                    #else:
                         # 超时则通知后台配送失败, 并更改机器人任务配送状态为 delivered_failed
-                        self.notify_deliveryFailed()
+                        #self.notify_deliveryFailed()
 
                 # 然后无论配送失败或者成功,
                 # 1- 先发一个信号给tianxin表示小车可以返回初始点位(可以加个状态delivery_end之类的)
-                if taskStatus == "delivered" or taskStatus == "delivered_failed":
+                if taskStatus == "delivered" or taskStatus == "delivered_failed" or taskStatus == "returning":
                     self.publish_returnSignal()
                 # 2- 等到机器人返回可以重新规划路径的初始点位后 tianxin 发送信号给我 (实现在rosSub里面)
                 # 然后更新机器人状态为 idle, 清空 taskId, 以及其他运行时参数
@@ -197,8 +204,8 @@ class InteractionThread(threading.Thread):
             3. 如果超过deadline还没有成功核对二维码, 则返回False
         """
         #调用接口2
-        response = self.http_client.update_taskStatus(dataInfo.TaskStatus.PENDING_RECEIPT.value)
-        
+        response = self.http_client.update_taskStatus("19582642036", dataInfo.TaskStatus.PENDING_RECEIPT.value)
+        print(f"response from 接口2: {response}")
         #设置超时时间
         self.qr_deadline = time.monotonic() + TIMEOUT
 
@@ -222,7 +229,7 @@ class InteractionThread(threading.Thread):
             3. 更新机器人taskStatus 为 delivered, 并立即发送 robots/{robotId}/state 话题
         """
         #调用接口3
-        response = self.http_client.update_taskStatus(dataInfo.TaskStatus.DELIVERY_COMPLETE.value)
+        response = self.http_client.update_taskStatus("19582642036", dataInfo.TaskStatus.DELIVERY_COMPLETE.value)
         
         #更新机器人状态并发布 state 主题
         self.state.update_taskStatus("delivered")
@@ -238,7 +245,7 @@ class InteractionThread(threading.Thread):
             3. 更新机器人taskStatus 为 delivered_failed, 并立即发送 robots/{robotId}/state 话题
         """
         #调用接口4
-        response = self.http_client.update_taskStatus(dataInfo.TaskStatus.DELIVERY_FAILED.value)
+        response = self.http_client.update_taskStatus("19582642036", dataInfo.TaskStatus.DELIVERY_FAILED.value)
 
         #更新机器人状态并发布 state 主题
         self.state.update_taskStatus("delivered_failed")
@@ -251,21 +258,52 @@ class InteractionThread(threading.Thread):
         给tianxin发送小车可以开回做下一次路径规划的初始化点位
         """
         self.ros_pub_returnSignal.publish("RETURN")
-        print("Forwarded the return signal to the planning and localization part")
+        self.returning = True
+        print("Forwarded the return signal")
 
+
+def create_flask_app(server_bp):
+    app = Flask(__name__)
+    app.register_blueprint(server_bp)
+
+    @app.route("/healthz")
+    def healthz():
+        return jsonify({"status": "ok"}), 200
+    
+    return app
+
+def start_flask_in_thread(flask_app, host, port):
+    class ServerThread(Thread):
+        def __init__(self):
+            super().__init__(daemon=False)
+            self.srv = make_server(host, port, flask_app)
+            self.ctx = flask_app.app_context()
+            self.ctx.push()
+
+        def run(self):
+            self.srv.serve_forever()
+
+        def shutdown(self):
+            self.srv.shutdown()
+
+    thr = ServerThread()
+    thr.start()
+    return thr
                 
 if __name__ == "__main__":
 
-    HEARTBEAT = 5
+    HEARTBEAT = 10
     TIMEOUT = 180
     BROKER_HOST = "10.25.0.2"
     BROKER_PORT = 1883
-    BACKEND_HOST = "192.168.10.249"   #"10.25.0.15"
-    BACKEND_PORT = "8889"             #"18001"
+    BACKEND_HOST = "10.25.0.15"   # "192.168.10.249"
+    BACKEND_PORT = "18001"           # "8889" 
     HTTP_HEAD = "http"
     ROBOTID = "18950214603"
     PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="
     IV_VECTOR = "tBPz/vp+8x9ps4ikCj6btA=="
+
+    SKEW_MS = 2 * 60 * 1000
 
 
     rospy.init_node("robot_commNode", anonymous=False)
@@ -281,9 +319,15 @@ if __name__ == "__main__":
     
     stop_event = threading.Event()
     state_thread = StateThread(robot_mqtt, stop_event)
-    interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event)
+    #interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event)
     state_thread.start()
-    interaction_thread.start()
+    #interaction_thread.start()
+
+    srv = httpServer.HttpServer(state, HTTP_HEAD, "0.0.0.0", 8000, ROBOTID, PRIVATE_KEY, IV_VECTOR, SKEW_MS)
+    flask_app = create_flask_app(srv.bp)
+    flask_thread = start_flask_in_thread(flask_app, "0.0.0.0", 8000)
+    rospy.loginfo("HTTP server for backend callbacks started on 0.0.0.0:8000")
+
     
     rospy.loginfo("Threads start working successfully.")
 
@@ -293,8 +337,9 @@ if __name__ == "__main__":
         #回收线程
         stop_event.set()
         state_thread.join(timeout=1)
-        interaction_thread.join(timeout=1)
-        
+        #interaction_thread.join(timeout=1)
+        flask_thread.join(1)
+        flask_thread.shutdown()
         #正常退出发布离线消息
         robot_mqtt.publish_connection(status="offline", reason="shutdown")
         robot_mqtt.stop()

@@ -87,8 +87,8 @@ class HttpClient:
         将后台传输的密文解密为明文后再转为dict类型
         """
         cipher_bytes = base64.b64decode(data_b64)
-        plain = self.aes_cbc_decrypt(cipher_bytes, self.key, self.iv)
-        return json.loads(plain.decode("utf-8"))
+        plain = self.aes_cbc_decrypt(cipher_bytes)
+        return json.loads(plain.decode("utf-8")) 
     
     def select_taskInfo(self):
         """
@@ -99,7 +99,7 @@ class HttpClient:
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
 
-        payload = {"taskId": 18959715166}
+        payload = {"taskId": 19582642036}
         data = self.encrypted_data(payload)
         body = {"data": data}
 
@@ -107,16 +107,17 @@ class HttpClient:
         for i in range(1):
             try: 
                 #每次发送都更新header
-                #HEADER = self.build_auth_headers()
-                #response = requests.post(url = url, headers = HEADER, json = body, timeout = 1)
-                response = requests.post(url = url, json = body, timeout = 1)
+                HEADER = self.build_auth_headers()
+                response = requests.post(url = url, headers = HEADER, json = body, timeout = 1)
+                #response = requests.post(url = url, json = body, timeout = 1)
 
                 if response.ok:
                     print(response.status_code)
                     # 获取到相关data然后解析数据
-                    #data = response.text
-                    #result = self.decrypt_response_data(data)
-                    result = response.json()
+                    data = response.text
+                    print(data)
+                    result = self.decrypt_response_data(data)
+                    #result = response.json()
                     print(result)
                     return result
                         
@@ -131,7 +132,7 @@ class HttpClient:
         print("需要检查网络或后台状态")
         return None
 
-    def update_taskStatus(self, taskStatus):
+    def update_taskStatus(self, taskId, taskStatus):
         """
         接口2,3,4: 机器人主动向后台更新任务进度
         参数:
@@ -143,7 +144,7 @@ class HttpClient:
         url = f"{self.base_url}/api/robot/client/reportTaskProcess"
 
         payload = {
-            "taskId": 18959715166,
+            "taskId": taskId,
             "taskStatus": taskStatus, 
             "step": "step",
             "createTime": dataInfo.utc_now_ms()
@@ -154,9 +155,9 @@ class HttpClient:
         #请求失败要重试
         for i in range(5):
             try:
-                #HEADER = self.build_auth_headers(self.robotId, self.private_key)
-                #response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
-                response = requests.post(url = url, json = body, timeout = 5)
+                HEADER = self.build_auth_headers()
+                response = requests.post(url = url, headers = HEADER, json = body, timeout = 5)
+                #response = requests.post(url = url, json = body, timeout = 5)
                 if not response.ok:
                     print(f"第{i}次向后台更新任务进度失败, 状态码: {response.status_code}")
                 else:

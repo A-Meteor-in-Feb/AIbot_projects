@@ -20,6 +20,8 @@ class RosStateSub:
 
         self.sub_arrived = rospy.Subscriber("signal/arrived", String, self.callback_arrived, queue_size=1)
         self.sub_canReplan = rospy.Subscriber("signal/canReplan", String, self.callback_canReplan, queue_size=1)
+
+        
     def callback_pose2d(self, msg: Pose2D):
         self.state.update_position(msg.x, msg.y, msg.theta)
 

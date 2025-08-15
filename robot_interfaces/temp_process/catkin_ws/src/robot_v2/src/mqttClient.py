@@ -85,7 +85,7 @@ class MqttClient:
         发布话题 robots/{robotId}/network/ip
         """
         ip = self.get_ip()
-        #self.state.update_ip(ip) 没写这个字段和这个功能, 可以考虑以后加上
+        self.state.update_ip(ip)
         payload = {
             "interface": "wireguard",
             "ip": ip,

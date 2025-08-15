@@ -21,6 +21,7 @@ class StateInfo:
         self.lock = threading.Lock()
         self.state = {
             "position": {"x": 0, "y": 0, "theta": 0},
+            "ip": "",
             "coordinateType": "map",
             "battery": 0,
             "taskStatus": "",
@@ -49,6 +50,15 @@ class StateInfo:
                 "y": new_y,
                 "theta": new_theta
             })
+
+    def update_ip(self, ip_addr):
+        """
+        用来更新机器人的IP地址
+        参数:
+            ip_addr: str, 机器人IP地址
+        """
+        with self.lock:
+            self.state["ip"] = ip_addr
     
     def update_battery(self, batteryPercentage):
         """

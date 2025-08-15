@@ -7,7 +7,7 @@ BROKER_PORT = 1883
 
 ORG_ID = "AIbot"
 
-ROBOT_ID = "R1234"
+ROBOT_ID = "18950214603"
 ROBOT_IP = ""
 
 DEVICE_TYPE = "backend"
