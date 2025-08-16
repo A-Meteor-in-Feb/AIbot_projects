@@ -7,6 +7,8 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import dataInfo
 import time
+from pathlib import Path
+import uuid
 
 
 class HttpClient:
@@ -99,16 +101,12 @@ class HttpClient:
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
 
-        payload = {"taskId": 19582642036}
-        data = self.encrypted_data(payload)
-        body = {"data": data}
-
         #只发一次
         for i in range(1):
             try: 
                 #每次发送都更新header
                 HEADER = self.build_auth_headers()
-                response = requests.post(url = url, headers = HEADER, json = body, timeout = 1)
+                response = requests.post(url = url, headers = HEADER, timeout = 10)
                 #response = requests.post(url = url, json = body, timeout = 1)
 
                 if response.ok:
@@ -147,7 +145,7 @@ class HttpClient:
             "taskId": taskId,
             "taskStatus": taskStatus, 
             "step": "step",
-            "createTime": dataInfo.utc_now_ms()
+            "timestamp": dataInfo.utc_now_ms()
         }
         data = self.encrypted_data(payload)
         body = {"data": data}
@@ -170,3 +168,81 @@ class HttpClient:
 
         print("需要检查网络或后台状态")
         return None
+    
+
+    def report_collect(self):
+        """
+        机器人主动向后台上传关键节点的图像; 视频; 报错 - 其他接口有错误(除网络问题之外, 比如500, 404, code!=0 都调用这个接口上报给后台)(再定义一个函数-report_httpError吧)
+        """
+
+        url = f"{self.base_url}/api/robot/client/reportRobotCollect"
+        image_bytes = Path("images/deliver.jpg").read_bytes()
+        image_base64 = base64.b64encode(image_bytes).decode('ascii')
+
+        timestamp = dataInfo.utc_now_ms()
+        random_uuid = uuid.uuid4()
+
+        header = self.build_auth_headers()
+
+        payload = {
+            "type": "image",
+            "data": image_base64,
+            "timestamp": timestamp,
+            "uuid": str(random_uuid)
+        }
+
+        #data = self.encrypted_data(payload)
+        #body = {"data": data}
+
+        response = requests.post(url = url, headers=header, json = payload, timeout=10)
+
+        response.raise_for_status()
+
+        print(f"server response: {response}")
+
+    def report_warn(self, taskId, type):
+        """
+        机器人遇到需要人为干预才能解决的问题, 调用这个接口上报故障
+        参数:
+            taskId: 如果正在执行任务, 则把taskId传过来
+            type: 故障类型, 字符串
+        """
+        url = f"{self.base_url}/api/robot/client/reportRobotWarn"
+
+        header = self.build_auth_headers()
+        """
+        """
+        taskId = 0
+        type = "no error"
+        timestamp = dataInfo.utc_now_ms()
+        random_uuid = uuid.uuid4()
+
+        payload = {
+            "taskId": taskId,
+            "type": type,
+            "timestamp": timestamp,
+            "uuid": str(random_uuid)
+        }
+
+        response = requests.post(url=url, headers=header, json=payload, timeout=10)
+
+        print(f"error - server response: {response}")
+
+        
+
+
+if __name__ == "__main__":
+    BACKEND_HOST = "10.25.0.15"   # "192.168.10.249"
+    BACKEND_PORT = "18001"           # "8889" 
+    HTTP_HEAD = "http"
+    ROBOTID = "18950214603"
+    PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="
+    IV_VECTOR = "tBPz/vp+8x9ps4ikCj6btA=="
+    http_client = HttpClient(HTTP_HEAD, BACKEND_HOST, BACKEND_PORT, ROBOTID, PRIVATE_KEY, IV_VECTOR)
+    
+    try:
+        http_client.report_warn(0, "no error")
+        
+    except KeyboardInterrupt:
+        print("exiting....")
+        pass

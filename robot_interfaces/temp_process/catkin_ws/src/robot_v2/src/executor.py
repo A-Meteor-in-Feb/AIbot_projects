@@ -322,12 +322,12 @@ if __name__ == "__main__":
     #interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event)
     state_thread.start()
     #interaction_thread.start()
-
+    """
     srv = httpServer.HttpServer(state, HTTP_HEAD, "0.0.0.0", 8000, ROBOTID, PRIVATE_KEY, IV_VECTOR, SKEW_MS)
     flask_app = create_flask_app(srv.bp)
     flask_thread = start_flask_in_thread(flask_app, "0.0.0.0", 8000)
     rospy.loginfo("HTTP server for backend callbacks started on 0.0.0.0:8000")
-
+    """
     
     rospy.loginfo("Threads start working successfully.")
 
@@ -338,8 +338,8 @@ if __name__ == "__main__":
         stop_event.set()
         state_thread.join(timeout=1)
         #interaction_thread.join(timeout=1)
-        flask_thread.join(1)
-        flask_thread.shutdown()
+        #flask_thread.join(1)
+        #flask_thread.shutdown()
         #正常退出发布离线消息
         robot_mqtt.publish_connection(status="offline", reason="shutdown")
         robot_mqtt.stop()

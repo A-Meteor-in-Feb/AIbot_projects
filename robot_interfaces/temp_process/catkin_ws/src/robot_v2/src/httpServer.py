@@ -48,6 +48,7 @@ class HttpServer:
             view_func=self.handle_task,
             methods = ["POST"]
         )
+        
 
     def md5_hex(self, s: str) -> str:
         """
@@ -171,8 +172,6 @@ class HttpServer:
             return jsonify({"status":"ok"}), 200
             
         return jsonify({"status":"ok"}), 200
-
-        
 
 
     def make_error(self, status_code: int, message: str):
