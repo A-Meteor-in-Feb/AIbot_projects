@@ -6,18 +6,20 @@ from flask import abort
 import dataInfo
 
 class HttpServer:
-    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend):
+    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder):
         """
         用于接收后台发来的请求.
         参数:
-            state: 机器人状态
-            statusBackend: 后台维护的相关任务信息
+            state: 机器人执行相关状态
+            statusBackend: 后台发送的任务相关状态信息
+            currentOrder: 机器人当前执行的任务
             head: url的协议, http或者https.
             host: 机器人的host
             port: 机器人的端口
         """
         self.state = state
         self.statusBackend = statusBackend
+        self.currentOrder = currentOrder
 
         self.bp = Blueprint("robot_api", __name__)
 
@@ -34,27 +36,47 @@ class HttpServer:
         """
         data = request.get_json()
 
-        taskStatus = data.get("taskInfo").get("status")
+        status = data.get("taskInfo").get("status")
         taskId = data.get("taskId")
-        code = data.get("code")
 
         statusBackend = self.statusBackend.get_statusBackend()
 
-        # 下发任务
-        if statusBackend.get("status") == 0:
-            if taskStatus == 20:
-                self.statusBackend.update_status(taskStatus)
-                self.statusBackend.update_taskId(taskId)
-    
-        if taskStatus == 20 and statusBackend.get("status") == 0:
+        # 当前没有任务收到了后台发来的关于任务信息的请求
+        if statusBackend.get("status") == 0 and status == 20:
+            """
+            更新各个字段的值
+            MQTT连接上之后机器人会变味idle状态
+            主逻辑里判断如果 idle且taskId不为0 则用ros给tianxin发送goal 话题
+            然后更改机器人为delivering状态
+            """
+            self.statusBackend.update_statusBackend(status, taskId)
+            code = data.get("code")
+            goal_position = data.get("taskInfo").get("addressParams").get("pose").get("dock")
+            floor = data.get("taskInfo").get("addressParams").get("floor")
+            room = data.get("taskInfo").get("addressParams").get("identity").get("desc")
+            binId = data.get("binId")
+            self.currentOrder.update_currentOrder(taskId, code, goal_position, floor, room, binId)
+            self.state.update_taskId(taskId)
 
+            return jsonify({"status": "ok"}), 200
+        
+        # 当前有任务且收到了来自后台发送的取消任务的请求
+        if statusBackend.get("status") == 20 and status == 60:
+            """
+            收到这个取消任务请求的话, 就更新各个状态记录的字段为0
+            然后更新机器人状态为 取消配送 - cancel_delivery
+            然后给tianxin发信号之类的回初始化点位, 等待下一次配送
+            如果是因为故障之类的, 就直接offline吧???? 这个还需要再想一下
+            """
+            self.statusBackend.update_statusBackend(0,0)
+            self.currentOrder.update_currentOrder(0,"", {0.0, 0.0, 0.0}, "", "", 0)
+            self.state.update_taskId(0)
+            self.state.update_taskStatus("CANCEL_DELIVERY")
 
             return jsonify({"status": "ok"}), 200
-        # 取消任务
-        elif taskStatus == 60:
-            return jsonify({"status": "ok"}), 200
-        else:
-            return jsonify({"status": "ok"}), 200
+
+        #其他情况都他妈的是bad request
+        return jsonify({"statue": "bad request"}), 400
 
 
 
