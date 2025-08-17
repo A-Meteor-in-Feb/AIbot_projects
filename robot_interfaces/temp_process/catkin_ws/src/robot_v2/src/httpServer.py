@@ -162,6 +162,10 @@ class HttpServer:
         # TODO - 这个地方根据字段来做判断吧, 如果已经更新字段了, 就判断信息一不一致
         # 如果httpClient那边还没有更新到相关字段, 就直接赋值
         status = data.get("taskInfo").get("status")
+        taskId = data.get("taskId")
+        code = data.get("code")
+
+        
         if status == 20:
             print(f"后台发送请求, 状态码为20")
             return jsonify({"status":"ok"}), 200

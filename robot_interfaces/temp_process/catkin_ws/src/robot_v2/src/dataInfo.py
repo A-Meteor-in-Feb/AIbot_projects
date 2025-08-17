@@ -116,3 +116,41 @@ class StateInfo:
         """
         with self.lock:
             self.state["binsNum"] = bins_num
+
+
+# ========================= UPDATE ================================ #
+class StatusBackend:
+    def __init__(self):
+        """
+        用于维护后台发来的任务状态, 用于实时核对任务状态的变化
+        """
+        self.lock = threading.Lock()
+        self.status_backend = {
+            "status": 0,
+            "taskId": 0,
+            "code":""
+        }
+    
+    def get_state(self):
+        with self.lock:
+            return copy.deepcopy(self.status_backend) 
+
+    def update_status(self, status):
+        """
+        用于更新任务状态.
+        参数:
+            status: int 一个数字, 代表后台现在对于任务执行状态的记录
+        """
+        with self.lock:
+            self.status_backend["status"] = status
+    
+    def update_taskId(self, taskId):
+        """
+        用于更新任务ID
+        参数:
+            taskId: int 一串数字, 用于记录specific task
+        """
+        with self.lock:
+            self.status_backend["taskId"] = taskId
+
+    

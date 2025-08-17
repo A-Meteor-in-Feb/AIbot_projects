@@ -92,14 +92,16 @@ class HttpClient:
         plain = self.aes_cbc_decrypt(cipher_bytes)
         return json.loads(plain.decode("utf-8")) 
     
-    def select_taskInfo(self):
+    def select_taskInfo(self, taskId):
         """
-        接口1: 机器人主动获取任务信息
+        接口1: 机器人实时向后台
         返回值:
             正常情况下: 会返回后台响应数据, 且数据类型为dict; 可以在executor.py中直接使用, 无需类型转换.
             异常情况下: 尝试从后台获取任务信息连续5次都失败, 返回None; 供executor.py中主逻辑做异常判断
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
+
+        payload = {"taskId": taskId}
 
         #只发一次
         for i in range(1):
