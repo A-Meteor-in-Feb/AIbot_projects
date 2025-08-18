@@ -217,7 +217,7 @@ class InteractionThread(threading.Thread):
         
         if response:
             self.finalize_task()
-            
+
         #更新机器人状态并发布 state 主题
         self.state.update_taskStatus("delivered")
         self.robot_mqtt.publish_state()
@@ -281,7 +281,7 @@ class FetchTaskThread(threading.Thread):
             if now >= next_fetch:
                 status_old = self.statusBackend.get_statusBackend().get("status")
 
-                response = self.http_client.select_taskInfo()
+                response = self.http_client.select_taskInfo(taskId)
                 if response:
                     taskId = response.get("data").get("taskInfo").get("id")
                     status_new = response.get("data").get("taskInfo").get("status")

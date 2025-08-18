@@ -31,10 +31,7 @@ class HttpClient:
             try:
                 header = self.httpEncyption.build_auth_headers()
 
-                if data:
-                    response = requests.post(url=url, headers=header, json=data, timeout=10)
-                else:
-                    response = requests.post(url=url, headers=header, timeout=10)
+                response = requests.post(url=url, headers=header, json=data, timeout=10)
 
                 if response.ok:
                     data = response.text
@@ -57,7 +54,7 @@ class HttpClient:
         return None
 
 
-    def select_taskInfo(self):
+    def select_taskInfo(self, taskId):
         """
         接口1: 机器人主动获取任务信息
         返回值:
@@ -65,7 +62,19 @@ class HttpClient:
             异常情况下: 尝试从后台获取任务信息连续5次都失败, 返回None; 供executor.py中主逻辑做异常判断
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
-        response = self.post_request(url=url, data=None)
+
+        uuid_str = str(uuid.uuid4())
+        payload = {
+            "taskId": taskId,
+            "timestamp": dataInfo.utc_now_ms(),
+            "uuid": uuid_str
+        }
+
+        #加密
+        encypted_payload = self.httpEncyption.encrypted_data(payload)
+        data = {"data": encypted_payload}
+
+        response = self.post_request(url=url, data=data)
 
         #正常情况
         if response:
