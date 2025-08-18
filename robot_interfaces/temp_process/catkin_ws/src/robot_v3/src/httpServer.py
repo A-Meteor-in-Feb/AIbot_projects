@@ -29,6 +29,11 @@ class HttpServer:
             methods = ["POST"]
         )
 
+    def create_app(self):
+        """
+        暴露一个create_app() 在外部
+        """
+
     def handle_request(self):
         """
         接口7: 机器人接收来自后台的请求, 并给出响应
@@ -49,12 +54,15 @@ class HttpServer:
             主逻辑里判断如果 idle且taskId不为0 则用ros给tianxin发送goal 话题
             然后更改机器人为delivering状态
             """
-            self.statusBackend.update_statusBackend(status, taskId)
+            #get 相关值
             code = data.get("code")
             goal_position = data.get("taskInfo").get("addressParams").get("pose").get("dock")
             floor = data.get("taskInfo").get("addressParams").get("floor")
             room = data.get("taskInfo").get("addressParams").get("identity").get("desc")
             binId = data.get("binId")
+            
+            #更新相关状态
+            self.statusBackend.update_statusBackend(status, taskId)
             self.currentOrder.update_currentOrder(taskId, code, goal_position, floor, room, binId)
             self.state.update_taskId(taskId)
 
@@ -69,7 +77,7 @@ class HttpServer:
             如果是因为故障之类的, 就直接offline吧???? 这个还需要再想一下
             """
             self.statusBackend.update_statusBackend(0,0)
-            self.currentOrder.update_currentOrder(0,"", {0.0, 0.0, 0.0}, "", "", 0)
+            self.currentOrder.update_currentOrder(0,"", {"x":0.0, "y":0.0, "theta":0.0}, "", "", 0)
             self.state.update_taskId(0)
             self.state.update_taskStatus("CANCEL_DELIVERY")
 
@@ -77,6 +85,3 @@ class HttpServer:
 
         #其他情况都他妈的是bad request
         return jsonify({"statue": "bad request"}), 400
-
-
-

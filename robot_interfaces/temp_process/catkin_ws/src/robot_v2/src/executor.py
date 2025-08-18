@@ -265,10 +265,6 @@ class InteractionThread(threading.Thread):
 def create_flask_app(server_bp):
     app = Flask(__name__)
     app.register_blueprint(server_bp)
-
-    @app.route("/healthz")
-    def healthz():
-        return jsonify({"status": "ok"}), 200
     
     return app
 
@@ -317,11 +313,11 @@ if __name__ == "__main__":
 
     rospy.loginfo("MQTT client and ROS subscribers initialized done.")
     
-    #stop_event = threading.Event()
-    #state_thread = StateThread(robot_mqtt, stop_event)
-    #interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event)
-    #state_thread.start()
-    #interaction_thread.start()
+    stop_event = threading.Event()
+    state_thread = StateThread(robot_mqtt, stop_event)
+    interaction_thread = InteractionThread(state, robot_mqtt, http_client, ros_pub_goal, ros_pub_returnSignal, stop_event)
+    state_thread.start()
+    interaction_thread.start()
     
     srv = httpServer.HttpServer(state, HTTP_HEAD, "0.0.0.0", 8000, ROBOTID, PRIVATE_KEY, IV_VECTOR, SKEW_MS)
     flask_app = create_flask_app(srv.bp)
@@ -335,9 +331,9 @@ if __name__ == "__main__":
         rospy.spin()
     finally:
         #回收线程
-        #stop_event.set()
-        #state_thread.join(timeout=1)
-        #interaction_thread.join(timeout=1)
+        stop_event.set()
+        state_thread.join(timeout=1)
+        interaction_thread.join(timeout=1)
         flask_thread.join(1)
         flask_thread.shutdown()
         #正常退出发布离线消息
