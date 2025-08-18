@@ -202,4 +202,3 @@ class CurrentOrder:
                 "room": room,
                 "binId": binId
             })
-

@@ -63,9 +63,16 @@ class RosSub:
         订阅 signal 话题, 然后修改机器人相应的状态
         参数:
             msg: String, 一个字符串代表机器人的状态
+            PLANNING_COMPLETE
         """
         signal = msg.data
-        if signal == "ARRIVED":
+        # tianxin 发规划完成, 我这里把机器人状态更新为delivering
+        if signal == "PLANNING_COMPLETE":
+            self.state.update_taskStatus("delivering")
+        # tianxin 到达目标地址, 我这里把机器人状态更新为 arrived
+        if signal == "GOAL_ARRIVED":
             self.state.update_taskStatus("arrived")
-        elif signal == "CAN_REPLAN":
+        # tianxin 回到原点/起点
+        if signal == "RETURN_COMPLETE":
             self.state.update_taskStatus("idle")
+            self.state.update_taskId(0)

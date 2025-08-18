@@ -33,6 +33,9 @@ class HttpServer:
         """
         暴露一个create_app() 在外部
         """
+        app = Flask(__name__)
+        app.register_blueprint(self.bp)
+        return app
 
     def handle_request(self):
         """
@@ -76,12 +79,12 @@ class HttpServer:
             然后给tianxin发信号之类的回初始化点位, 等待下一次配送
             如果是因为故障之类的, 就直接offline吧???? 这个还需要再想一下
             """
-            self.statusBackend.update_statusBackend(0,0)
             self.currentOrder.update_currentOrder(0,"", {"x":0.0, "y":0.0, "theta":0.0}, "", "", 0)
             self.state.update_taskId(0)
-            self.state.update_taskStatus("CANCEL_DELIVERY")
+            self.state.update_taskStatus("cancel_delivery")
+            self.statusBackend.update_statusBackend(taskId=0, status=0)
 
             return jsonify({"status": "ok"}), 200
 
         #其他情况都他妈的是bad request
-        return jsonify({"statue": "bad request"}), 400
+        return jsonify({"status": "bad request"}), 400

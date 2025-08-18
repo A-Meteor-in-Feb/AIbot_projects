@@ -101,7 +101,7 @@ class HttpEncryption:
         rid = headers.get("Robot-Id")
 
         # 重新计算签名
-        sign_str = f"{R}:{T}:{rid}:{self.private_key_b64}"
+        sign_str = f"{R}:{T}:{rid}:{self.private_key}"
         cal_sign = self.md5_hex(sign_str)
         if cal_sign != S:
             code = 401
