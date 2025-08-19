@@ -1,3 +1,4 @@
 flask
 requests
 pycryptodome>=3.20.0
+evdev

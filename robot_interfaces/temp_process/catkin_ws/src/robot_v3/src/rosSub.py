@@ -18,7 +18,7 @@ class RosSub:
         self.topic_statusCode = "/status_code"
 
         #跟tianxin交互需要用到的话题
-        self.topic_signal = "signal"
+        self.topic_signal = "/signal"
 
         #话题订阅
         self.sub_pose2d = rospy.Subscriber(self.topic_pose2d, Pose2D, self.callback_pose2d, queue_size=1, tcp_nodelay=True)

@@ -12,7 +12,7 @@ import httpClient
 import dataInfo
 import httpServer
 import encryption
-
+import qrCode
 
 from flask import Flask, jsonify
 from werkzeug.serving import make_server
@@ -58,7 +58,7 @@ class StateThread(threading.Thread):
 
 
 class InteractionThread(threading.Thread):
-    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, ros_pub_goal, ros_pub_returnSignal, robot_mqtt, http_client, stop_event: threading.Event):
+    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, ros_pub_goal, ros_pub_returnSignal, robot_mqtt, http_client, qr_scanner: qrCode.QrCode, stop_event: threading.Event):
         """
         这个类主要用来控制机器人的执行, 与后台交互, tianxin交互
         参数:
@@ -82,6 +82,8 @@ class InteractionThread(threading.Thread):
 
         self.robot_mqtt = robot_mqtt
         self.http_client = http_client
+
+        self.qr_scanner = qr_scanner
         
         self.stop_event = stop_event
 
@@ -117,18 +119,18 @@ class InteractionThread(threading.Thread):
                     #目前机器人到达目的地, 开始送货
                     if taskStatus == "arrived":
                         # step 1 - 核对二维码
-                        #code = self.currentOrder.get_currentOrder().get("code")
-                        #qr_check = self.qr_check()
+                        code = self.currentOrder.get_currentOrder().get("code")
+                        qr_check = self.qr_check(code)
                         # step 2 - 如果二维码核对成功, 控制货仓开关, 取货完成调用接口通知后台, 
                         # 并更新机器人状态为 delivered -- 更新机器人currentOrder 清空, taskId 清空, statusBackend 清空
-                        #if qr_check:
+                        if qr_check:
                             #self.door_open()
-                            #self.notify_complete(taskId=taskId)
+                            self.notify_complete(taskId=taskId)
                         # step 2 - 如果二维码核对失败, 调用接口通知后台配送失败
                         # 并更新机器人状态为delivered_failed -- 更新机器人currentOrder 清空, taskId 清空, statusBackend 清空
-                        #else:
-                            #self.notify_failed(taskId=taskId)
-                        self.notify_complete(taskId=taskId)
+                        else:
+                            self.notify_failed(taskId=taskId)
+                        
                     
                     #机器人配送完成或者失败
                     if taskStatus == "delivered" or taskStatus == "delivered_failed":
@@ -136,6 +138,7 @@ class InteractionThread(threading.Thread):
                         self.state.update_taskStatus("returning")
 
                         #给 tianxin 发可以return的信号
+                        #这个地方要换成原点位置, 因为只有有位置才能返回
                         try:
                             self.publish_returnSignal()
                         except Exception as e:
@@ -145,6 +148,7 @@ class InteractionThread(threading.Thread):
                     #任务被取消则先发送返回信号, 然后再设置status为0, 等到回到原点机器人会更新状态为idle
                     if taskStatus == "cancel_delivery":
                         #为了防止重发 先更新机器人状态为 returning
+                        #这个地方要换成原点位置, 因为只有有位置才能返回
                         self.state.update_taskStatus("returning")
 
                         #给 tianxin 发可以return的信号
@@ -193,13 +197,20 @@ class InteractionThread(threading.Thread):
         self.ros_pub_returnSignal.publish("RETURN")
         rospy.loginfo("Forwarded the return signal")
     
-    def qr_check(self):
+    def qr_check(self, code):
         """
         核对二维码, 计时核对, 超时还没有核对成功的话就算失败
         return:
             True: 核对成功
             False: 核对失败
         """
+        #用两分钟的时间去核对二维码
+        result = self.qr_scanner.scan(code)
+        #关闭硬件读取接口
+        self.qr_scanner.close()
+        #返回结果
+        return result
+
     
     def door_open(self):
         """
@@ -336,6 +347,7 @@ if __name__ == "__main__":
 
     #控制参数
     HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送
+    TIMEOUT = 120 #限制扫描二维码的时间
 
     #连接参数
     BROKER_HOST = "10.25.0.2"
@@ -362,6 +374,8 @@ if __name__ == "__main__":
     ros_pub_goal = rospy.Publisher(TOPIC_GOAL, Goal, queue_size=1)
     ros_pub_returnSignal = rospy.Publisher(TOPIC_RETURN, String, queue_size=1)
     
+    #QR code scanner 初始化
+    qr_scanner = qrCode.QrCode(timeout=TIMEOUT)
 
     #mqtt初始化与连接 -- 成功连接会更新机器人状态为idle
     robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
@@ -380,7 +394,7 @@ if __name__ == "__main__":
     state_thread = StateThread(robot_mqtt, HEARTBEAT, stop_event)
     state_thread.start()
     #http client 线程
-    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, ros_pub_goal=ros_pub_goal, ros_pub_returnSignal=ros_pub_returnSignal, robot_mqtt=robot_mqtt, http_client=http_client, stop_event=stop_event)
+    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, ros_pub_goal=ros_pub_goal, ros_pub_returnSignal=ros_pub_returnSignal, robot_mqtt=robot_mqtt, http_client=http_client, qr_scanner=qr_scanner stop_event=stop_event)
     interaction_thread.start()
     #fetch task info 线程
     fetchTask_thread = FetchTaskThread(http_client=http_client, state=state, statusBackend=statusBackend, currentOrder=currentOrder, period=HEARTBEAT, stop_event=stop_event)
