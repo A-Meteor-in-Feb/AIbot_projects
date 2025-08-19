@@ -34,8 +34,11 @@ class HttpClient:
                 response = requests.post(url=url, headers=header, json=data, timeout=10)
 
                 if response.ok:
-                    data = response.text
-                    result = self.httpEncyption.decrypt_response_data(data)
+                    #需要解密
+                    #data = response.text
+                    #result = self.httpEncyption.decrypt_response_data(data)
+                    #不需要解密
+                    result = response.json()
                     return result
                 #这里的情况包括服务器端各种异常比如 500, 404, 401 等等
                 else:
@@ -75,7 +78,7 @@ class HttpClient:
         data = {"data": encypted_payload}
 
         response = self.post_request(url=url, data=data)
-
+        print("\n send request \n")
         #正常情况
         if response:
             return response
@@ -209,3 +212,27 @@ class HttpClient:
             return response
         else:
             return None
+        
+"""
+if __name__ == "__main__":
+    #后台指定的参数
+    ROBOTID = "18950214603"
+    PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="
+    IV_VECTOR = "tBPz/vp+8x9ps4ikCj6btA=="
+
+    #控制参数
+    HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送
+
+    #连接参数
+    BROKER_HOST = "10.25.0.2"
+    BROKER_PORT = 1883
+    HTTP_HEAD = "http"
+    BACKEND_HOST = "10.25.0.15"   # "192.168.10.249"
+    BACKEND_PORT = "18001"        # "8889"
+
+    httpEncryption = encryption.HttpEncryption(robotId=ROBOTID, private_key=PRIVATE_KEY, iv_vector=IV_VECTOR)
+
+    httpClient = HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
+
+    httpClient.select_taskInfo(19908332614)
+"""

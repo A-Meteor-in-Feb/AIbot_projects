@@ -1,7 +1,7 @@
 import time
 import threading
 import rospy
-from robot_v2.msg import Goal
+from robot_v3.msg import Goal
 from geometry_msgs.msg import PoseStamped
 from tf.transformations import quaternion_from_euler
 from std_msgs.msg import String
@@ -101,7 +101,7 @@ class InteractionThread(threading.Thread):
                 if taskId != 0:
                     
                     #目前机器人空闲且被分配了任务, 规划路径开始delivering
-                    if taskStatus == "idle" and status == 20:
+                    if taskStatus == "idle":
                         #为了防止重发 先更新机器人状态为 assigned
                         self.state.update_taskStatus("assigned")
 
@@ -117,17 +117,18 @@ class InteractionThread(threading.Thread):
                     #目前机器人到达目的地, 开始送货
                     if taskStatus == "arrived":
                         # step 1 - 核对二维码
-                        code = self.currentOrder.get_currentOrder().get("code")
-                        qr_check = self.qr_check()
+                        #code = self.currentOrder.get_currentOrder().get("code")
+                        #qr_check = self.qr_check()
                         # step 2 - 如果二维码核对成功, 控制货仓开关, 取货完成调用接口通知后台, 
                         # 并更新机器人状态为 delivered -- 更新机器人currentOrder 清空, taskId 清空, statusBackend 清空
-                        if qr_check:
-                            self.door_open()
-                            self.notify_complete(taskId=taskId)
+                        #if qr_check:
+                            #self.door_open()
+                            #self.notify_complete(taskId=taskId)
                         # step 2 - 如果二维码核对失败, 调用接口通知后台配送失败
                         # 并更新机器人状态为delivered_failed -- 更新机器人currentOrder 清空, taskId 清空, statusBackend 清空
-                        else:
-                            self.notify_failed(taskId=taskId)
+                        #else:
+                            #self.notify_failed(taskId=taskId)
+                        self.notify_complete(taskId=taskId)
                     
                     #机器人配送完成或者失败
                     if taskStatus == "delivered" or taskStatus == "delivered_failed":

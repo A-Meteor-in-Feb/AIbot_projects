@@ -44,13 +44,18 @@ class HttpServer:
         """
         data = request.get_json()
 
+        print(f"Get request from the backend: {data}\n")
+
         status = data.get("taskInfo").get("status")
         taskId = data.get("taskId")
+        print(f"receive:{status}, {taskId}\n")
 
         statusBackend = self.statusBackend.get_statusBackend()
+        s = statusBackend.get("status")
+        print(f"now: {s}\n")
 
         # 当前没有任务收到了后台发来的关于任务信息的请求
-        if statusBackend.get("status") == 0 and status == 20:
+        if s == 0 and (status == 30 or status == 40): ###有修改
             """
             更新各个字段的值
             MQTT连接上之后机器人会变味idle状态
@@ -58,11 +63,13 @@ class HttpServer:
             然后更改机器人为delivering状态
             """
             #get 相关值
+            print(1,"\n")
             code = data.get("code")
-            goal_position = data.get("taskInfo").get("addressParams").get("pose").get("dock")
-            floor = data.get("taskInfo").get("addressParams").get("floor")
-            room = data.get("taskInfo").get("addressParams").get("identity").get("desc")
             binId = data.get("binId")
+            addr = data.get("taskInfo").get("addressParams")
+            goal_position = addr.get("pose").get("dock")
+            floor = addr.get("floor")
+            room = addr.get("identity").get("desc")
             
             #更新相关状态
             self.statusBackend.update_statusBackend(status, taskId)
@@ -71,8 +78,8 @@ class HttpServer:
 
             return jsonify({"status": "ok"}), 200
         
-        # 当前有任务且收到了来自后台发送的取消任务的请求
-        if statusBackend.get("status") == 20 and status == 60:
+        # 当前有任务且收到了来自后台发送的取消任务的请求 statusBackend.get("status") == 20 and
+        elif status == 60:
             """
             收到这个取消任务请求的话, 就更新各个状态记录的字段为0
             然后更新机器人状态为 取消配送 - cancel_delivery
@@ -85,6 +92,10 @@ class HttpServer:
             self.statusBackend.update_statusBackend(taskId=0, status=0)
 
             return jsonify({"status": "ok"}), 200
+        
+        elif status == 20 or status == 30 or status == 40 or status == 50 or status == 70 or status == 80:
 
-        #其他情况都他妈的是bad request
-        return jsonify({"status": "bad request"}), 400
+            return jsonify({"status": "received"}), 200
+        else: 
+            #其他情况都他妈的是bad request
+            return jsonify({"status": "bad request"}), 400

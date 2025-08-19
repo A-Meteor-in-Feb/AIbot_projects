@@ -12,8 +12,8 @@ def utc_now_ms():
 
 class TaskStatus(Enum):
     PENDING_RECEIPT = 40 #待签收
-    DELIVERY_FAILED = 50 #配送失败
-    DELIVERY_COMPLETE = 70 #配送完成
+    DELIVERY_FAILED = 80 #配送失败
+    DELIVERY_COMPLETE = 50 #配送完成
 
 
 class StateInfo:
