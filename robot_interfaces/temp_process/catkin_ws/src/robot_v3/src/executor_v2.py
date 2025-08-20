@@ -98,14 +98,16 @@ class InteractionThread(threading.Thread):
                 taskId = self.state.get_state().get("taskId")
 
                 #目前机器人空闲且被分配了任务, 规划路径开始delivering
-                if taskStatus == "idle" and taskId != 0 and (status == 30 or status == 40):
+                #status == 30 或 40 代表这是一个新的还未执行的任务
+                #idle, returning, delivered, delivered_failed 都代表 这个机器人可以开始执行新任务
+                if (taskStatus == "idle" or taskStatus == "returning") and taskId != 0 and (status == 30 or status == 40):
 
                     goal = self.currentOrder.get_currentOrder().get("goal_position")
                     floor = self.currentOrder.get_currentOrder().get("goal_floor")
 
                     #给 tianxin 发目标位置, 他规划好会返回信号并更新机器人为delivering
                     try:
-                        self.publish_goal(goal=goal, floor=floor, cancel=False)
+                        self.publish_goal(goal=goal, floor=floor)
                     except Exception as e:
                         rospy.loginfo(f"Error happens when PUBLISH GOAL: {e}")
 
@@ -124,18 +126,18 @@ class InteractionThread(threading.Thread):
                     else:
                         self.notify_failed(taskId=taskId)
                     
-                #机器人配送完成或者失败
-                if taskStatus == "delivered" or taskStatus == "delivered_failed":
+                #机器人配送完成或者失败 且 现在没有新的待执行的任务
+                if (taskStatus == "delivered" or taskStatus == "delivered_failed") and (status != 30 or status != 40):
                         
                     return_goal = self.currentOrder.get_currentOrder().get("return_position")
                     return_floor = self.currentOrder.get_currentOrder().get("return_floor")
-                    self.publish_goal(goal=return_goal, floor=return_floor, cancel=False)
+                    self.publish_goal(goal=return_goal, floor=return_floor)
                     
-                #取消某个任务 则 给tianxin发送要返回某个地方的goal
-                if taskStatus == "cancel_delivery":
+                #取消某个任务 且 没有分配新任务 则 给tianxin发送要返回某个地方的goal
+                if taskStatus == "cancel_delivery" and (status != 30 or status != 40):
                     return_goal = self.currentOrder.get_currentOrder().get("return_position")
                     return_floor = self.currentOrder.get_currentOrder().get("return_floor")
-                    self.publish_goal(goal=return_goal, floor=return_floor, cancel=True)
+                    self.publish_goal(goal=return_goal, floor=return_floor)
 
                 #机器人在任何情况下返回 ([配送完毕] 或者 [任务取消]), 清空数据记录
                 if taskStatus == "returning":
@@ -148,7 +150,7 @@ class InteractionThread(threading.Thread):
             self.stop_event.wait(0.1)
 
 
-    def publish_goal(self, goal, floor, cancel):
+    def publish_goal(self, goal, floor):
         """
         给tianxin发布他规划路径需要的数据
         参数:
@@ -172,17 +174,9 @@ class InteractionThread(threading.Thread):
         goal = Goal()
         goal.pose = ps
         goal.floor = floor
-        goal.cancel = cancel
 
         self.ros_pub_goal.publish(goal)
         rospy.loginfo("Forwarded the goal info to the planning part")
-
-    def publish_returnSignal(self):
-        """
-        给tianxin发送小车可以开回做下一次路径规划的初始化点位
-        """
-        self.ros_pub_returnSignal.publish("RETURN")
-        rospy.loginfo("Forwarded the return signal")
     
     def qr_check(self, code):
         """
@@ -236,7 +230,7 @@ class InteractionThread(threading.Thread):
         """
         这个函数的作用就是在正常情况下, 小车完成任务后, 开始返回原始位置后, 清空数据记录
         """
-        self.currentOrder.update_currentOrder(0, "", {"x":0.0, "y":0.0, "theta":0.0}, "", "", 0)
+        self.currentOrder.update_currentOrder(0, "", {"x":0.0, "y":0.0, "theta":0.0}, "", "", {"x":0.0, "y":0.0, "theta":0.0}, "")
         self.state.update_taskId(0)
         self.statusBackend.update_statusBackend(0, 0)
 
@@ -294,6 +288,7 @@ class FetchTaskThread(threading.Thread):
                         self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
 
                         #然后更新机器人状态 -- 主要是任务id
+                        self.state.update_taskStatus("idle")
                         self.state.update_taskId(taskId_new)
 
                         #get 相关值
