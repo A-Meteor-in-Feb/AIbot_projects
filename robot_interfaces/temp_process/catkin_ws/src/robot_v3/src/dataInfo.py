@@ -162,7 +162,8 @@ class StatusBackend:
 class CurrentOrder:
     def __init__(self):
         """
-        currentOrder: 用于维护记录当前执行的任务的状态 --- 后面可能还会更新 
+        currentOrder: 用于维护记录当前执行的任务的状态 --- 后面可能还会更新
+        "binId": 0, 先给删了 
         """
         self.lock = threading.Lock()
 
@@ -170,9 +171,10 @@ class CurrentOrder:
             "taskId": 0,
             "code": "",
             "goal_position": {"x": 0, "y": 0, "theta": 0},
-            "floor": "",
+            "goal_floor": "",
             "room": "",
-            "binId": 0
+            "return_position": {"x": 0, "y": 0, "theta":0},
+            "return_floor":""
         }
 
     def get_currentOrder(self):
@@ -182,23 +184,27 @@ class CurrentOrder:
         with self.lock:
             return copy.deepcopy(self.currentOrder)    
     
-    def update_currentOrder(self, taskId, code, goal_position, floor, room, binId):
+    def update_currentOrder(self, taskId, code, goal_position, goal_floor, room, return_position, return_floor):
         """
         用于更新当前执行的任务的信息
         参数:
             taskId: task ID
             code: 用于核对二维码的code
             goal_position: 目标地址
-            floor: 目标地址楼层
+            goal_floor: 目标地址楼层
             room: 目标地址门牌号
-            binId: 货仓id
+            binId: 货仓id -- 先给删了 
+                "binId": binId,
+            return_position: 执行完任务返回的初始化点位坐标
+            return_floor: 执行完任务返回的初始化点位楼层
         """
         with self.lock:
             self.currentOrder.update({
                 "taskId": taskId,
                 "code": code,
                 "goal_position": goal_position,
-                "floor": floor,
+                "goal_floor": goal_floor,
                 "room": room,
-                "binId": binId
+                "return_position": return_position,
+                "return_floor": return_floor
             })

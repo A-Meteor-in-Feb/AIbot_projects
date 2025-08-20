@@ -63,18 +63,22 @@ class HttpServer:
             然后更改机器人为delivering状态
             """
             #get 相关值
-            print(1,"\n")
             code = data.get("code")
-            binId = data.get("binId")
+            #binId = data.get("binId")  -- 先给删了
+
             addr = data.get("taskInfo").get("addressParams")
             goal_position = addr.get("pose").get("dock")
-            floor = addr.get("floor")
+            goal_floor = addr.get("floor")
             room = addr.get("identity").get("desc")
+
+            restArea = data.get("restArea")
+            return_position = restArea.get("pose").get("dock")
+            return_floor = restArea.get("floor")
             
             #更新相关状态
-            self.statusBackend.update_statusBackend(status, taskId)
-            self.currentOrder.update_currentOrder(taskId, code, goal_position, floor, room, binId)
-            self.state.update_taskId(taskId)
+            self.statusBackend.update_statusBackend(taskId=taskId, status=status)
+            self.currentOrder.update_currentOrder(taskId=taskId, code=code, goal_position=goal_position, goal_floor=goal_floor, room=room, return_position=return_position, return_floor=return_floor)
+            self.state.update_taskId(task_id=taskId)
 
             return jsonify({"status": "ok"}), 200
         
@@ -86,10 +90,8 @@ class HttpServer:
             然后给tianxin发信号之类的回初始化点位, 等待下一次配送
             如果是因为故障之类的, 就直接offline吧???? 这个还需要再想一下
             """
-            self.currentOrder.update_currentOrder(0,"", {"x":0.0, "y":0.0, "theta":0.0}, "", "", 0)
-            self.state.update_taskId(0)
             self.state.update_taskStatus("cancel_delivery")
-            self.statusBackend.update_statusBackend(taskId=0, status=0)
+            self.statusBackend.update_statusBackend(taskId=taskId, status=status)
 
             return jsonify({"status": "ok"}), 200
         

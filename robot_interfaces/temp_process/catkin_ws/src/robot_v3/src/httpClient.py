@@ -39,6 +39,7 @@ class HttpClient:
                     #result = self.httpEncyption.decrypt_response_data(data)
                     #不需要解密
                     result = response.json()
+                    print(result)
                     return result
                 #这里的情况包括服务器端各种异常比如 500, 404, 401 等等
                 else:
@@ -66,18 +67,22 @@ class HttpClient:
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
 
-        uuid_str = str(uuid.uuid4())
-        payload = {
-            "taskId": taskId,
-            "timestamp": dataInfo.utc_now_ms(),
-            "uuid": uuid_str
-        }
+        if taskId == 0:
+            response = self.post_request(url=url, data={})
+        else:
+            uuid_str = str(uuid.uuid4())
+            payload = {
+                "taskId": taskId,
+                "timestamp": dataInfo.utc_now_ms(),
+                "uuid": uuid_str
+            }
 
-        #加密
-        encypted_payload = self.httpEncyption.encrypted_data(payload)
-        data = {"data": encypted_payload}
+            #加密
+            encypted_payload = self.httpEncyption.encrypted_data(payload)
+            data = {"data": encypted_payload}
 
-        response = self.post_request(url=url, data=data)
+            response = self.post_request(url=url, data=data)
+
         print("\n send request \n")
         #正常情况
         if response:
@@ -213,7 +218,7 @@ class HttpClient:
         else:
             return None
         
-"""
+
 if __name__ == "__main__":
     #后台指定的参数
     ROBOTID = "18950214603"
@@ -224,15 +229,12 @@ if __name__ == "__main__":
     HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送
 
     #连接参数
-    BROKER_HOST = "10.25.0.2"
-    BROKER_PORT = 1883
     HTTP_HEAD = "http"
-    BACKEND_HOST = "10.25.0.15"   # "192.168.10.249"
+    BACKEND_HOST = "192.168.10.164"   # "10.25.0.15"
     BACKEND_PORT = "18001"        # "8889"
 
     httpEncryption = encryption.HttpEncryption(robotId=ROBOTID, private_key=PRIVATE_KEY, iv_vector=IV_VECTOR)
 
     httpClient = HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
 
-    httpClient.select_taskInfo(19908332614)
-"""
+    httpClient.select_taskInfo(0)
