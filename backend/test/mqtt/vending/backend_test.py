@@ -52,7 +52,6 @@ if __name__ == "__main__":
 
     mqtt_client.loop_start()
     try:
-        
         while True:
             publish_topic("shipment", {"n": "1001"})
             time.sleep(5)

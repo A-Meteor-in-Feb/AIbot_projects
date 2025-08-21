@@ -162,19 +162,26 @@ class StatusBackend:
 class CurrentOrder:
     def __init__(self):
         """
-        currentOrder: 用于维护记录当前执行的任务的状态 --- 后面可能还会更新
-        "binId": 0, 先给删了 
+        currentOrder: 用于维护记录当前执行的任务的详细信息 --- 后面可能还会更新 
         """
         self.lock = threading.Lock()
-
         self.currentOrder = {
             "taskId": 0,
             "code": "",
-            "goal_position": {"x": 0, "y": 0, "theta": 0},
-            "goal_floor": "",
-            "room": "",
-            "return_position": {"x": 0, "y": 0, "theta":0},
-            "return_floor":""
+            "goal_positions":{
+                "outside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "inside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "goal_position": {"x": 0.0, "y": 0.0, "thata": 0.0},
+                "goal_floor": "",
+                "goal_room": ""
+            },
+            "return_positions":{
+                "outside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "inside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "return_position": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "return_floor": "",
+                "return_room": ""
+            }
         }
 
     def get_currentOrder(self):
@@ -184,27 +191,51 @@ class CurrentOrder:
         with self.lock:
             return copy.deepcopy(self.currentOrder)    
     
-    def update_currentOrder(self, taskId, code, goal_position, goal_floor, room, return_position, return_floor):
+    def update_deliveryDetails(self, taskId, code):
         """
         用于更新当前执行的任务的信息
         参数:
             taskId: task ID
             code: 用于核对二维码的code
-            goal_position: 目标地址
-            goal_floor: 目标地址楼层
-            room: 目标地址门牌号
-            binId: 货仓id -- 先给删了 
-                "binId": binId,
-            return_position: 执行完任务返回的初始化点位坐标
-            return_floor: 执行完任务返回的初始化点位楼层
         """
         with self.lock:
-            self.currentOrder.update({
-                "taskId": taskId,
-                "code": code,
+            self.currentOrder["taskId"] = taskId
+            self.currentOrder["code"] = code
+
+    def update_goalPositions(self, outside_lift, inside_lift, goal_position, goal_floor, goal_room):
+        """
+        用于更新当前任务的目标地址的所有信息.
+        参数:
+            outside_lift: 电梯外部坐标
+            inside_lift: 电梯内部坐标
+            goal_position: 目标地址坐标
+            goal_floor: 目标地址楼层
+            goal_room: 目标地址房间号
+        """
+        with self.lock:
+            self.currentOrder["goal_positions"].update({
+                "outside_lift": outside_lift,
+                "inside_lift": inside_lift,
                 "goal_position": goal_position,
                 "goal_floor": goal_floor,
-                "room": room,
+                "goal_room": goal_room
+            })
+
+    def update_returnPositions(self, outside_lift, inside_lift, return_position, return_floor, return_room):
+        """
+        用于更新当前任务结束后机器人返回地址的详细信息.
+        参数:
+            outside_lift: 电梯外部坐标
+            inside_lift: 电梯内部坐标
+            return_position: 机器人返回的地址坐标
+            return_floor: 机器人返回的楼层坐标
+            return_room: 机器人返回的房间号
+        """
+        with self.lock:
+            self.currentOrder["return_positions"].update({
+                "outside_lift": outside_lift,
+                "inside_lift": inside_lift,
                 "return_position": return_position,
-                "return_floor": return_floor
+                "return_floor": return_floor,
+                "return_room": return_room
             })

@@ -1,2 +1,2 @@
-geometry_msgs/PoseStamped pose
+geometry_msgs/PoseStamped[3] pose
 string floor
