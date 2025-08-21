@@ -64,21 +64,16 @@ class HttpServer:
             """
             #get 相关值
             code = data.get("code")
-            #binId = data.get("binId")  -- 先给删了
 
-            addr = data.get("taskInfo").get("addressParams")
-            goal_position = addr.get("pose").get("dock")
-            goal_floor = addr.get("floor")
-            room = addr.get("identity").get("desc")
+            ### 怎么从响应里面得到数据??????
+            ### 响应格式??????
 
-            restArea = data.get("restArea")
-            return_position = restArea.get("pose").get("dock")
-            return_floor = restArea.get("floor")
-            
             #更新相关状态
-            self.statusBackend.update_statusBackend(taskId=taskId, status=status)
-            self.currentOrder.update_currentOrder(taskId=taskId, code=code, goal_position=goal_position, goal_floor=goal_floor, room=room, return_position=return_position, return_floor=return_floor)
             self.state.update_taskId(task_id=taskId)
+            self.statusBackend.update_statusBackend(taskId=taskId, status=status)
+
+
+            
 
             return jsonify({"status": "ok"}), 200
         

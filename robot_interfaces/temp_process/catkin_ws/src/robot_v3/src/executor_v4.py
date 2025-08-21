@@ -99,15 +99,23 @@ class InteractionThread(threading.Thread):
                 #status == 30 或 40 代表这是一个新的还未执行的任务
                 #idle, returning, delivered, delivered_failed 都代表 这个机器人可以开始执行新任务
                 if (taskStatus == "idle" or taskStatus == "returning") and taskId != 0 and (status == 30 or status == 40):
+                    
+                    try:
+                        currentOrder_info = self.currentOrder.get_currentOrder()
+                        goal_positions = currentOrder_info.get("goal_positions")
+                    except Exception as e:
+                        rospy.loginfo(f"\n (executor - 107) Error happens when try to read goal details: {e}")
 
-                    goal = self.currentOrder.get_currentOrder().get("goal_position")
-                    floor = self.currentOrder.get_currentOrder().get("goal_floor")
+                    outside_lift = goal_positions.get("outside_lift")
+                    inside_lift = goal_positions.get("inside_lift")
+                    goal_position = goal_positions.get("goal_position")
+                    goal_floor = goal_positions.get("goal_floor")
 
                     #给 tianxin 发目标位置, 他规划好会返回信号并更新机器人为delivering
                     try:
-                        self.publish_goal(goal=goal, floor=floor)
+                        self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=goal_position, final_floor=goal_floor)
                     except Exception as e:
-                        rospy.loginfo(f"Error happens when PUBLISH GOAL: {e}")
+                        rospy.loginfo(f"\n (executor - 118) Error happens when PUBLISH GOAL: {e}")
 
                 #目前机器人到达目的地, 开始送货
                 if taskStatus == "arrived":
@@ -126,16 +134,41 @@ class InteractionThread(threading.Thread):
                     
                 #机器人配送完成或者失败 且 现在没有新的待执行的任务
                 if (taskStatus == "delivered" or taskStatus == "delivered_failed") and (status != 30 or status != 40) and taskId == 0:
-                        
-                    return_goal = self.currentOrder.get_currentOrder().get("return_position")
-                    return_floor = self.currentOrder.get_currentOrder().get("return_floor")
-                    self.publish_goal(goal=return_goal, floor=return_floor)
                     
+                    try:
+                        currentOrder_info = self.currentOrder.get_currentOrder()
+                        return_positions = currentOrder_info.get("return_positions")
+                    except Exception as e:
+                        rospy.loginfo(f"\n (executor - 142) Error happens when try to read return details: {e}")
+
+                    outside_lift = return_positions.get("outside_lift")
+                    inside_lift = return_positions.get("inside_lift")
+                    return_position = return_positions.get("return_position")
+                    return_floor = return_positions.get("return_floor")
+                    
+                    try:
+                        self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=return_position, final_floor=return_floor)
+                    except Exception as e:
+                        rospy.loginfo(f"\n (executor - 152) Error happens when PUBLISH GOAL: {e}")
+
                 #取消某个任务 且 没有分配新任务 则 给tianxin发送要返回某个地方的goal
                 if taskStatus == "cancel_delivery" and (status != 30 or status != 40) and taskId == 0:
-                    return_goal = self.currentOrder.get_currentOrder().get("return_position")
-                    return_floor = self.currentOrder.get_currentOrder().get("return_floor")
-                    self.publish_goal(goal=return_goal, floor=return_floor)
+                    
+                    try:
+                        currentOrder_info = self.currentOrder.get_currentOrder()
+                        return_positions = currentOrder_info.get("return_positions")
+                    except Exception as e:
+                        rospy.loginfo(f"\n (executor - 161) Error happens when try to read return details: {e}")
+
+                    outside_lift = return_positions.get("outside_lift")
+                    inside_lift = return_positions.get("inside_lift")
+                    return_position = return_positions.get("return_position")
+                    return_floor = return_positions.get("return_floor")
+                    
+                    try:
+                        self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=return_position, final_floor=return_floor)
+                    except Exception as e:
+                        rospy.loginfo(f"\n (executor - 171) Error happens when PUBLISH GOAL: {e}")
 
                 #机器人在任何情况下返回 ([配送完毕] 或者 [任务取消]), 清空数据记录
                 if taskStatus == "returning":
@@ -147,31 +180,43 @@ class InteractionThread(threading.Thread):
 
             self.stop_event.wait(0.1)
 
-
-    def publish_goal(self, goal, floor):
+    def position_transform(self, position):
         """
-        给tianxin发布他规划路径需要的数据
+        这个函数用来把普通坐标点转换成tianxin可以直接用的pose
         参数:
-            goal: dict, 目标位置
-            floor: str, 目标楼层
-            cancel: 是否取消当前任务
+            position: {"x": float, "y": float, "theta": float}
+        返回:
+            一个 PoseStamped 对象
         """
         ps = PoseStamped()
         ps.header.stamp = rospy.Time.now()
         ps.header.frame_id = "map"
-        ps.pose.position.x = goal['x']
-        ps.pose.position.y = goal['y']
+        ps.pose.position.x = position["x"]
+        ps.pose.position.y = position["y"]
         ps.pose.position.z = 0.0
-        
-        q = quaternion_from_euler(0.0, 0.0, goal['theta'])
+
+        q = quaternion_from_euler(0.0, 0.0, position["theta"])
         ps.pose.orientation.x = q[0]
         ps.pose.orientation.y = q[1]
         ps.pose.orientation.z = q[2]
         ps.pose.orientation.w = q[3]
 
+        return ps
+
+    def publish_goal(self, outside_lift, inside_lift, final_position, final_floor):
+        """
+        给tianxin发布他规划路径需要的数据
+        参数:
+            outside_lift: 电梯外面的坐标
+            inside_lift: 电梯内部的坐标
+            final_position: 最后机器人需要到达的坐标
+            final_floor: 最后机器人需要到达的楼层
+        """
+
         goal = Goal()
-        goal.pose = ps
-        goal.floor = floor
+        for item in [outside_lift, inside_lift, final_position]:
+            goal.pose.append(self.position_transform(item))
+        goal.floor = final_floor
 
         self.ros_pub_goal.publish(goal)
         rospy.loginfo("Forwarded the goal info to the planning part")
@@ -232,7 +277,10 @@ class InteractionThread(threading.Thread):
         """
         这个函数的作用就是在正常情况下, 小车完成任务后, 开始返回原始位置后, 清空数据记录
         """
-        self.currentOrder.update_currentOrder(0, "", {"x":0.0, "y":0.0, "theta":0.0}, "", "", {"x":0.0, "y":0.0, "theta":0.0}, "")
+        empty_pos = {"x": 0, "y": 0, "theta": 0}
+        self.currentOrder.update_deliveryDetails(taskId=0, code="")
+        self.currentOrder.update_goalPositions(outside_lift=empty_pos, inside_lift=empty_pos, goal_position=empty_pos, goal_floor="", goal_room="")
+        self.currentOrder.update_returnPositions(outside_lift=empty_pos, inside_lift=empty_pos, return_position=empty_pos, return_floor="", return_room="")
         self.state.update_taskId(0)
         self.statusBackend.update_statusBackend(0, 0)
 
@@ -299,6 +347,8 @@ class FetchTaskThread(threading.Thread):
 
                             #get 相关值
                             code = data.get("code")
+                            #配送任务的 Id 和 QR code
+                            self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
 
                             #配送目的地相信信息的获取
                             goal_addrList = taskInfo.get("addressList")
@@ -319,9 +369,8 @@ class FetchTaskThread(threading.Thread):
                                     goal_pos = dock
                                     goal_flr = item.get("floor")
                                     goal_room = desc
-
+                            #更新送货地址信息
                             self.currentOrder.update_goalPositions(outside_lift=outside_lift_goal, inside_lift=inside_lift_goal, goal_position=goal_pos, goal_floor=goal_flr, goal_room=goal_room)
-
 
                             #配送完成返回地址信息的获取
                             return_addrList = data.get("addressList")
@@ -342,12 +391,9 @@ class FetchTaskThread(threading.Thread):
                                     return_pos = dock
                                     return_flr = item.get("floor")
                                     return_room = desc
-
                             #然后更新任务完成后返回地址详细
                             self.currentOrder.update_returnPositions(outside_lift=outside_lift_return, inside_lift=inside_lift_return, return_position=return_pos, return_floor=return_flr, return_room=return_room)
                             
-
-
                         # 如果同一个任务id情况下(机器人正在执行某一任务), 收到来自后台的response, 除了60 其他都不用管
                         if status_old != status_new and taskId_old == taskId_new:
                             self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
@@ -405,7 +451,6 @@ if __name__ == "__main__":
     BACKEND_PORT = "18001"        # "8889"
 
     #ROS 发布话题名
-    #TOPIC_RETURN = "signal/return"
     TOPIC_GOAL = "/goal"
 
     #临界资源初始化
@@ -420,10 +465,6 @@ if __name__ == "__main__":
     rospy.init_node("robot_comNode", anonymous=False)
     ros_sub = rosSub.RosSub(state)
     ros_pub_goal = rospy.Publisher(TOPIC_GOAL, Goal, queue_size=1)
-    #ros_pub_returnSignal = rospy.Publisher(TOPIC_RETURN, String, queue_size=1)
-    
-    #QR code scanner 初始化
-    #qr_scanner = qrCode.QrCode(timeout=TIMEOUT)
 
     #mqtt初始化与连接 -- 成功连接会更新机器人状态为idle
     robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
