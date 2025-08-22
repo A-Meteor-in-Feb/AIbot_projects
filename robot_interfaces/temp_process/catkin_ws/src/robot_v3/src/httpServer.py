@@ -46,16 +46,17 @@ class HttpServer:
 
         print(f"Get request from the backend: {data}\n")
 
-        status = data.get("taskInfo").get("status")
-        taskId = data.get("taskId")
-        print(f"receive:{status}, {taskId}\n")
+        status_new = data.get("taskInfo").get("status")
+        taskId_new = data.get("taskId")
+        print(f"receive:{status_new}, {taskId_new}\n")
 
         statusBackend = self.statusBackend.get_statusBackend()
-        s = statusBackend.get("status")
-        print(f"now: {s}\n")
+        status_old = statusBackend.get("status")
+        taskId_old = statusBackend.get("taskId")
+        print(f"now: {status_old}\n")
 
-        # 当前没有任务收到了后台发来的关于任务信息的请求
-        if s == 0 and (status == 30 or status == 40): ###有修改
+        # 当前 任务状态 与 新任务状态不符, 且 任务ID不同, 说明是新分配了一个任务
+        if status_old != status_new and taskId_old != taskId_new: ###有修改
             """
             更新各个字段的值
             MQTT连接上之后机器人会变味idle状态
@@ -65,34 +66,95 @@ class HttpServer:
             #get 相关值
             code = data.get("code")
 
-            ### 怎么从响应里面得到数据??????
-            ### 响应格式??????
+            #更新配送需要的信息
+            self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
 
-            #更新相关状态
-            self.state.update_taskId(task_id=taskId)
-            self.statusBackend.update_statusBackend(taskId=taskId, status=status)
+            goal_addrList = data.get("taskInfo").get("addressList")
+            outside_lift_goal = {}
+            inside_lift_goal = {}
+            goal_pos = {}
+            goal_flr = ""
+            goal_room = ""
 
-
+            for item in goal_addrList:
+                desc = item.get("identity").get("desc")
+                dock = item.get("pose").get("dock")
+                if "ELEVATOR_out" in desc:
+                    outside_lift_goal = dock
+                elif "ELEVATOR_in" in desc:
+                    inside_lift_goal = dock
+                else:
+                    goal_pos = dock
+                    goal_flr = item.get("floor")
+                    goal_room = desc
             
+            #更新送货地址详细信息
+            self.currentOrder.update_goalPositions(outside_lift=outside_lift_goal, inside_lift=inside_lift_goal, goal_position=goal_pos, goal_floor=goal_flr, goal_room=goal_room)
+
+            return_addrList = data.get("addressList")
+            outside_lift_return = {}
+            inside_lift_return = {}
+            return_pos = {}
+            return_flr = ""
+            return_room = ""
+
+            for item in return_addrList:
+                desc = item.get("identity").get("desc")
+                dock = item.get("pose").get("dock")
+                if "ELEVATOR_out" in desc:
+                    outside_lift_return = dock
+                elif "ELEVATOR_in" in desc:
+                    inside_lift_return = dock
+                else:
+                    return_pos = dock
+                    return_flr = item.get("floor")
+                    return_room = desc
+
+            #更新返回地址的详细信息
+            self.currentOrder.update_returnPositions(outside_lift=outside_lift_return, inside_lift=inside_lift_return, return_position=return_pos, return_floor=return_flr, return_room=return_room)
+
+            #117+118 = 机器人可以开始执行新任务
+            self.state.update_taskId(task_id=taskId_new)
+            self.state.update_taskStatus("idle")
+            #120 = 记录后台让机器人执行的任务的状态
+            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
 
             return jsonify({"status": "ok"}), 200
         
         # 当前有任务且收到了来自后台发送的取消任务的请求 statusBackend.get("status") == 20 and
-        elif status == 60:
+        elif taskId_new == taskId_old and status_new != status_old:
             """
             收到这个取消任务请求的话, 就更新各个状态记录的字段为0
             然后更新机器人状态为 取消配送 - cancel_delivery
             然后给tianxin发信号之类的回初始化点位, 等待下一次配送
             如果是因为故障之类的, 就直接offline吧???? 这个还需要再想一下
             """
-            self.state.update_taskStatus("cancel_delivery")
-            self.statusBackend.update_statusBackend(taskId=taskId, status=status)
+            self.statusBackend.update_statusBackend(taskId=taskId_old, status=status_new)
+            if status_new == 60:
+                self.state.update_taskId(0)
+                self.state.update_taskStatus("cancel_delivery")
 
             return jsonify({"status": "ok"}), 200
         
-        elif status == 20 or status == 30 or status == 40 or status == 50 or status == 70 or status == 80:
+        elif status_new == 20 or status_new == 30 or status_new == 40 or status_new == 50 or status_new == 70 or status_new == 80:
 
             return jsonify({"status": "received"}), 200
         else: 
             #其他情况都他妈的是bad request
             return jsonify({"status": "bad request"}), 400
+
+
+if __name__ == "__main__":
+    # 初始化三个依赖对象（这里只是举例，实际要根据 dataInfo 里的定义来）
+    state = dataInfo.StateInfo()
+    statusBackend = dataInfo.StatusBackend()
+    currentOrder = dataInfo.CurrentOrder()
+
+    # 实例化 HttpServer
+    server = HttpServer(state, statusBackend, currentOrder)
+
+    # 创建 Flask app
+    app = server.create_app()
+
+    # 启动服务，端口 8000
+    app.run(host="0.0.0.0", port=8000, debug=True)
