@@ -507,3 +507,4 @@ if __name__ == "__main__":
         #正常退出发布离线消息
         robot_mqtt.publish_connection(status="offline", reason="shutdown")
         robot_mqtt.stop()
+        
