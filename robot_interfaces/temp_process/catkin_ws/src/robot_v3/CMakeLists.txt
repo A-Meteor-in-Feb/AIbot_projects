@@ -52,6 +52,7 @@ add_message_files(
   FILES
   Goal.msg
   Battery.msg
+  Position.msg
 )
 
 ## Generate services in the 'srv' folder

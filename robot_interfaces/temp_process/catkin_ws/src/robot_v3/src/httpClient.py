@@ -58,30 +58,33 @@ class HttpClient:
         return None
 
 
-    def select_taskInfo(self, taskId):
+    def select_taskInfo(self, taskId, floor, building):
         """
         接口1: 机器人主动获取任务信息
+        参数:
+            taskId: 当前机器人执行的task id
+            floor: 当前机器人所在的楼层
+            building: 当前机器人所在的建筑物
         返回值:
             正常情况下: 会返回后台响应数据, 且数据类型为dict; 可以在executor.py中直接使用, 无需类型转换.
             异常情况下: 尝试从后台获取任务信息连续5次都失败, 返回None; 供executor.py中主逻辑做异常判断
         """
         url = f"{self.base_url}/api/robot/client/selectTaskInfo"
 
-        if taskId == 0:
-            response = self.post_request(url=url, data={})
-        else:
-            uuid_str = str(uuid.uuid4())
-            payload = {
-                "taskId": taskId,
-                "timestamp": dataInfo.utc_now_ms(),
-                "uuid": uuid_str
-            }
-
-            #加密
-            encypted_payload = self.httpEncyption.encrypted_data(payload)
-            data = {"data": encypted_payload}
-
-            response = self.post_request(url=url, data=data)
+        uuid_str = str(uuid.uuid4())
+        payload = {
+            "taskId": taskId,
+            "floor": floor,
+            "building": building,
+            "timestamp": dataInfo.utc_now_ms(),
+            "uuid": uuid_str
+        }
+            
+        #加密
+        #encypted_payload = self.httpEncyption.encrypted_data(payload)
+        #data = {"data": encypted_payload}
+        #response = self.post_request(url=url, data=data)
+        response = self.post_request(url=url, data=payload)
 
         print("\n send request \n")
         #正常情况
@@ -92,12 +95,13 @@ class HttpClient:
             return None
     
 
-    def update_taskStatus(self, taskId, taskStatus):
+    def update_taskStatus(self, taskId, taskStatus, elevatorControlCommand):
         """
         接口2: 机器人向后台更新任务进度
         参数:
             taskId: 目前的任务id
             taskStatus: 目前任务状态
+            elevatorControlCommand: 机器人需要坐电梯
         返回:
             正常情况下成功响应
             异常情况下...
@@ -107,17 +111,21 @@ class HttpClient:
         uuid_str = str(uuid.uuid4())
         payload = {
             "taskId": taskId,
-            "taskStatus": taskStatus,
             "step": "step",
             "timestamp": dataInfo.utc_now_ms(),
             "uuid": uuid_str
         }
+        
+        if taskStatus:
+            payload["taskStatus"] = taskStatus
+        if elevatorControlCommand:
+            payload["elevatorControlCommand"] = elevatorControlCommand
 
         #加密
-        encypted_payload = self.httpEncyption.encrypted_data(payload)
-        data = {"data": encypted_payload}
-
-        response = self.post_request(url=url, data=data)
+        #encypted_payload = self.httpEncyption.encrypted_data(payload)
+        #data = {"data": encypted_payload}
+        #response = self.post_request(url=url, data=data)
+        response = self.post_request(url=url, data=payload)
 
         if response:
             return response
@@ -237,4 +245,5 @@ if __name__ == "__main__":
 
     httpClient = HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
 
-    httpClient.select_taskInfo(0)
+    #httpClient.select_taskInfo(0, "2m", "ntuitive")
+    httpClient.update_taskStatus(taskId=0, taskStatus=None, elevatorControlCommand="ntuitive:2m:PL1_2m_ELEVATOR_out:u")

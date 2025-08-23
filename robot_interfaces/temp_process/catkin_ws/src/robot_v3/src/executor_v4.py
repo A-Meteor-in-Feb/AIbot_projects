@@ -58,7 +58,7 @@ class StateThread(threading.Thread):
 
 
 class InteractionThread(threading.Thread):
-    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, ros_pub_goal, robot_mqtt, http_client, stop_event: threading.Event):
+    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, elevatorPlan: dataInfo.ElevatorPlan, ros_pub_goal, robot_mqtt, http_client, stop_event: threading.Event):
         """
         这个类主要用来控制机器人的执行, 与后台交互, tianxin交互
         参数:
@@ -75,6 +75,7 @@ class InteractionThread(threading.Thread):
         self.state = state
         self.statusBackend = statusBackend
         self.currentOrder = currentOrder
+        self.elevatorPlan = elevatorPlan
 
         self.ros_pub_goal = ros_pub_goal
 
@@ -93,8 +94,10 @@ class InteractionThread(threading.Thread):
                 # 得到现在后台分配任务的情况
                 status = self.statusBackend.get_statusBackend().get("status")
                 # 得到现在机器人的状态
-                taskStatus = self.state.get_state().get("taskStatus")
-                taskId = self.state.get_state().get("taskId")
+                robot_state = self.state.get_state()
+                taskStatus = robot_state.get("taskStatus")
+                taskId = robot_state.get("taskId")
+                step = robot_state.get("step")
 
                 # 机器人在 [idle] 或者 [returning] 的时候 and 有 [待完成任务 (30\40)&(taskId)] 
                 if (taskStatus in ("idle", "returning")) and (status in (30, 40)) and taskId != 0:    
@@ -115,24 +118,35 @@ class InteractionThread(threading.Thread):
                     except Exception as e:
                         rospy.loginfo(f"\n <executor - 118> Error in PUBLISH GOAL: {e}")
 
+                if taskStatus == "delivering":
+                    elevatorCommand = self.elevatorPlan.get_elevatorPlan().get("delivering")
+                    if step == 1:
+                        self.state.update_step(0)
+                        command_1 = elevatorCommand.get(1)
+                        self.http_client.update_taskStatus(taskId=taskId, taskStatus=None, elevatorControlCommand=command_1)
+                    elif step == 2:
+                        self.state.update_step(0)
+                        command_2 = elevatorCommand.get(2)
+                        self.http_client.update_taskStatus(taskId=taskId, taskStatus=None, elevatorControlCommand=command_2)
+                    else:
+                        continue
+
                 # 机器人 [arrived]
                 if taskStatus == "arrived":
                     # step 1 - 核对二维码
                     code = self.currentOrder.get_currentOrder().get("code")
                     qr_check = self.qr_check(code)
                     # step 2 - 如果二维码核对成功, 控制货仓开关, 取货完成调用接口通知后台, 
-                    # 并更新机器人状态为 delivered -- 更新机器人currentOrder 清空, taskId 清空, statusBackend 清空
+                    # 并更新机器人状态为 delivered -- 更新机器人taskId 清空
                     if qr_check:
                         #self.door_open()
                         self.notify_complete(taskId=taskId)
                     # step 2 - 如果二维码核对失败, 调用接口通知后台配送失败
-                    # 并更新机器人状态为delivered_failed -- 更新机器人currentOrder 清空, taskId 清空, statusBackend 清空
+                    # 并更新机器人状态为delivered_failed -- 更新机器人taskId 清空
                     else:
                         self.notify_failed(taskId=taskId)
                     
-                #机器人配送完成或者失败 且 现在没有新的待执行的任务
-                #if (taskStatus == "delivered" or taskStatus == "delivered_failed") and (status != 30 or status != 40) and taskId == 0:
-                # 机器人在 [delivered] 或者 []
+                # 机器人在 [delivered] 或者 [delivered_failed] 且 [没有待完成任务] -- 在notify后台取货成功/失败之后 任务就被清空了
                 if (taskStatus in ("delivered", "delivered_failed")) and (status not in (30, 40)) and taskId == 0:
                     
                     try:
@@ -173,7 +187,17 @@ class InteractionThread(threading.Thread):
                 #机器人在任何情况下返回 ([配送完毕] 或者 [任务取消]), 清空数据记录
                 if taskStatus == "returning":
                     self.finalize_task()
-                
+                    elevatorCommand = self.elevatorPlan.get_elevatorPlan().get("returning")
+                    if step == 1:
+                        self.state.update_step(0)
+                        command_1 = elevatorCommand.get(1)
+                        self.http_client.update_taskStatus(taskId=taskId, taskStatus=None, elevatorControlCommand=command_1)
+                    elif step == 2:
+                        self.state.update_step(0)
+                        command_1 = elevatorCommand.get(2)
+                        self.http_client.update_taskStatus(taskId=taskId, taskStatus=None, elevatorControlCommand=command_2)
+                    else:
+                        continue
                     
             except Exception as e:
                 rospy.loginfo(f"Error happens in the main execution loop as {e}")
@@ -286,7 +310,7 @@ class InteractionThread(threading.Thread):
 
 
 class FetchTaskThread(threading.Thread):
-    def __init__(self, http_client, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, period, stop_event: threading.Event):
+    def __init__(self, http_client, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, period, elevatorPlan: dataInfo.ElevatorPlan , stop_event: threading.Event):
         """
         这个线程用于执行周期性地从后台拉取任务信息, 为了避免因为网络问题没有得到最新的任务状态
         参数:
@@ -295,6 +319,7 @@ class FetchTaskThread(threading.Thread):
             statusBackend: 后台分配任务的状态
             currentOrder: 机器人当前执行的任务的详细信息
             period:
+            elevatorPlan: 
             stop_event: 线程终止时间标志
         """
         super().__init__(daemon=True)
@@ -303,7 +328,10 @@ class FetchTaskThread(threading.Thread):
         self.statusBackend = statusBackend
         self.currentOrder = currentOrder
         self.period = period
+        self.elevatorPlan = elevatorPlan
         self.stop_event = stop_event
+
+        self.level = {"1": 1, "2m": 2, "3": 3, "4": 4, "5": 5}
 
     def run(self):
         next_fetch = time.monotonic()
@@ -322,11 +350,16 @@ class FetchTaskThread(threading.Thread):
             if now >= next_fetch:
 
                 status_old = self.statusBackend.get_statusBackend().get("status")
-                taskId_old = self.state.get_state().get("taskId")
+                
+                robot_state = self.state.get_state()
+                robot_taskId_old = robot_state.get("taskId")
+                robot_floor = robot_state.get("floor")
+                robot_building = robot_state.get("building")
+                
+                response = self.http_client.select_taskInfo(taskId=robot_taskId_old, floor=robot_floor, building=robot_building)
+                response_code = response.get("code")
 
-                response = self.http_client.select_taskInfo(taskId_old)
-
-                if response:
+                if response_code == 0:
                     data = response.get("data")
                     taskInfo = data.get("taskInfo") or {}
 
@@ -337,74 +370,143 @@ class FetchTaskThread(threading.Thread):
 
                         # 如果是不同任务id(也就是机器人执行完了某个任务, 或者根本没执行任何任务)
                         # 收到了来自后台的 response -- 30 or 40 则更新机器人状态, 添加任务信息, 更新后台状态记录
-                        if status_old != status_new and taskId_old != taskId_new:
-                            #首先更新后台状态记录
-                            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
-
-                            #然后更新机器人状态 -- 主要是任务id
-                            self.state.update_taskStatus("idle")
-                            self.state.update_taskId(taskId_new)
-
+                        if status_old != status_new and robot_taskId_old != taskId_new:
                             #get 相关值
                             code = data.get("code")
                             #配送任务的 Id 和 QR code
                             self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
 
-                            #配送目的地相信信息的获取
+                            #配送目的地相信信息的 获取&存储&更新
                             goal_addrList = taskInfo.get("addressList")
-                            outside_lift_goal = {}
-                            inside_lift_goal = {}
-                            goal_pos = {}
-                            goal_flr = ""
-                            goal_room = ""
+                            len_goal_addrList = len(goal_addrList)
+                            self.store_goalPositions(goal=True, addrList=goal_addrList)
+                            if len_goal_addrList == 3:
+                                self.store_elevatorCommand(goal=True)
 
-                            for item in goal_addrList:
-                                desc = item.get("identity").get("desc")
-                                dock = item.get("pose").get("dock")
-                                if "ELEVATOR_out" in desc:
-                                    outside_lift_goal = dock
-                                elif "ELEVATOR_in" in desc:
-                                    inside_lift_goal = dock
-                                else:
-                                    goal_pos = dock
-                                    goal_flr = item.get("floor")
-                                    goal_room = desc
-                            #更新送货地址信息
-                            self.currentOrder.update_goalPositions(outside_lift=outside_lift_goal, inside_lift=inside_lift_goal, goal_position=goal_pos, goal_floor=goal_flr, goal_room=goal_room)
-
-                            #配送完成返回地址信息的获取
+                            #配送完成返回地址信息的 获取&存储&更新
                             return_addrList = data.get("addressList")
-                            outside_lift_return = {}
-                            inside_lift_return = {}
-                            return_pos = {}
-                            return_flr = ""
-                            return_room = ""
+                            len_return_addrList = len(return_addrList)
+                            self.store_goalPositions(goal=False, addrList=return_addrList)
+                            if len_return_addrList == 3:
+                                self.store_elevatorCommand(goal=False)
 
-                            for item in return_addrList:
-                                desc = item.get("identity").get("desc")
-                                dock = item.get("pose").get("dock")
-                                if "ELEVATOR_out" in desc:
-                                    outside_lift_return = dock
-                                elif "ELEVATOR_in" in desc:
-                                    inside_lift_return = dock
-                                else:
-                                    return_pos = dock
-                                    return_flr = item.get("floor")
-                                    return_room = desc
-                            #然后更新任务完成后返回地址详细
-                            self.currentOrder.update_returnPositions(outside_lift=outside_lift_return, inside_lift=inside_lift_return, return_position=return_pos, return_floor=return_flr, return_room=return_room)
+                            #更新后台状态记录
+                            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
+                            #然后更新机器人状态 -- 主要是任务id
+                            self.state.update_taskStatus("idle")
+                            self.state.update_taskId(taskId_new)
                             
                         # 如果同一个任务id情况下(机器人正在执行某一任务), 收到来自后台的response, 除了60 其他都不用管
-                        if status_old != status_new and taskId_old == taskId_new:
+                        if status_old != status_new and robot_taskId_old == taskId_new:
                             self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
                             # 是 60 取消任务的话
                             if status_new == 60:
                                 self.state.update_taskId(0)
                                 self.state.update_taskStatus("cancel_delivery")
+                else:
+                    rospy.loginfo(f"Backend response with: {response_code}")
 
                 next_fetch = now + self.period
             
             self.stop_event.wait(0.1)
+
+    def store_goalPositions(self, goal, addrList):
+        """
+        存储更新订单目的地址以及机器人返回原点的地址详情
+        参数:
+            goal: bool, 代表当前更新的事配送目的地址(True) 还是 返回原点地址(False).
+            addrList: 目标地址的详细信息
+        """
+        addr_len = len(addrList)
+
+        lift_out = {}
+        lift_in = {}
+        pos = {}
+        out_lift_name = ""
+        in_lift_name = ""
+        flr = ""
+        room = ""
+        house = ""
+
+        #机器人和目标位置在同一楼层
+        if addr_len == 1:
+            empty_pos = {"x": 0, "y": 0, "theta": 0}
+            lift_out = empty_pos
+            lift_in = empty_pos
+            pos = addrList[0].get("pose").get("dock")
+            flr = addrList[0].get("floor")
+            room = addrList[0].get("identity").get("desc")
+            house = addrList[0].get("house")
+
+        #机器人和目标位置不在同一楼层
+        elif addr_len == 3:
+            for item in addrList:
+                desc = item.get("identity").get("desc")
+                dock = item.get("pose").get("dock")
+                if "ELEVATOR_out" in desc:
+                    lift_out = dock
+                    out_lift_name = desc
+                elif "ELEVATOR_in" in desc:
+                    lift_in = dock
+                    in_lift_name = desc
+                else:
+                    pos = dock
+                    flr = item.get("floor")
+                    room = desc
+                    house = item.get("house")
+
+        #后台传输参数有错
+        else:
+            rospy.loginfo("Error - Backend response bad parameters.")
+
+        if goal:
+            self.currentOrder.update_goalPositions(outside_lift=lift_out, inside_lift=lift_in, goal_position=pos, out_lift_name=out_lift_name, in_lift_name=in_lift_name, goal_floor=flr, goal_room=room, house=house)
+        else:
+            self.currentOrder.update_returnPositions(outside_lift=lift_out, inside_lift=lift_in, return_position=pos, out_lift_name=out_lift_name, in_lift_name=in_lift_name, return_floor=flr, return_room=room, house=house)
+
+    def store_elevatorCommand(self, goal):
+        """
+        用于更新机器人和电梯交互的指令
+        参数:
+            goal: True or False, True 代表要更新送货需要的指令, False 代表要更新返回需要的指令
+        """
+        BUILDING = ""
+        ROBOT_FLOOR = ""
+        ELEVATOR_NAME_OUT = ""
+        ELEVATOR_NAME_IN = ""
+        MOVE = ""
+        TO = ""
+
+        robot_info = self.state.get_state()
+
+        if goal:
+            info = self.currentOrder.get_currentOrder().get("goal_positions")
+            TO = info.get("goal_floor")
+        else:
+            info = self.currentOrder.get_currentOrder().get("return_positions")
+            TO = info.get("return_floor")
+
+        ROBOT_FLOOR = robot_info.get("floor")
+        ROBOT_FLOOR_int = self.level.get(ROBOT_FLOOR)
+
+        TO_int = self.level.get(TO)
+
+        if ROBOT_FLOOR_int > TO_int:
+            MOVE = "d"
+        else:
+            MOVE = "u"
+
+        ELEVATOR_NAME_OUT = info.get("out_lift_name")
+        ELEVATOR_NAME_IN = info.get("in_lift_name")
+        BUILDING = info.get("house")
+
+        command_1 = f"{BUILDING}:{ROBOT_FLOOR}:{ELEVATOR_NAME_OUT}:{MOVE}"
+        command_2 = f"{BUILDING}:{ROBOT_FLOOR}:{ELEVATOR_NAME_IN}:{TO}"
+
+        if goal:
+            self.elevatorPlan.update_deliveringCommand(command_1=command_1, command_2=command_2)
+        else:
+            self.elevatorPlan.update_returningCommand(command_1=command_1, command_2=command_2)
 
 
 def create_flask_app(server: httpServer.HttpServer):
@@ -457,6 +559,7 @@ if __name__ == "__main__":
     state = dataInfo.StateInfo()
     statusBackend = dataInfo.StatusBackend()
     currentOrder = dataInfo.CurrentOrder()
+    elevatorPlan = dataInfo.ElevatorPlan()
 
     #加密解密头部鉴权功能初始化
     httpEncryption = encryption.HttpEncryption(robotId=ROBOTID, private_key=PRIVATE_KEY, iv_vector=IV_VECTOR)
@@ -474,7 +577,7 @@ if __name__ == "__main__":
     http_client = httpClient.HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
 
     #机器人服务器端
-    http_server = httpServer.HttpServer(state=state, statusBackend=statusBackend, currentOrder=currentOrder)
+    http_server = httpServer.HttpServer(state=state, statusBackend=statusBackend, currentOrder=currentOrder, elevatorPlan=elevatorPlan)
     flask_app = create_flask_app(http_server)
 
     #线程启动
@@ -483,10 +586,10 @@ if __name__ == "__main__":
     state_thread = StateThread(robot_mqtt, HEARTBEAT, stop_event)
     state_thread.start()
     #http client 线程
-    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, ros_pub_goal=ros_pub_goal, robot_mqtt=robot_mqtt, http_client=http_client, stop_event=stop_event)
+    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, elevatorPlan=elevatorPlan , ros_pub_goal=ros_pub_goal, robot_mqtt=robot_mqtt, http_client=http_client, stop_event=stop_event)
     interaction_thread.start()
     #fetch task info 线程
-    fetchTask_thread = FetchTaskThread(http_client=http_client, state=state, statusBackend=statusBackend, currentOrder=currentOrder, period=HEARTBEAT, stop_event=stop_event)
+    fetchTask_thread = FetchTaskThread(http_client=http_client, state=state, statusBackend=statusBackend, currentOrder=currentOrder, period=HEARTBEAT, elevatorPlan=elevatorPlan, stop_event=stop_event)
     fetchTask_thread.start()
     #http server 线程
     flask_thread = start_flask_in_thread(flask_app, "0.0.0.0", 8000)

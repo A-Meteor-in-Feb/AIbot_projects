@@ -2,8 +2,12 @@ import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
 from robot_v3.msg import Battery
+from robot_v3.msg import Position
 import dataInfo
 from std_msgs.msg import String
+from nav_msgs.msg import Odometry
+from tf.transformations import euler_from_quaternion
+from std_msgs.msg import Int32
 
 class RosSub:
     def __init__(self, state: dataInfo.StateInfo):
@@ -13,28 +17,52 @@ class RosSub:
             state: 对象实例, 方便相应属性更新.
         """
         #机器人基础状态 - 位置、电量、异常码 需要的话题
-        self.topic_pose2d = "/moverbase_pose2d" #这个之后需要换成jianyu的发布的数据话题
+        self.topic_localization = "/global_localization" 
         self.topic_battery = "/battery"
         self.topic_statusCode = "/status_code"
 
         #跟tianxin交互需要用到的话题
         self.topic_signal = "/signal"
+        self.topic_position = "/position" #TODO
+        self.topic_step = "/step" #TODO
 
         #话题订阅
-        self.sub_pose2d = rospy.Subscriber(self.topic_pose2d, Pose2D, self.callback_pose2d, queue_size=1, tcp_nodelay=True)
+        self.sub_localization = rospy.Subscriber(self.topic_localization, Odometry, self.callback_localization, queue_size=1, tcp_nodelay=True)
         self.sub_battery = rospy.Subscriber(self.topic_battery, Battery, self.callback_battery, queue_size=1, tcp_nodelay=True)
         self.sub_statusCode = rospy.Subscriber(self.topic_statusCode, UInt64, self.callback_statusCode, queue_size=1, tcp_nodelay=True)
-        self.sub_signal = rospy.Subscriber(self.topic_signal, String, self.callback_signal, queue_size=1, tcp_nodelay=True)
         
+        #跟tianxin交互需要用到的话题
+        self.sub_signal = rospy.Subscriber(self.topic_signal, String, self.callback_signal, queue_size=1, tcp_nodelay=True)
+        self.sub_position = rospy.Subscriber(self.topic_position, Position, self.callback_position, queue_size=1, tcp_nodelay=True)
+        self.sub_step = rospy.Subscriber(self.topic_step, Int32, self.callback_step, queue_size=1, tcp_nodelay=True)
+
         self.state = state
 
-    def callback_pose2d(self, msg: Pose2D):
+    def callback_localization(self, msg: Odometry):
         """
         For 实时或者定时更新机器人的地理位置.
         参数:
-            msg: Pose2D, 由localization部分发送过来
+            msg: Odometry, 由localization部分发送过来
         """
-        self.state.update_position(msg.x, msg.y, msg.theta)
+        q = msg.pose.pose.orientation
+        quat = [q.x, q.y, q.z, q.w]
+
+        roll, pitch, yaw = euler_from_quaternion(quat)
+
+        self.state.update_localization(msg.pose.pose.position.x, msg.pose.pose.position.y, yaw)
+
+    
+    def callback_position(self, msg: Position):
+        """
+        接收机器人所在的楼层和楼
+        参数:
+            msg: Position, 由 floor 和 building 组成
+        """
+        floor = msg.floor
+        building = msg.building
+
+        self.state.update_position(floor=floor, building=building)
+
 
     def callback_battery(self, msg: Battery):
         """
@@ -87,3 +115,17 @@ class RosSub:
         #if signal == "RETURN_COMPLETE":
             #self.state.update_taskStatus("idle")
             #self.state.update_taskId(0)
+
+    def callback_step(self, msg: Int32):
+        """
+        订阅step话题, 按需要给后台发交互电梯信号
+        参数:
+            msg: Int32 代表机器人执行步骤
+        """
+        step = msg.data
+        if step == 1:
+            self.state.update_step(step=1)
+        elif step == 2:
+            self.state.update_step(step=2)
+        else:
+            rospy.loginfo("Invalide step number")

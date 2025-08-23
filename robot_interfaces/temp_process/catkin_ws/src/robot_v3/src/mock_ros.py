@@ -3,6 +3,8 @@ from std_msgs.msg import String
 from robot_v3.msg import Goal
 import time
 
+from std_msgs.msg import Int32
+
 
 def goal_callback(msg: Goal):
     print(f"receive goal {msg}")
@@ -23,6 +25,13 @@ def return_callback(msg: String):
 def publish_signal(signal):
     signal_publisher.publish(signal)
 
+def publish_step(step):
+    """
+    参数为一个数字
+    step = 1 : 机器人到达电梯门口要坐电梯 --- u/d
+    step = 2 : 机器人进入电梯内部要开始坐电梯. --- 目标楼层
+    """
+    step_publisher.publish(step)
 
 if __name__ == "__main__":
     rospy.init_node('mock_rosNode', anonymous=True)
@@ -31,5 +40,6 @@ if __name__ == "__main__":
     #rospy.Subscriber("signal/return", String, return_callback, queue_size=1)
     
     signal_publisher = rospy.Publisher("signal", String, queue_size=1)  
+    step_publisher = rospy.Publisher("step", Int32, queue_size=1)
     
     rospy.spin()

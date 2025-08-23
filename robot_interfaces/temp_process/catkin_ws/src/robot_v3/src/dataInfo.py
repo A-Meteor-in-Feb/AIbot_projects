@@ -26,6 +26,8 @@ class StateInfo:
         self.state = {
             "position": {"x": 0, "y": 0, "theta": 0},
             "ip": "",
+            "floor": "2m",
+            "building": "ntuitive",
             "coordinateType": "map",
             "battery": 0,
             "taskStatus": "",
@@ -33,7 +35,8 @@ class StateInfo:
             "connection": "offline",
             "autonomousMode": True,
             "fault": False,
-            "binsNum": 0
+            "binsNum": 0,
+            "step": 0
         }
         
 
@@ -44,7 +47,7 @@ class StateInfo:
         with self.lock:
             return copy.deepcopy(self.state)
     
-    def update_position(self, new_x, new_y, new_theta):
+    def update_localization(self, new_x, new_y, new_theta):
         """ 
         用来更新机器人位置的函数
         参数:
@@ -67,6 +70,17 @@ class StateInfo:
         """
         with self.lock:
             self.state["ip"] = ip_addr
+
+    def update_position(self, floor, building):
+        """
+        用来更新机器人所在楼层
+        参数:
+            floor: str, 机器人所在楼层
+            building: str, 机器人所在建筑物
+        """
+        with self.lock:
+            self.state["floor"] = floor
+            self.state["building"] = building
     
     def update_battery(self, batteryPercentage):
         """
@@ -125,6 +139,15 @@ class StateInfo:
         with self.lock:
             self.state["binsNum"] = bins_num
 
+    def update_step(self, step):
+        """
+        用来更新机器人的运行步骤
+        参数:
+            step: int, 1 代表需要进入电梯; 2 代表进入电梯后需要电梯执行操作
+        """
+        with self.lock:
+            self.state["step"] = step
+
 
 class StatusBackend:
     def __init__(self):
@@ -172,15 +195,21 @@ class CurrentOrder:
                 "outside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
                 "inside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
                 "goal_position": {"x": 0.0, "y": 0.0, "thata": 0.0},
+                "out_lift_name": "",
+                "in_lift_name": "",
                 "goal_floor": "",
-                "goal_room": ""
+                "goal_room": "",
+                "house": ""
             },
             "return_positions":{
                 "outside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
                 "inside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
                 "return_position": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "out_lift_name": "",
+                "in_lift_name": "",
                 "return_floor": "",
-                "return_room": ""
+                "return_room": "",
+                "house": ""
             }
         }
 
@@ -202,40 +231,103 @@ class CurrentOrder:
             self.currentOrder["taskId"] = taskId
             self.currentOrder["code"] = code
 
-    def update_goalPositions(self, outside_lift, inside_lift, goal_position, goal_floor, goal_room):
+    def update_goalPositions(self, outside_lift, inside_lift, goal_position, out_lift_name, in_lift_name, goal_floor, goal_room, house):
         """
-        用于更新当前任务的目标地址的所有信息.
+        用于更新当前任务的目标地址的所有信息
         参数:
             outside_lift: 电梯外部坐标
             inside_lift: 电梯内部坐标
             goal_position: 目标地址坐标
+            out_lift_name: 即将进入的电梯名字
+            in_lift_name: 已进入的电梯的名字
             goal_floor: 目标地址楼层
             goal_room: 目标地址房间号
+            house: 目标位置所在建筑
         """
         with self.lock:
             self.currentOrder["goal_positions"].update({
                 "outside_lift": outside_lift,
                 "inside_lift": inside_lift,
                 "goal_position": goal_position,
+                "out_lift_name": out_lift_name,
+                "in_lift_name": in_lift_name,
                 "goal_floor": goal_floor,
-                "goal_room": goal_room
+                "goal_room": goal_room,
+                "house": house
             })
 
-    def update_returnPositions(self, outside_lift, inside_lift, return_position, return_floor, return_room):
+    def update_returnPositions(self, outside_lift, inside_lift, return_position, out_lift_name, in_lift_name, return_floor, return_room, house):
         """
-        用于更新当前任务结束后机器人返回地址的详细信息.
+       用于更新当前任务结束后机器人返回地址的详细信息.
         参数:
             outside_lift: 电梯外部坐标
             inside_lift: 电梯内部坐标
             return_position: 机器人返回的地址坐标
+            out_lift_name: 即将进入的电梯名字
+            in_lift_name: 已进入的电梯的名字
             return_floor: 机器人返回的楼层坐标
             return_room: 机器人返回的房间号
+            house: 目标位置所在建筑
         """
         with self.lock:
             self.currentOrder["return_positions"].update({
                 "outside_lift": outside_lift,
                 "inside_lift": inside_lift,
                 "return_position": return_position,
+                "out_lift_name": out_lift_name,
+                "in_lift_name": in_lift_name,
                 "return_floor": return_floor,
-                "return_room": return_room
+                "return_room": return_room,
+                "house": house
+            })
+
+
+class ElevatorPlan:
+    def __init__(self):
+        """
+        用来存储计划走的电梯路线指令
+        """
+        self.lock = threading.Lock()
+        self.elevatorPlan = {
+            "delivering": {
+                1: "",
+                2: ""
+            },
+            "returning": {
+                1: "",
+                2: ""
+            }
+        }
+
+    def get_elevatorPlan(self):
+        """
+        获得当前机器人与电梯交互的命令信息
+        """
+        with self.lock:
+            return copy.deepcopy(self.elevatorPlan) 
+
+    def update_deliveringCommand(self, command_1, command_2):
+        """
+        用于更新机器人和电梯交互的指令 - 在delivering的时候
+        参数:
+            command_1: tianxin 发信号 1 时, 我需要发给后台的指令
+            command_2: tianxin 发信号 2 时, 我需要发给后台的指令
+        """
+        with self.lock:
+            self.elevatorPlan["delivering"].update({
+                1: command_1,
+                2: command_2
+            })
+
+    def update_returningCommand(self, command_1, command_2):
+        """
+        用于更新机器人和电梯交互的指令 - 在returning的时候
+        参数:
+            command_1: tianxin 发信号 1 时, 我需要发给后台的指令
+            command_2: tianxin 发信号 2 时, 我需要发给后台的指令
+        """
+        with self.lock:
+            self.elevatorPlan["returning"].update({
+                1: command_1,
+                2: command_2
             })
