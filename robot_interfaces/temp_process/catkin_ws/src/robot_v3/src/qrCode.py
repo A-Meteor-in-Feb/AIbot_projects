@@ -42,7 +42,7 @@ class QrCode:
 
         while True:
             
-            if time.monotonic > deadline:
+            if time.monotonic() > deadline:
                 print("QR code timeout")
                 return False
             

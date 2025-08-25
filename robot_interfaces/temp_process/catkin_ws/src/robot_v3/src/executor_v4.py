@@ -133,6 +133,7 @@ class InteractionThread(threading.Thread):
 
                 # 机器人 [arrived]
                 if taskStatus == "arrived":
+                    response = self.http_client.update_taskStatus(taskId, dataInfo.TaskStatus.PENDING_RECEIPT.value, None)
                     # step 1 - 核对二维码
                     code = self.currentOrder.get_currentOrder().get("code")
                     qr_check = self.qr_check(code)
@@ -273,7 +274,7 @@ class InteractionThread(threading.Thread):
             3. 更新机器人taskStatus 为 delivered, 并立即发送 robots/{robotId}/state 话题
         """
         #调用接口3
-        response = self.http_client.update_taskStatus(taskId, dataInfo.TaskStatus.DELIVERY_COMPLETE.value)
+        response = self.http_client.update_taskStatus(taskId, dataInfo.TaskStatus.DELIVERY_COMPLETE.value, None)
         print("\n delivery_succeed \n")
         #更新机器人状态并发布 state 主题
         self.state.update_taskStatus("delivered")
@@ -289,7 +290,7 @@ class InteractionThread(threading.Thread):
             3. 更新机器人taskStatus 为 delivered_failed, 并立即发送 robots/{robotId}/state 话题
         """
         #调用接口4
-        response = self.http_client.update_taskStatus(taskId, dataInfo.TaskStatus.DELIVERY_FAILED.value)
+        response = self.http_client.update_taskStatus(taskId, dataInfo.TaskStatus.DELIVERY_FAILED.value, None)
         print("\n delivery_failed \n")
         #更新机器人状态并发布 state 主题
         self.state.update_taskStatus("delivered_failed")

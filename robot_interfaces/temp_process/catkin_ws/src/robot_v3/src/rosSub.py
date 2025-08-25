@@ -79,12 +79,14 @@ class RosSub:
             msg: UIn64 一个112位数字, 代表机器人是否发生故障
         TODO 但其实我觉得故障来源不止这里, 而且不一定机器人底盘现在是可以被正常使用的状态
         TODO 而且有很多异常码, 也有很多正常码, 我觉得判断的逻辑是不是需要改一改或者怎么样之类的
-        """
+        
         code = int(msg.data)
         if code == 1:
             self.state.update_fault(False)
         else:
             self.state.update_fault(True)
+
+        """
 
     def callback_signal(self, msg: String):
         """
