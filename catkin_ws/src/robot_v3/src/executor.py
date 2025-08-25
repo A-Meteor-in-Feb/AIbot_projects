@@ -114,7 +114,7 @@ class InteractionThread(threading.Thread):
 
                     try:
                         self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=goal_position, final_floor=goal_floor)
-                        time.sleep(3) #这里待修改 这个做法不太优雅
+                        self.publish_goal_wait(taskStatus_old=taskStatus)
                     except Exception as e:
                         rospy.loginfo(f"\n <executor - 119> Error in PUBLISH GOAL: {e}")
 
@@ -145,7 +145,7 @@ class InteractionThread(threading.Thread):
                         self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_FAILED.value , elevatorCommand=None)
                     
                 # 机器人在 [delivered] 或者 [delivered_failed] 且 [没有待完成任务] -- 在notify后台取货成功/失败之后 任务就被清空了
-                if (taskStatus in ("delivered", "delivered_failed")) and (status not in (30, 40)) and taskId == 0:
+                if (taskStatus == "delivered" or taskStatus== "delivered_failed") and (status not in (30, 40)) and taskId == 0:
                     
                     try:
                         currentOrder_info = self.currentOrder.get_currentOrder()
@@ -160,7 +160,7 @@ class InteractionThread(threading.Thread):
                     
                     try:
                         self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=return_position, final_floor=return_floor)
-                        time.sleep(3)
+                        self.publish_goal_wait(taskStatus_old=taskStatus)
                     except Exception as e:
                         rospy.loginfo(f"\n <executor - 165> Error happens when PUBLISH GOAL: {e}")
 
@@ -180,7 +180,7 @@ class InteractionThread(threading.Thread):
                     
                     try:
                         self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=return_position, final_floor=return_floor)
-                        time.sleep(3)
+                        self.publish_goal_wait(taskStatus_old=taskStatus)
                     except Exception as e:
                         rospy.loginfo(f"\n <executor - 185> Error happens when PUBLISH GOAL: {e}")
 
@@ -246,6 +246,22 @@ class InteractionThread(threading.Thread):
 
         self.ros_pub_goal.publish(goal)
         rospy.loginfo(f"Forwarded the goal info to the planning part \n {goal}")
+
+    def publish_goal_wait(self, taskStatus_old):
+        rate = rospy.Rate(10) #控制每0.1秒检查一次状态
+        waited = 0
+        while waited < 5.0:
+                            
+            if self.stop_event.is_set() or rospy.is_shutdown():
+                break
+                            
+            robot_state = self.state.get_state()
+            taskStatus_new = robot_state.get("taskStatus")
+            if taskStatus_new != taskStatus_old:
+                break
+
+            rate.sleep()
+            waited += 0.1
     
     def qr_check(self, code):
         """
@@ -275,9 +291,9 @@ class InteractionThread(threading.Thread):
         try:
             response = self.http_client.update_taskStatus(taskId=taskId, taskStatus=taskStatus, elevatorControlCommand=elevatorCommand)
             rospy.loginfo(f"notify backend with taskId:{taskId}, taskStatus:{taskStatus}, elevatorCommand:{elevatorCommand}")
-            rospy.loginfo(f" notify backend and get: {response.code}")
+            rospy.loginfo(f" notify backend and get: {response.get("code")} ")
         except Exception as e:
-            rospy.loginfo(f" <executor - 280> error happens: {e}")
+            rospy.loginfo(f" <executor - 296> error happens: {e}")
         
         if taskStatus:
             #配送成功

@@ -39,20 +39,20 @@ class HttpClient:
                     #result = self.httpEncyption.decrypt_response_data(data)
                     #不需要解密
                     result = response.json()
-                    print(f"\n backend response: {result}\n")
+                    print(f"\n <httpClient-42> backend response: {result}\n")
                     return result
                 #这里的情况包括服务器端各种异常比如 500, 404, 401 等等
                 else:
                     resp_code = response.status_code
-                    print(f"第{i}次 [主动获取任务信息] 失败, 状态码: {response.status_code}")
+                    print(f"\n <httpClient-47> 第{i}次 [主动获取任务信息] 失败, 状态码: {response.status_code}\n")
             
             #网络异常、请求超时等等 网络错误
             except requests.RequestException as e:
-                print(f"第{i}次调用接口异常: {e}")
+                print(f"\n <httpClient-51> 第{i}次调用接口异常: {e}\n")
 
             time.sleep(2) #间隔两秒再试一次
 
-        print("需要检查网络或后台状态")
+        print("\n <httpClient-55> 需要检查网络或后台状态 \n")
         self.report_httpError(code=resp_code)
 
         return None
