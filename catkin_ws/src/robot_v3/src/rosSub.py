@@ -96,13 +96,14 @@ class RosSub:
         """
         signal = msg.data
         taskStatus = self.state.get_state().get("taskStatus")
+        taskId = self.state.get_state().get("taskId")
         # tianxin 发规划完成, 
-        if signal == "PLANNING_COMPLETE":
+        if signal == "GOAL_RECEIVED":
             # 如果机器人原来为idle, 则这里把机器人状态更新为delivering
-            if taskStatus == "idle":
+            if taskStatus == "idle" and taskId != 0:
                 self.state.update_taskStatus("delivering")
             # 其他任何状态, 只有两种情况 1-任务取消返回; 2-任务完成返回
-            else:
+            elif taskStatus == "delivered" or taskStatus == "delivered_failed" or taskStatus == "cancel_delivery":
                 self.state.update_taskStatus("returning")
         # tianxin 到达目标地址
         if signal == "GOAL_ARRIVED":
@@ -110,7 +111,7 @@ class RosSub:
             if taskStatus == "returning":
                 self.state.update_taskStatus("idle")
             # 如果之前机器人状态为 delivering, 则这里把机器人状态更新为 arrived
-            else:
+            elif taskStatus == "delivering":
                 self.state.update_taskStatus("arrived")
         # tianxin 回到原点/起点
         #if signal == "RETURN_COMPLETE":

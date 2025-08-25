@@ -414,6 +414,13 @@ class FetchTaskThread(threading.Thread):
                             if status_new == 60:
                                 self.state.update_taskId(0)
                                 self.state.update_taskStatus("cancel_delivery")
+                    else:
+                        #配送完成返回地址信息的 获取&存储&更新
+                        return_addrList = data.get("addressList")
+                        len_return_addrList = len(return_addrList)
+                        self.store_goalPositions(goal=False, addrList=return_addrList)
+                        if len_return_addrList == 3:
+                            self.store_elevatorCommand(goal=False)
                 else:
                     rospy.loginfo(f"Backend response with: {response_code}")
 

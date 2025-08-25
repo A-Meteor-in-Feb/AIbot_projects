@@ -9,8 +9,8 @@ from std_msgs.msg import Int32
 def goal_callback(msg: Goal_v3):
     print(f"receive goal {msg}")
     time.sleep(2)
-    publish_signal("PLANNING_COMPLETE")
-    print("PLANNING_COMPLETE")
+    publish_signal("GOAL_RECEIVED")
+    print("GOAL_RECEIVED")
     time.sleep(3)
     publish_signal("GOAL_ARRIVED")
     print("ARRIVED")
