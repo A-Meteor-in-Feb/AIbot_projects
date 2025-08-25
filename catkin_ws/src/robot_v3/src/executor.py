@@ -271,7 +271,7 @@ class InteractionThread(threading.Thread):
             False: 核对失败
         """
         #用两分钟的时间去核对二维码
-        qr_scanner = qrCode.QrCode(timeout=10)
+        qr_scanner = qrCode.QrCode(timeout=60)
         try:
             return qr_scanner.scan(code)
         finally:
