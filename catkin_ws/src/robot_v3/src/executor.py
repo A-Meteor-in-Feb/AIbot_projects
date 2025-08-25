@@ -200,6 +200,11 @@ class InteractionThread(threading.Thread):
                         self.notify_backend(taskId=taskId, taskStatus=None, elevatorCommand=command_2)
                     else:
                         continue
+                
+                if taskStatus == "idle" and taskId == 0:
+                    empty_pos = {"x": 0, "y": 0, "theta": 0}
+                    self.currentOrder.update_returnPositions(outside_lift=empty_pos, inside_lift=empty_pos, return_position=empty_pos, out_lift_name="", in_lift_name="", return_floor="", return_room="", house="")
+        
                     
             except Exception as e:
                 rospy.loginfo(f"\n <executor-203> Error happens in the main execution loop as {e}\n")
@@ -317,7 +322,6 @@ class InteractionThread(threading.Thread):
         empty_pos = {"x": 0, "y": 0, "theta": 0}
         self.currentOrder.update_deliveryDetails(taskId=0, code="")
         self.currentOrder.update_goalPositions(outside_lift=empty_pos, inside_lift=empty_pos, goal_position=empty_pos, out_lift_name="", in_lift_name="", goal_floor="", goal_room="", house="")
-        self.currentOrder.update_returnPositions(outside_lift=empty_pos, inside_lift=empty_pos, return_position=empty_pos, out_lift_name="", in_lift_name="", return_floor="", return_room="", house="")
         self.state.update_taskId(0)
         self.statusBackend.update_statusBackend(0, 0)
 
