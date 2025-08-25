@@ -113,10 +113,12 @@ class RosSub:
             # 如果之前机器人状态为 delivering, 则这里把机器人状态更新为 arrived
             elif taskStatus == "delivering":
                 self.state.update_taskStatus("arrived")
-        # tianxin 回到原点/起点
-        #if signal == "RETURN_COMPLETE":
-            #self.state.update_taskStatus("idle")
-            #self.state.update_taskId(0)
+        # tianxin 发送错误信号
+        if signal == "ERROR_CONTROL" or signal == "ERROR_PLANNING" or signal == "ERROR_OSCILLATING":
+            if taskStatus == "delivering":
+                self.state.update_taskStatus("idle")
+            if taskStatus == "returning":
+                self.state.update_taskStatus("delivered")
 
     def callback_step(self, msg: Int32):
         """

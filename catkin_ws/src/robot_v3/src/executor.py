@@ -98,6 +98,8 @@ class InteractionThread(threading.Thread):
                 taskStatus = robot_state.get("taskStatus")
                 taskId = robot_state.get("taskId")
                 step = robot_state.get("step")
+                #fault = robot_state.get("fault")
+
 
                 # 机器人在 [idle] 或者 [returning] 的时候 and 有 [待完成任务 (30\40)&(taskId)] 
                 if (taskStatus == "idle" or taskStatus == "returning") and (status == 30 or status == 40) and taskId != 0:    

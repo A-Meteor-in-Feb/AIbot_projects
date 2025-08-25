@@ -215,11 +215,11 @@ class HttpClient:
         }
 
         #加密
-        encrypted_payload = self.httpEncyption.encrypted_data(payload)
-        data = {"data": encrypted_payload}
+        #encrypted_payload = self.httpEncyption.encrypted_data(payload)
+        #data = {"data": encrypted_payload}
 
-        response = self.post_request(url=url, data=data)
-
+        #response = self.post_request(url=url, data=data)
+        response = self.post_request(url=url, data=payload)
         if response:
             return response
         else:
