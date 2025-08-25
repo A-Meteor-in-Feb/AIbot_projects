@@ -51,7 +51,7 @@ class StateThread(threading.Thread):
                 try:
                     self.robot_mqtt.publish_state()
                 except Exception as e:
-                    rospy.logwarn(f" <executor - 54> MQTT error: {e}")
+                    rospy.logwarn(f" <executor - 54> MQTT error: {e}\n")
                 next_time = now + self.heartbeat
             
             self.stop_event.wait(0.1)
@@ -100,12 +100,12 @@ class InteractionThread(threading.Thread):
                 step = robot_state.get("step")
 
                 # 机器人在 [idle] 或者 [returning] 的时候 and 有 [待完成任务 (30\40)&(taskId)] 
-                if (taskStatus in ("idle", "returning")) and (status in (30, 40)) and taskId != 0:    
+                if (taskStatus == "idle" or taskStatus == "returning") and (status == 30 or status == 40) and taskId != 0:    
                     try:
                         currentOrder_info = self.currentOrder.get_currentOrder()
                         goal_positions = currentOrder_info.get("goal_positions")
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 107> Error in READ GOAL: {e}")
+                        rospy.loginfo(f"\n <executor - 107> Error in READ GOAL: {e}\n")
 
                     outside_lift = goal_positions.get("outside_lift")
                     inside_lift = goal_positions.get("inside_lift")
@@ -116,7 +116,7 @@ class InteractionThread(threading.Thread):
                         self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=goal_position, final_floor=goal_floor)
                         self.publish_goal_wait(taskStatus_old=taskStatus)
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 119> Error in PUBLISH GOAL: {e}")
+                        rospy.loginfo(f"\n <executor - 119> Error in PUBLISH GOAL: {e}\n")
 
                 if taskStatus == "delivering":
                     elevatorCommand = self.elevatorPlan.get_elevatorPlan().get("delivering")
@@ -145,13 +145,13 @@ class InteractionThread(threading.Thread):
                         self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_FAILED.value , elevatorCommand=None)
                     
                 # 机器人在 [delivered] 或者 [delivered_failed] 且 [没有待完成任务] -- 在notify后台取货成功/失败之后 任务就被清空了
-                if (taskStatus == "delivered" or taskStatus== "delivered_failed") and (status not in (30, 40)) and taskId == 0:
+                if (taskStatus == "delivered" or taskStatus== "delivered_failed") and (status != 30 or status != 40) and taskId == 0:
                     
                     try:
                         currentOrder_info = self.currentOrder.get_currentOrder()
                         return_positions = currentOrder_info.get("return_positions")
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 154> Error happens when try to read return details: {e}")
+                        rospy.loginfo(f"\n <executor - 154> Error happens when try to read return details: {e}\n")
 
                     outside_lift = return_positions.get("outside_lift")
                     inside_lift = return_positions.get("inside_lift")
@@ -162,7 +162,7 @@ class InteractionThread(threading.Thread):
                         self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=return_position, final_floor=return_floor)
                         self.publish_goal_wait(taskStatus_old=taskStatus)
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 165> Error happens when PUBLISH GOAL: {e}")
+                        rospy.loginfo(f"\n <executor - 165> Error happens when PUBLISH GOAL: {e}\n")
 
                 #取消某个任务 且 没有分配新任务 则 给tianxin发送要返回某个地方的goal
                 if taskStatus == "cancel_delivery" and (status != 30 or status != 40) and taskId == 0:
@@ -171,7 +171,7 @@ class InteractionThread(threading.Thread):
                         currentOrder_info = self.currentOrder.get_currentOrder()
                         return_positions = currentOrder_info.get("return_positions")
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 174> Error happens when try to read return details: {e}")
+                        rospy.loginfo(f"\n <executor - 174> Error happens when try to read return details: {e}\n")
 
                     outside_lift = return_positions.get("outside_lift")
                     inside_lift = return_positions.get("inside_lift")
@@ -182,7 +182,7 @@ class InteractionThread(threading.Thread):
                         self.publish_goal(outside_lift=outside_lift, inside_lift=inside_lift, final_position=return_position, final_floor=return_floor)
                         self.publish_goal_wait(taskStatus_old=taskStatus)
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 185> Error happens when PUBLISH GOAL: {e}")
+                        rospy.loginfo(f"\n <executor - 185> Error happens when PUBLISH GOAL: {e}\n")
 
                 #机器人在任何情况下返回 ([配送完毕] 或者 [任务取消]), 清空数据记录
                 if taskStatus == "returning":
@@ -200,7 +200,7 @@ class InteractionThread(threading.Thread):
                         continue
                     
             except Exception as e:
-                rospy.loginfo(f"Error happens in the main execution loop as {e}")
+                rospy.loginfo(f"\n <executor-203> Error happens in the main execution loop as {e}\n")
 
             self.stop_event.wait(0.1)
 
@@ -245,7 +245,7 @@ class InteractionThread(threading.Thread):
         goal.floor = final_floor
 
         self.ros_pub_goal.publish(goal)
-        rospy.loginfo(f"Forwarded the goal info to the planning part \n {goal}")
+        rospy.loginfo(f"\n Forwarded the goal info to the planning part \n {goal}\n")
 
     def publish_goal_wait(self, taskStatus_old):
         rate = rospy.Rate(10) #控制每0.1秒检查一次状态
@@ -271,7 +271,7 @@ class InteractionThread(threading.Thread):
             False: 核对失败
         """
         #用两分钟的时间去核对二维码
-        qr_scanner = qrCode.QrCode(timeout=60)
+        qr_scanner = qrCode.QrCode(timeout=10)
         try:
             return qr_scanner.scan(code)
         finally:
@@ -290,10 +290,10 @@ class InteractionThread(threading.Thread):
         """
         try:
             response = self.http_client.update_taskStatus(taskId=taskId, taskStatus=taskStatus, elevatorControlCommand=elevatorCommand)
-            rospy.loginfo(f"notify backend with taskId:{taskId}, taskStatus:{taskStatus}, elevatorCommand:{elevatorCommand}")
-            rospy.loginfo(f" notify backend and get: {response.get("code")} ")
+            rospy.loginfo(f"\n notify backend with taskId:{taskId}, taskStatus:{taskStatus}, elevatorCommand:{elevatorCommand}\n")
+            rospy.loginfo(f"\n notify backend and get: {response.get("code")} \n")
         except Exception as e:
-            rospy.loginfo(f" <executor - 296> error happens: {e}")
+            rospy.loginfo(f"\n <executor - 296> error happens: {e}\n")
         
         if taskStatus:
             #配送成功
@@ -468,7 +468,7 @@ class FetchTaskThread(threading.Thread):
 
         #后台传输参数有错
         else:
-            rospy.loginfo(" <executor - 455> Backend response bad parameters.")
+            rospy.loginfo("\n <executor - 455> Backend response bad parameters.\n")
 
         if goal:
             self.currentOrder.update_goalPositions(outside_lift=lift_out, inside_lift=lift_in, goal_position=pos, out_lift_name=out_lift_name, in_lift_name=in_lift_name, goal_floor=flr, goal_room=room, house=house)
