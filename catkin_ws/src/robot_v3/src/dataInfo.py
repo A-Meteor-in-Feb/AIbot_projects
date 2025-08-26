@@ -197,6 +197,7 @@ class CurrentOrder:
                 "goal_position": {"x": 0.0, "y": 0.0, "thata": 0.0},
                 "out_lift_name": "",
                 "in_lift_name": "",
+                "lift_floor": "",
                 "goal_floor": "",
                 "goal_room": "",
                 "house": ""
@@ -207,6 +208,7 @@ class CurrentOrder:
                 "return_position": {"x": 0.0, "y": 0.0, "theta": 0.0},
                 "out_lift_name": "",
                 "in_lift_name": "",
+                "lift_floor": "",
                 "return_floor": "",
                 "return_room": "",
                 "house": ""
@@ -231,7 +233,7 @@ class CurrentOrder:
             self.currentOrder["taskId"] = taskId
             self.currentOrder["code"] = code
 
-    def update_goalPositions(self, outside_lift, inside_lift, goal_position, out_lift_name, in_lift_name, goal_floor, goal_room, house):
+    def update_goalPositions(self, outside_lift, inside_lift, goal_position, out_lift_name, in_lift_name, lift_floor, goal_floor, goal_room, house):
         """
         用于更新当前任务的目标地址的所有信息
         参数:
@@ -251,12 +253,13 @@ class CurrentOrder:
                 "goal_position": goal_position,
                 "out_lift_name": out_lift_name,
                 "in_lift_name": in_lift_name,
+                "lift_floor": lift_floor,
                 "goal_floor": goal_floor,
                 "goal_room": goal_room,
                 "house": house
             })
 
-    def update_returnPositions(self, outside_lift, inside_lift, return_position, out_lift_name, in_lift_name, return_floor, return_room, house):
+    def update_returnPositions(self, outside_lift, inside_lift, return_position, out_lift_name, in_lift_name, lift_floor, return_floor, return_room, house):
         """
        用于更新当前任务结束后机器人返回地址的详细信息.
         参数:
@@ -276,6 +279,7 @@ class CurrentOrder:
                 "return_position": return_position,
                 "out_lift_name": out_lift_name,
                 "in_lift_name": in_lift_name,
+                "lift_floor": lift_floor,
                 "return_floor": return_floor,
                 "return_room": return_room,
                 "house": house

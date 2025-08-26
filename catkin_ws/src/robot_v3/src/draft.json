@@ -1,0 +1,87 @@
+{
+    "code": 0, 
+    'data': {
+        'code': 'f153e7093ef59679042a96bd983ccb2e', 
+        'addressList': [
+            {'identity': {'id': 1097046284, 'no': '4163990C', 'desc': 'SL1_3_ELEVATOR_out'}, 
+            'pose': {
+                'dock': {'x': 0.1899999976158142, 'y': -0.03999999910593033, 'theta': 3.140000104904175}, 
+                'real': {'x': 0.19266630709171295, 'y': -0.0444614551961422, 'theta': 0.0}
+                }, 
+                'navigation': {'arrival_method': 2}, 
+                'dock_settings': {'identify': '', 'verify': ''}, 
+                'stationId': 18839843720, 
+                'stationName': '小区001', 
+                'house': 'ntuitive', 
+                'floor': '3'
+            }, 
+            {'identity': {'id': 1097051631, 'no': '4163ADEF', 'desc': 'SL1_3_ELEVATOR_in'}, 
+            'pose': {
+                'dock': {'x': -1.9299999475479126, 'y': -0.36000001430511475, 'theta': -2.9599997997283936}, 
+                'real': {'x': -1.9266630411148071, 'y': -0.3556916415691376, 'theta': 0.0}
+                }, 
+                'navigation': {'arrival_method': 2}, 
+                'dock_settings': {'identify': '', 'verify': ''}, 
+                'stationId': 18839843720, 
+                'stationName': '小区001', 
+                'house': 'ntuitive', 
+                'floor': '3'
+            }, 
+            {'navigation': {'arrival_method': 2}, 
+            'pose': {
+                'real': {'x': 1.25, 'y': -6.320000171661377, 'theta': -0.24000000953674316}, 
+                'dock': {'x': 1.25, 'y': -6.320000171661377, 'theta': 3.049999952316284}
+                }, 
+                'identity': {'no': '30114F8F', 'id': 806440847, 'desc': 'NIC-2M-03'}, 
+                'floor': '2m', 
+                'house': 'ntuitive', 
+                'dock_settings': {'identify': '', 'verify': ''}, 
+                'stationId': '18839843720'
+            }
+        ], 
+        'taskInfo': {
+            'addressList': [
+                {'navigation': {'arrival_method': 2}, 
+                'pose': {
+                    'real': {'x': 12.069999694824219, 'y': 1.4900000095367432, 'theta': 0.15000000596046448}, 
+                    'dock': {'x': 12.069999694824219, 'y': 1.4900000095367432, 'theta': 0.27000001072883606}
+                    }, 
+                'identity': {'no': '4161B224', 'id': 1096921636, 'desc': 'NIC-03-06'}, 'stationName': '小区001', 'floor': '3', 'house': 'ntuitive', 'dock_settings': {'identify': '', 'verify': ''}, 'stationId': 18839843720}], 'addressParams': {'$ref': '$.data.taskInfo.addressList[0]'}, 'createTime': 1756193817000, 'id': 20533017315, 'orderId': 20533004928, 'robotId': 18950214603, 'spaceParams': {'spaceList': [{'spaceId': 19846681846, 'quantity': 1, 'productId': 18946654944, 'spaceNo': '01'}]}, 'stationId': 18839843720, 'status': 30, 'updateTime': 1756193817000, 'userId': 19253437857}, 'restArea': {'$ref': '$.data.addressList[2]'}}, 'msg': '操作成功'}
+
+
+
+
+
+
+{
+    'code': 0, 
+    'data': {
+        'code': 'f153e7093ef59679042a96bd983ccb2e', 
+        'addressList': [
+            {'navigation': {'arrival_method': 2}, 
+            'pose': {
+                'real': {'x': 1.25, 'y': -6.320000171661377, 'theta': -0.24000000953674316}, 
+                'dock': {'x': 1.25, 'y': -6.320000171661377, 'theta': 3.049999952316284}
+            }, 
+            'identity': {'no': '30114F8F', 'id': 806440847, 'desc': 'NIC-2M-03'}, 
+            'floor': '2m', 'house': 'ntuitive', 
+            'dock_settings': {'identify': '', 'verify': ''}, 
+            'stationId': '18839843720'
+            }
+        ], 
+            
+        'taskInfo': {
+            'addressList': [
+                {'identity': {'id': 809174930, 'no': '303B0792', 'desc': 'SL1_2m_ELEVATOR_out'}, 
+                'pose': {
+                    'dock': {'x': 30.860000610351562, 'y': -3.7699999809265137, 'theta': 0.5}, 
+                    'real': {'x': 30.860000610351562, 'y': -3.7699999809265137, 'theta': 0.27000001072883606}
+                }, 
+                'navigation': {'arrival_method': 2}, 
+                'dock_settings': {'identify': '', 'verify': ''}, 
+                'stationId': 18839843720, 'stationName': '小区001', 'house': 'ntuitive', 'floor': '2m'}, 
+                {'identity': {'id': 819012035, 'no': '30D121C3', 'desc': 'SL1_2m_ELEVATOR_in'}, 
+                'pose': {'dock': {'x': 32.774776458740234, 'y': -2.9644484519958496, 'theta': 0.0}, 
+                'real': {'x': 32.774776458740234, 'y': -2.9644484519958496, 'theta': 0.0}
+                }, 'navigation': {'arrival_method': 2}, 
+                'dock_settings': {'identify': '', 'verify': ''}, 'stationId': 18839843720, 'stationName': '小区001', 'house': 'ntuitive', 'floor': '2m'}, {'identity': {'id': 1097051631, 'no': '4163ADEF', 'desc': 'SL1_3_ELEVATOR_in'}, 'pose': {'dock': {'x': -1.9299999475479126, 'y': -0.36000001430511475, 'theta': -2.9599997997283936}, 'real': {'x': -1.9266630411148071, 'y': -0.3556916415691376, 'theta': 0.0}}, 'navigation': {'arrival_method': 2}, 'dock_settings': {'identify': '', 'verify': ''}, 'stationId': 18839843720, 'stationName': '小区001', 'house': 'ntuitive', 'floor': '3'}, {'navigation': {'arrival_method': 2}, 'pose': {'real': {'x': 12.069999694824219, 'y': 1.4900000095367432, 'theta': 0.15000000596046448}, 'dock': {'x': 12.069999694824219, 'y': 1.4900000095367432, 'theta': 0.27000001072883606}}, 'identity': {'no': '4161B224', 'id': 1096921636, 'desc': 'NIC-03-06'}, 'stationName': '小区001', 'floor': '3', 'house': 'ntuitive', 'dock_settings': {'identify': '', 'verify': ''}, 'stationId': 18839843720}], 'addressParams': {'$ref': '$.data.taskInfo.addressList[3]'}, 'createTime': 1756193817000, 'id': 20533017315, 'orderId': 20533004928, 'robotId': 18950214603, 'spaceParams': {'spaceList': [{'spaceId': 19846681846, 'quantity': 1, 'productId': 18946654944, 'spaceNo': '01'}]}, 'stationId': 18839843720, 'status': 30, 'updateTime': 1756193817000, 'userId': 19253437857}, 'restArea': {'$ref': '$.data.addressList[0]'}}, 'msg': '操作成功'}
