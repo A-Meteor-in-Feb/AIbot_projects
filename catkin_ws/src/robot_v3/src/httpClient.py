@@ -6,6 +6,7 @@ import encryption
 import time
 from pathlib import Path
 import base64
+import logging
 
 class HttpClient:
     def __init__(self, head, host, port, httpEncryption: encryption.HttpEncryption):
@@ -16,6 +17,13 @@ class HttpClient:
         self.base_url = f"{head}://{host}:{port}"
         self.retries = 5
         self.httpEncyption = httpEncryption
+        self.flowId = ""
+
+        self.file_logger1 = logging.getLogger("backend_logger")
+        self.file_logger1.setLevel(logging.INFO)
+        fh1 = logging.FileHandler("backend_response.log", mode="a", encoding="utf-8")
+        fh1.setLevel(logging.INFO)
+        self.file_logger1.addHandler(fh1)
 
 
     def post_request(self, url, data):
@@ -39,7 +47,8 @@ class HttpClient:
                     #result = self.httpEncyption.decrypt_response_data(data)
                     #不需要解密
                     result = response.json()
-                    print(f"\n <httpClient-42> backend response: {result}\n")
+                    #print(f"\n <httpClient-42> backend response: {result}\n")
+                    self.file_logger1.info(f"<httpClient-42> backend response: {result}")
                     return result
                 #这里的情况包括服务器端各种异常比如 500, 404, 401 等等
                 else:
@@ -225,6 +234,69 @@ class HttpClient:
         else:
             return None
         
+
+    def set_elevatorControlFlow(self, flowId, elevatorStatus, robotId, taskId, fromFloor, toFloor, house="ntuitive", from_elevator_out ={}, from_elevator_in = {}, to_elevator_out = {}, to_elevator_in = {}):
+        """
+        向后台发送电梯执行流程
+        参数:
+            elevatorStatus: 电梯流程状态
+            robotId: 机器人ID
+            taskId: 任务ID
+            house: 楼号
+            fromFloor: 起始楼层
+            toFloor: 终点楼层
+            from_elevator_out: 起点电梯外部位置
+            from_elevator_in: 起点电梯内部位置
+            to_elevator_out: 终点电梯外部位置
+            to_elevator_in: 终点电梯内部位置
+        """
+        url = f"{self.base_url}/api/robot/client/setElevatorControlFlowInfo"
+
+        timestamp = dataInfo.utc_now_ms()
+
+        payload = {
+            "flowId": flowId,
+            "status": elevatorStatus,
+            "stamp": timestamp,
+            "robotId": robotId,
+            "taskId": taskId,
+            "house": house,
+            "fromFloor": fromFloor,
+            "toFloor": toFloor,
+            "fromElevatorOutAddress": from_elevator_out,
+            "fromElevatorInAddress": from_elevator_in,
+            "toElevatorOutAddress": to_elevator_out,
+            "toElevatorInAddress": to_elevator_in
+        }
+        print(f"\n {payload} \n")
+
+        response = self.post_request(url=url, data=payload)
+        if response:
+            return response
+        else:
+            return None
+
+
+    def get_elevatorControlFlow(self, flowId):
+        """
+        向后台请求得到电梯流程的更新
+        """
+        url = f"{self.base_url}/api/robot/client/getElevatorControlFlowInfo"
+
+        payload = {
+            "flowId": flowId
+        }
+
+        response = self.post_request(url=url, data=payload)
+        if response:
+            return response
+        else:
+            return None
+
+
+        
+
+        
 """
 if __name__ == "__main__":
     #后台指定的参数
@@ -245,5 +317,8 @@ if __name__ == "__main__":
     httpClient = HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
 
     #httpClient.select_taskInfo(0, "2m", "ntuitive")
-    httpClient.update_taskStatus(taskId=0, taskStatus=None, elevatorControlCommand="ntuitive:2m:PL1_2m_ELEVATOR_out:u")
+    #httpClient.update_taskStatus(taskId=0, taskStatus=None, elevatorControlCommand="ntuitive:2m:PL1_2m_ELEVATOR_out:u")
+    #response = httpClient.set_elevatorControlFlow(elevatorStatus=0, robotId=ROBOTID, taskId=None, fromFloor="3", toFloor="2m")
+    response = httpClient.get_elevatorControlFlow(flowId="e4339c0a-15a4-46d7-af6f-70aaa096f1c1")
+    print(response)
 """

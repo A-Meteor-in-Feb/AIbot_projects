@@ -191,28 +191,8 @@ class CurrentOrder:
         self.currentOrder = {
             "taskId": 0,
             "code": "",
-            "goal_positions":{
-                "outside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
-                "inside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
-                "goal_position": {"x": 0.0, "y": 0.0, "thata": 0.0},
-                "out_lift_name": "",
-                "in_lift_name": "",
-                "lift_floor": "",
-                "goal_floor": "",
-                "goal_room": "",
-                "house": ""
-            },
-            "return_positions":{
-                "outside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
-                "inside_lift": {"x": 0.0, "y": 0.0, "theta": 0.0},
-                "return_position": {"x": 0.0, "y": 0.0, "theta": 0.0},
-                "out_lift_name": "",
-                "in_lift_name": "",
-                "lift_floor": "",
-                "return_floor": "",
-                "return_room": "",
-                "house": ""
-            }
+            "goal_positions":[],
+            "return_positions":[]
         }
 
     def get_currentOrder(self):
@@ -233,58 +213,35 @@ class CurrentOrder:
             self.currentOrder["taskId"] = taskId
             self.currentOrder["code"] = code
 
-    def update_goalPositions(self, outside_lift, inside_lift, goal_position, out_lift_name, in_lift_name, lift_floor, goal_floor, goal_room, house):
+    def update_goalPositions(self, goal_pos_dict):
         """
         用于更新当前任务的目标地址的所有信息
         参数:
-            outside_lift: 电梯外部坐标
-            inside_lift: 电梯内部坐标
-            goal_position: 目标地址坐标
-            out_lift_name: 即将进入的电梯名字
-            in_lift_name: 已进入的电梯的名字
-            goal_floor: 目标地址楼层
-            goal_room: 目标地址房间号
-            house: 目标位置所在建筑
+            goal_pos_dict = {"room": "", "dock": {}, "floor": "", "house":""}
         """
         with self.lock:
-            self.currentOrder["goal_positions"].update({
-                "outside_lift": outside_lift,
-                "inside_lift": inside_lift,
-                "goal_position": goal_position,
-                "out_lift_name": out_lift_name,
-                "in_lift_name": in_lift_name,
-                "lift_floor": lift_floor,
-                "goal_floor": goal_floor,
-                "goal_room": goal_room,
-                "house": house
-            })
+            self.currentOrder["goal_positions"].append(goal_pos_dict)
 
-    def update_returnPositions(self, outside_lift, inside_lift, return_position, out_lift_name, in_lift_name, lift_floor, return_floor, return_room, house):
+    def update_returnPositions(self, return_pos_dict):
         """
-       用于更新当前任务结束后机器人返回地址的详细信息.
+        用于更新当前任务结束后机器人返回地址的详细信息.
         参数:
-            outside_lift: 电梯外部坐标
-            inside_lift: 电梯内部坐标
-            return_position: 机器人返回的地址坐标
-            out_lift_name: 即将进入的电梯名字
-            in_lift_name: 已进入的电梯的名字
-            return_floor: 机器人返回的楼层坐标
-            return_room: 机器人返回的房间号
-            house: 目标位置所在建筑
+            return_pos_dict = {"room": "", "dock": {}, "floor": "", "house":""}
         """
         with self.lock:
-            self.currentOrder["return_positions"].update({
-                "outside_lift": outside_lift,
-                "inside_lift": inside_lift,
-                "return_position": return_position,
-                "out_lift_name": out_lift_name,
-                "in_lift_name": in_lift_name,
-                "lift_floor": lift_floor,
-                "return_floor": return_floor,
-                "return_room": return_room,
-                "house": house
-            })
+            self.currentOrder["return_positions"].append(return_pos_dict)
 
+    def reset_currentOrder(self):
+        """
+        任务结束后重置.
+        """
+        with self.lock:
+            self.currentOrder = {
+                "taskId": 0,
+                "code": "",
+                "goal_positions": [],
+                "return_positions": []
+            }
 
 class ElevatorPlan:
     def __init__(self):
@@ -335,3 +292,99 @@ class ElevatorPlan:
                 1: command_1,
                 2: command_2
             })
+
+class ElevatorControl:
+    def __init__(self):
+        self.lock = threading.Lock()
+
+        self.elevatorControlParams = {
+            "status": 0,
+            "robotId": 0,
+            "taskId": 0,
+            "house": "ntuitive",
+            "fromFloor": "",
+            "toFloor": "",
+            "fromElevatorOutAddress": {},
+            "fromElevatorInAddress": {},
+            "toElevatorOutAddress": {},
+            "toElevatorInAddress": {}
+        }
+
+    def get_elevatorControl(self):
+        """
+        获得当前用于电梯的详细信息
+        """
+        with self.lock:
+            return copy.deepcopy(self.elevatorControlParams)
+        
+    def update_basicInfo(self, robotId, taskId):
+        """
+        用于更新机器人基本信息
+        """
+        with self.lock:
+            self.elevatorControlParams["robotId"] = robotId
+            self.elevatorControlParams["taskId"] = taskId
+
+    def update_elevatorStatus(self, elevatorStatus):
+        """
+        用于更新电梯的现在的状态
+        """
+        with self.lock:
+            self.elevatorControlParams["status"] = elevatorStatus
+
+    def update_floorInfo(self, fromFloor, toFloor):
+        """
+        用于更新机器人要从哪层(fromFloor)到哪层(toFloor)
+        """
+        with self.lock:
+            self.elevatorControlParams["fromFloor"] = fromFloor
+            self.elevatorControlParams["toFloor"] = toFloor
+
+    def update_fromElevatorOutAddress(self, fromElevatorOutAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["fromElevatorOutAddress"] = fromElevatorOutAddress
+
+    def update_fromElevatorInAddress(self, fromElevatorInAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["fromElevatorInAddress"] = fromElevatorInAddress
+
+    def update_toElevatorOutAddress(self, toElevatorOutAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["toElevatorOutAddress"] = toElevatorOutAddress
+
+    def update_toElevatorInAddress(self, toElevatorInAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["toElevatorInAddress"] = toElevatorInAddress
+
+    def reset_elevatorControlParams(self):
+        """
+        任务结束后清空记录
+        """
+        with self.lock:
+            self.elevatorControlParams = {
+                "status": 0,
+                "robotId": 0,
+                "taskId": 0,
+                "house": "ntuitive",
+                "fromFloor": "",
+                "toFloor": "",
+                "fromElevatorOutAddress": {},
+                "fromElevatorInAddress": {},
+                "toElevatorOutAddress": {},
+                "toElevatorInAddress": {}
+            }
+
+
+ 

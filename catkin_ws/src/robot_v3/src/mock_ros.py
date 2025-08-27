@@ -7,7 +7,6 @@ from std_msgs.msg import Int32
 
 
 def goal_callback(msg: Goal_v3):
-    """
     if msg.relocation:
         print(f"receive goal {msg}")
         time.sleep(1)
@@ -17,15 +16,6 @@ def goal_callback(msg: Goal_v3):
         publish_signal("RELOCATION_COMPLETE")
         print("RELOCATION_COMPLETE\n")
     else:
-        print(f"receive goal {msg}")
-        time.sleep(1)
-        publish_signal("GOAL_RECEIVED")
-        print("GOAL_RECEIVED\n")
-        time.sleep(10)
-        publish_signal("GOAL_ARRIVED")
-        print("GOAL_ARRIVED\n")
-    """
-    if msg.relocation == False:
         print(f"receive goal {msg}")
         time.sleep(1)
         publish_signal("GOAL_RECEIVED")
