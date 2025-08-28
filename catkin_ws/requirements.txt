@@ -2,4 +2,3 @@ flask
 requests
 pycryptodome>=3.20.0
 evdev
-schedule >= 1.2.0

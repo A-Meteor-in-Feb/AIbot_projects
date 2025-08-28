@@ -58,8 +58,6 @@ class HttpServer:
         taskId_old = statusBackend.get("taskId")
         print(f"now: {status_old}\n")
 
-        robotStatus = self.state.get_state().get("taskStatus")
-
         # 当前 任务状态 与 新任务状态不符, 且 任务ID不同, 说明是新分配了一个任务
         if status_old != status_new and taskId_old != taskId_new: ###有修改
             """
@@ -75,18 +73,21 @@ class HttpServer:
             self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
 
             goal_addrList = data.get("taskInfo").get("addressList")
+            len_goal_addrList = len(goal_addrList)
             self.store_goalPositions(goal=True, addrList=goal_addrList)
+            if len_goal_addrList == 3:
+                self.store_elevatorCommand(goal=True)
 
             
             return_addrList = data.get("addressList")
+            len_return_addrList = len(return_addrList)
             self.store_goalPositions(goal=False, addrList=return_addrList)
+            if len_return_addrList == 3:
+                self.store_elevatorCommand(goal=False)
 
             #机器人可以开始执行新任务
             self.state.update_taskId(task_id=taskId_new)
-            if status_new == 90:
-                self.state.update_taskStatus("restock")
-            elif status_new == 30 or status_new == 40:
-                self.state.update_taskStatus("idle")
+            self.state.update_taskStatus("idle")
             #记录后台让机器人执行的任务的状态
             self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
 
@@ -101,7 +102,7 @@ class HttpServer:
             如果是因为故障之类的, 就直接offline吧???? 这个还需要再想一下
             """
             self.statusBackend.update_statusBackend(taskId=taskId_old, status=status_new)
-            if status_new == 60 and (robotStatus == "delivering" or robotStatus == "arrived"):
+            if status_new == 60:
                 self.state.update_taskId(0)
                 self.state.update_taskStatus("cancel_delivery")
 
@@ -122,24 +123,53 @@ class HttpServer:
             goal: bool, 代表当前更新的事配送目的地址(True) 还是 返回原点地址(False).
             addrList: 目标地址的详细信息
         """
-        for item in addrList:
-            desc = item.get("identity").get("desc")
-            dock = item.get("pose").get("dock")
-            floor = item.get("floor")
-            house = item.get("house")
+        addr_len = len(addrList)
 
-            pos_dict = {
-                "room": desc,
-                "dock": dock,
-                "floor": floor,
-                "house": house
-            }
+        lift_out = {}
+        lift_in = {}
+        pos = {}
+        out_lift_name = ""
+        in_lift_name = ""
+        flr = ""
+        room = ""
+        house = ""
 
-            if goal:
-                self.currentOrder.update_goalPositions(goal_pos_dict=pos_dict)
-            else:
-                self.currentOrder.update_returnPositions(return_pos_dict=pos_dict)
-        
+        #机器人和目标位置在同一楼层
+        if addr_len == 1:
+            empty_pos = {"x": 0, "y": 0, "theta": 0}
+            lift_out = empty_pos
+            lift_in = empty_pos
+            pos = addrList[0].get("pose").get("dock")
+            flr = addrList[0].get("floor")
+            room = addrList[0].get("identity").get("desc")
+            house = addrList[0].get("house")
+
+        #机器人和目标位置不在同一楼层
+        elif addr_len == 3:
+            for item in addrList:
+                desc = item.get("identity").get("desc")
+                dock = item.get("pose").get("dock")
+                if "ELEVATOR_out" in desc:
+                    lift_out = dock
+                    out_lift_name = desc
+                elif "ELEVATOR_in" in desc:
+                    lift_in = dock
+                    in_lift_name = desc
+                else:
+                    pos = dock
+                    flr = item.get("floor")
+                    room = desc
+                    house = item.get("house")
+
+        #后台传输参数有错
+        else:
+            print("Error - Backend response bad parameters.")
+
+        if goal:
+            self.currentOrder.update_goalPositions(outside_lift=lift_out, inside_lift=lift_in, goal_position=pos, out_lift_name=out_lift_name, in_lift_name=in_lift_name, goal_floor=flr, goal_room=room, house=house)
+        else:
+            self.currentOrder.update_returnPositions(outside_lift=lift_out, inside_lift=lift_in, return_position=pos, out_lift_name=out_lift_name, in_lift_name=in_lift_name, return_floor=flr, return_room=room, house=house)
+
     def store_elevatorCommand(self, goal):
         """
         用于更新机器人和电梯交互的指令
@@ -183,7 +213,6 @@ class HttpServer:
             self.elevatorPlan.update_deliveringCommand(command_1=command_1, command_2=command_2)
         else:
             self.elevatorPlan.update_returningCommand(command_1=command_1, command_2=command_2)
-
 
 """
 if __name__ == "__main__":

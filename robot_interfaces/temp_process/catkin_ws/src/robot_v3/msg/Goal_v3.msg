@@ -1,2 +1,3 @@
-geometry_msgs/PoseStamped[3] pose
+geometry_msgs/PoseStamped pose
 string floor
+bool relocation

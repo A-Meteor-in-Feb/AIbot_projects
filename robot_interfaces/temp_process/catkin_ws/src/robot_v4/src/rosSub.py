@@ -96,65 +96,29 @@ class RosSub:
         """
         signal = msg.data
         taskStatus = self.state.get_state().get("taskStatus")
-         
+        taskId = self.state.get_state().get("taskId")
+        # tianxin 发规划完成, 
         if signal == "GOAL_RECEIVED":
-
-            if taskStatus == "idle_toGo":
+            # 如果机器人原来为idle, 则这里把机器人状态更新为delivering
+            if taskStatus == "idle" and taskId != 0:
                 self.state.update_taskStatus("delivering")
-            elif taskStatus == "idle_lift_out":
-                self.state.update_taskStatus("delivering_lift_out")
-            elif taskStatus == "idle_lift_in":
-                self.state.update_taskStatus("delivering_lift_in")
-            elif taskStatus == "return_lift_out":
-                self.state.update_taskStatus("returning_lift_out")
-            elif taskStatus == "return_lift_in":
-                self.state.update_taskStatus("returning_lift_in")
-            elif taskStatus == "return_toGo":
+            # 其他任何状态, 只有两种情况 1-任务取消返回; 2-任务完成返回
+            elif taskStatus == "delivered" or taskStatus == "delivered_failed" or taskStatus == "cancel_delivery":
                 self.state.update_taskStatus("returning")
-        
+        # tianxin 到达目标地址
         if signal == "GOAL_ARRIVED":
-            
+            # 如果之前机器人状态为 returning, 则这里把机器人状态更新为 idle
             if taskStatus == "returning":
                 self.state.update_taskStatus("idle")
+            # 如果之前机器人状态为 delivering, 则这里把机器人状态更新为 arrived
             elif taskStatus == "delivering":
                 self.state.update_taskStatus("arrived")
-            elif taskStatus == "delivering_lift_out":
-                self.state.update_taskStatus("idle_lift_in")
-            elif taskStatus == "delivering_lift_in":
-                self.state.update_taskStatus("idle_inside_lift")
-            elif taskStatus == "returning_lift_out":
-                self.state.update_taskStatus("return_lift_in")
-            elif taskStatus == "returning_lift_in":
-                self.state.update_taskStatus("return_inside_lift")
-
-        if signal == "RELOCATION_RECEIVED":
-            if taskStatus == "idle_relocation":
-                self.state.update_taskStatus("idle_inLift")
-            elif taskStatus == "return_relocation":
-                self.state.update_taskStatus("return_inLift")
-        if signal == "RELOCATION_COMPLETE":
-            if taskStatus == "idle_inLift":
-                self.state.update_taskStatus("idle_toGo")
-            elif taskStatus == "return_inLift":
-                self.state.update_taskStatus("return_toGo")
-
+        # tianxin 发送错误信号
         if signal == "ERROR_CONTROL" or signal == "ERROR_PLANNING" or signal == "ERROR_OSCILLATING":
             if taskStatus == "delivering":
-                self.state.update_taskStatus("idle_toGo")
+                self.state.update_taskStatus("idle")
             if taskStatus == "returning":
-                self.state.update_taskStatus("return_toGo")
-            if taskStatus == "delivering_lift_out":
-                self.state.update_taskStatus("idle_lift_out")
-            if taskStatus == "delivering_lift_in":
-                self.state.update_taskStatus("idle_lift_in")
-            if taskStatus == "idle_inLift":
-                self.state.update_taskStatus("idle_relocation")
-            if taskStatus == "returning_lift_out":
-                self.state.update_taskStatus("return_lift_out")
-            if taskStatus == "returning_lift_in":
-                self.state.update_taskStatus("return_lift_in")
-            if taskStatus == "return_inLift":
-                self.state.update_taskStatus("return_relocation")
+                self.state.update_taskStatus("delivered")
 
     def callback_step(self, msg: Int32):
         """

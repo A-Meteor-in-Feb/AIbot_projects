@@ -7,22 +7,13 @@ from std_msgs.msg import Int32
 
 
 def goal_callback(msg: Goal_v3):
-    if msg.relocation:
-        print(f"receive goal {msg}")
-        time.sleep(1)
-        publish_signal("RELOCATION_RECEIVED")
-        print("RELOCATION_RECEIVED\n")
-        time.sleep(10)
-        publish_signal("RELOCATION_COMPLETE")
-        print("RELOCATION_COMPLETE\n")
-    else:
-        print(f"receive goal {msg}")
-        time.sleep(1)
-        publish_signal("GOAL_RECEIVED")
-        print("GOAL_RECEIVED\n")
-        time.sleep(10)
-        publish_signal("GOAL_ARRIVED")
-        print("GOAL_ARRIVED\n")
+    print(f"receive goal {msg}")
+    time.sleep(2)
+    publish_signal("GOAL_RECEIVED")
+    print("GOAL_RECEIVED")
+    time.sleep(3)
+    publish_signal("GOAL_ARRIVED")
+    print("ARRIVED")
 
 '''
 def return_callback(msg: String):
@@ -48,7 +39,7 @@ if __name__ == "__main__":
     rospy.Subscriber("/goal_v3", Goal_v3, goal_callback, queue_size=1)
     #rospy.Subscriber("signal/return", String, return_callback, queue_size=1)
     
-    signal_publisher = rospy.Publisher("signal", String, queue_size=1)  
+    signal_publisher = rospy.Publisher("/signal", String, queue_size=1)  
     step_publisher = rospy.Publisher("step", Int32, queue_size=1)
     
     rospy.spin()
