@@ -116,7 +116,7 @@ class InteractionThread(threading.Thread):
                     currentOrder_info = self.currentOrder.get_currentOrder()
                     goal_positions = currentOrder_info.get("goal_positions")
                 except Exception as e:
-                    print(f"\n <executor - 110> Error in READ GOAL: {e}\n")
+                    print(f"\n <executor-119> Error in READ GOAL: {e}\n")
 
                 for item in goal_positions:
                     robot_floor = self.state.get_state().get("floor")
@@ -135,11 +135,10 @@ class InteractionThread(threading.Thread):
                 self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value, elevatorCommand=None)
                 
                 code = self.currentOrder.get_currentOrder().get("code")
-                #qr_check = self.qr_check(code)
-                print(" Start checking QR code")
-                time.sleep(5)
-                #if qr_check:
-                if True:
+                qr_check = self.qr_check(code)
+                #print(" Start checking QR code")
+                #time.sleep(5)
+                if qr_check:
                     #self.door_open()
                     self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_COMPLETE.value , elevatorCommand=None)
                 else:
@@ -167,7 +166,7 @@ class InteractionThread(threading.Thread):
                 self.finalize_task()
         
         except Exception as e:
-            print(f"\n <executor-167> Error happens in the main execution loop as {e}\n")
+            print(f"\n <executor-169> Error happens in the main execution loop as {e}\n")
 
     def run(self):
         self._job = self._sched.every(2).seconds.do(self.logic)
@@ -213,14 +212,14 @@ class InteractionThread(threading.Thread):
                         self.elevatorGettter = elevatorFlowGetter.ElevatorFlowGetter(owner=self, flow_id=uuid_str, period=5)
                         self.elevatorGettter.start()
                     except Exception as e:
-                        rospy.loginfo(f"[move] start ElevatorFlowWatcher failed: {e}")
+                        rospy.loginfo(f" <executor-215> start ElevatorFlowGetter failed: {e}")
 
                 try:
                     self.elevatorStatus = 10
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
                     self.publish_goal(goal_pos=goal_lift_out, goal_floor=goal_lift_floor, relocation=False, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor - 136> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-222> Error in PUBLISH GOAL: {e}\n")
                     
             if taskStatus == "idle_lift_in":
 
@@ -234,7 +233,7 @@ class InteractionThread(threading.Thread):
                         self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
                         self.publish_goal(goal_pos=goal_lift_in, goal_floor=goal_lift_floor, relocation=False, taskStatus_old=taskStatus)
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 147> Error in PUBLISH GOAL: {e}\n")
+                        rospy.loginfo(f"\n <executor-236> Error in PUBLISH GOAL: {e}\n")
                 elif self.elevatorStatus == 10:
                     self.elevatorStatus = 20
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
@@ -259,7 +258,7 @@ class InteractionThread(threading.Thread):
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
                     self.publish_goal(goal_pos=goal_relocation, goal_floor=goal_floor, relocation=True, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor - 161> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-261> Error in PUBLISH GOAL: {e}\n")
 
             if taskStatus == "idle_toGo":
 
@@ -278,7 +277,7 @@ class InteractionThread(threading.Thread):
                 try:
                     self.publish_goal(goal_pos=goal_pos, goal_floor=goal_floor, relocation=False, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor - 167> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-280> Error in PUBLISH GOAL: {e}\n")
 
             robot_state = self.state.get_state()
             taskStatus = robot_state.get("taskStatus")
@@ -321,14 +320,14 @@ class InteractionThread(threading.Thread):
                         self.elevatorGettter = elevatorFlowGetter.ElevatorFlowGetter(owner=self, flow_id=uuid_str, period=5)
                         self.elevatorGettter.start()
                     except Exception as e:
-                        rospy.loginfo(f"[move] start ElevatorFlowWatcher failed: {e}")
+                        rospy.loginfo(f" <executor-323> start ElevatorFlowWatcher failed: {e}")
 
                 try:
                     self.elevatorStatus = 10
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
                     self.publish_goal(goal_pos=return_lift_out, goal_floor=return_lift_floor, relocation=False, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor - 136> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-330> Error in PUBLISH GOAL: {e}\n")
                     
             if taskStatus == "return_lift_in":
 
@@ -342,7 +341,7 @@ class InteractionThread(threading.Thread):
                         self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
                         self.publish_goal(goal_pos=return_lift_in, goal_floor=return_lift_floor, relocation=False, taskStatus_old=taskStatus)
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor - 147> Error in PUBLISH GOAL: {e}\n")
+                        rospy.loginfo(f"\n <executor-344> Error in PUBLISH GOAL: {e}\n")
 
                 elif self.elevatorStatus == 10:
                     self.elevatorStatus = 20
@@ -367,7 +366,7 @@ class InteractionThread(threading.Thread):
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
                     self.publish_goal(goal_pos=return_relocation, goal_floor=return_floor, relocation=True, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor - 161> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-369> Error in PUBLISH GOAL: {e}\n")
 
             if taskStatus == "return_toGo":
 
@@ -386,7 +385,7 @@ class InteractionThread(threading.Thread):
                 try:
                     self.publish_goal(goal_pos=return_pos, goal_floor=return_floor, relocation=False, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor - 167> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-388> Error in PUBLISH GOAL: {e}\n")
 
             robot_state = self.state.get_state()
             taskStatus = robot_state.get("taskStatus")
@@ -515,7 +514,7 @@ class InteractionThread(threading.Thread):
             rospy.loginfo(f"\n notify backend with taskId:{taskId}, taskStatus:{taskStatus}, elevatorCommand:{elevatorCommand}\n")
             rospy.loginfo(f"\n notify backend and get: {response} \n")
         except Exception as e:
-            rospy.loginfo(f"\n <executor - 303> error happens: {e}\n")
+            rospy.loginfo(f"\n <executor-517> error happens: {e}\n")
         
         if taskStatus:
             #配送成功
