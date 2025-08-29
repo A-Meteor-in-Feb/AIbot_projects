@@ -2,6 +2,7 @@ import threading
 import time
 import rospy
 import schedule
+import logging
 
 class ElevatorFlowGetter:
     def __init__(self, owner, flow_id: str, period: float = 5):
@@ -17,6 +18,12 @@ class ElevatorFlowGetter:
         self._sched = schedule.Scheduler()
         self._job = None
         self._thread = threading.Thread(target=self.run, name=f"ElevatorFlowWatcher-{flow_id}", daemon=True)
+
+        self.file_logger2 = logging.getLogger("backend_logger2")
+        self.file_logger2.setLevel(logging.INFO)
+        fh2 = logging.FileHandler("backend_response2.log", mode="a", encoding="utf-8")
+        fh2.setLevel(logging.INFO)
+        self.file_logger2.addHandler(fh2)
         
 
     def start(self):
@@ -53,6 +60,9 @@ class ElevatorFlowGetter:
             
         try:
             response = self.owner.http_client.get_elevatorControlFlow(flowId=self.flow_id)
+
+            self.file_logger2.info(f"<httpClient-51> backend response: {response}\n")
+                   
             flow_info = response.get("data").get("flowInfo")
             elevatorStatus = flow_info.get("status")
 
