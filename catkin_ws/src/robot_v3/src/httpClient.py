@@ -162,10 +162,10 @@ class HttpClient:
         }
 
         #加密
-        encrypted_payload = self.httpEncyption.encrypted_data(payload)
-        data = {"data": encrypted_payload}
+        #encrypted_payload = self.httpEncyption.encrypted_data(payload)
+        #data = {"data": encrypted_payload}
 
-        response = self.post_request(url=url, data=data)
+        response = self.post_request(url=url, data=payload)
 
         if response:
             return response
@@ -309,7 +309,7 @@ if __name__ == "__main__":
 
     #连接参数
     HTTP_HEAD = "http"
-    BACKEND_HOST = "192.168.10.164"   # "10.25.0.15"
+    BACKEND_HOST = "10.25.0.15"   #  "192.168.10.164"
     BACKEND_PORT = "18001"        # "8889"
 
     httpEncryption = encryption.HttpEncryption(robotId=ROBOTID, private_key=PRIVATE_KEY, iv_vector=IV_VECTOR)
@@ -319,6 +319,7 @@ if __name__ == "__main__":
     #httpClient.select_taskInfo(0, "2m", "ntuitive")
     #httpClient.update_taskStatus(taskId=0, taskStatus=None, elevatorControlCommand="ntuitive:2m:PL1_2m_ELEVATOR_out:u")
     #response = httpClient.set_elevatorControlFlow(elevatorStatus=0, robotId=ROBOTID, taskId=None, fromFloor="3", toFloor="2m")
-    response = httpClient.get_elevatorControlFlow(flowId="e4339c0a-15a4-46d7-af6f-70aaa096f1c1")
+    #response = httpClient.get_elevatorControlFlow(flowId="e4339c0a-15a4-46d7-af6f-70aaa096f1c1")
+    response = httpClient.report_image()
     print(response)
 """

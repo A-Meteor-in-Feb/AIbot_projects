@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import threading
 import copy
 from enum import Enum
 
 
 def utc_now_ms():
-    now = datetime.now()    
+    now = datetime.now() + timedelta(hours=8)   
     timestamp_str = now.strftime("%Y-%m-%d %H:%M:%S")
     return timestamp_str
 
