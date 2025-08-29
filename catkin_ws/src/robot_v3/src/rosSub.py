@@ -101,11 +101,11 @@ class RosSub:
 
             if taskStatus == "idle_toGo":
                 self.state.update_taskStatus("delivering")
-            elif taskStatus == "idle_lift_out":
+            elif taskStatus == "idle_lift_out" or taskStatus == "idle_lift_out_another":
                 self.state.update_taskStatus("delivering_lift_out")
             elif taskStatus == "idle_lift_in":
                 self.state.update_taskStatus("delivering_lift_in")
-            elif taskStatus == "return_lift_out":
+            elif taskStatus == "return_lift_out" or taskStatus == "return_lift_out_another":
                 self.state.update_taskStatus("returning_lift_out")
             elif taskStatus == "return_lift_in":
                 self.state.update_taskStatus("returning_lift_in")

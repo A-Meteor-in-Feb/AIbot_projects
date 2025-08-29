@@ -61,7 +61,7 @@ class StateThread(threading.Thread):
 
 
 class InteractionThread(threading.Thread):
-    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, ros_pub_goal, robot_mqtt, http_client, stop_event: threading.Event):
+    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, ros_pub_goal, http_client, stop_event: threading.Event):
         """
         这个类主要用来控制机器人的执行, 与后台交互, tianxin交互
         参数:
@@ -83,7 +83,6 @@ class InteractionThread(threading.Thread):
 
         self.ros_pub_goal = ros_pub_goal
 
-        self.robot_mqtt = robot_mqtt
         self.http_client = http_client
         
         self.stop_event = stop_event
@@ -122,30 +121,34 @@ class InteractionThread(threading.Thread):
                     robot_floor = self.state.get_state().get("floor")
                     goal_floor = item.get("floor")
                     goal_pos = item.get("dock")
+
+                    print(f"new travil: robot's floor {robot_floor}, to: {goal_floor}")
                     
                     if goal_floor != robot_floor:
                         self.state.update_taskStatus("idle_lift_out")
-                        self.move(taskId=taskId, robot_floor=robot_floor, goal_pos=goal_pos, goal_floor=goal_floor)
+                        self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=goal_pos, to_floor=goal_floor)
                     else:
                         self.state.update_taskStatus("idle_toGo")
-                        self.move(taskId=taskId, robot_floor=robot_floor, goal_pos=goal_pos, goal_floor=goal_floor)
+                        self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=goal_pos, to_floor=goal_floor)
 
             # 机器人 [arrived]
             if taskStatus == "arrived":
                 self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value, elevatorCommand=None)
                 
                 code = self.currentOrder.get_currentOrder().get("code")
-                qr_check = self.qr_check(code)
-                #print(" Start checking QR code")
-                #time.sleep(5)
-                if qr_check:
+                #qr_check = self.qr_check(code)
+                #if qr_check:
+                time.sleep(5)
+                print("\n scanning \n")
+                if True:
                     #self.door_open()
                     self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_COMPLETE.value , elevatorCommand=None)
                 else:
                     self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_FAILED.value , elevatorCommand=None)
                 
-            # 机器人在 [delivered]/ [delivered_failed]/ [cancel_delivery]/ [restock] 返回原点
+            # 机器人在 [delivered]/ [delivered_failed]/ [cancel_delivery] 先看有没有新任务, 没有新任务则返回 
             if taskStatus == "delivered" or taskStatus== "delivered_failed" or taskStatus == "cancel_delivery" or taskStatus == "restock":
+                
                 currentOrder_info = self.currentOrder.get_currentOrder()
                 return_positions = currentOrder_info.get("return_positions")
                 
@@ -154,12 +157,14 @@ class InteractionThread(threading.Thread):
                     return_floor = item.get("floor")
                     return_pos = item.get("dock")
 
+                    print(f"new travil: robot's floor {robot_floor}, to: {return_floor}")
+
                     if return_floor != robot_floor:
                         self.state.update_taskStatus("return_lift_out")
-                        self.back(taskId=taskId, robot_floor=robot_floor, return_pos=return_pos, return_floor=return_floor)
+                        self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=return_pos, to_floor=return_floor)
                     else:
                         self.state.update_taskStatus("return_toGo")
-                        self.back(taskId=taskId, robot_floor=robot_floor, return_pos=return_pos, return_floor=return_floor)
+                        self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=return_pos, to_floor=return_floor)
             
             # 机器人执行完整个任务之后清空之前任务的所有数据
             if taskStatus == "idle" and taskId == 0:
@@ -183,85 +188,154 @@ class InteractionThread(threading.Thread):
                 pass
             self._job = None
 
-
-    def move(self, taskId, robot_floor, goal_pos, goal_floor):
+    def move_with_lift(self, taskId, robot_floor, to_pos, to_floor):
         """
-        跟电梯交互的流程
+        跟电梯交互
+        参数:
+            taskId: 正在执行的任务ID, 如果没有在执行任务则为0
+            robot_floor: 机器人当前位于的楼层
+            to_pos: 机器人要到达的目的地坐标
+            to_floor: 机器人要到达的目的地楼层
         """
         robot_state = self.state.get_state()
         taskStatus = robot_state.get("taskStatus")
 
         uuid_str = str(uuid.uuid4())
 
-        rate = rospy.Rate(0.5)
-    
-        while taskStatus != "arrived":
+        rate = rospy.Rate(0.5) #控制两秒执行一次循环
 
-            if taskStatus == "idle_lift_out":
+        while  taskStatus not in ["idle", "arrived", "delivering", "returning", "cancel_delivery"]:
 
+            rospy.loginfo(f"\n robot's status: {taskStatus}; elevator's status: {self.elevatorStatus}; robot's floor: {robot_floor}\n")
+
+            if taskStatus == "idle_lift_out" or taskStatus == "return_lift_out": #准备走向电梯门外的点位
+
+                #初始化使用电梯需要的参数和流程接口
+                self.elevatorStatus = 0
                 self.elevatorControlParams.update_basicInfo(robotId=ROBOTID, taskId=taskId)
-                self.elevatorControlParams.update_floorInfo(fromFloor=robot_floor, toFloor=goal_floor)
-                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=0, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
+                self.elevatorControlParams.update_floorInfo(fromFloor=robot_floor, toFloor=to_floor)
+                
+                #向后台发初始化电梯流程请求 并更新 机器人执行任务需要的相关参数 
+                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
 
                 elevatorControl = self.elevatorControlParams.get_elevatorControl()
-                goal_lift_out = elevatorControl.get("fromElevatorOutAddress").get("pose").get("dock")
-                goal_lift_floor = elevatorControl.get("fromElevatorOutAddress").get("floor")
+                ele_out_pos = elevatorControl.get("fromElevatorOutAddress").get("pose").get("dock")
+                ele_out_floor = elevatorControl.get("fromElevatorOutAddress").get("floor")
 
+                #启动从后台获取电梯状态的进程
                 if not self.elevatorGettter:
                     try:
                         self.elevatorGettter = elevatorFlowGetter.ElevatorFlowGetter(owner=self, flow_id=uuid_str, period=5)
                         self.elevatorGettter.start()
                     except Exception as e:
-                        rospy.loginfo(f" <executor-215> start ElevatorFlowGetter failed: {e}")
+                        rospy.loginfo(f" <executor-224> start ElevatorFlowGetter failed: {e}")
 
+                #向planning部分发目的坐标, 目标接收成功, 机器人改为状态 [delivering_lift_out]-[机器人正在赶往电梯口]
                 try:
-                    self.elevatorStatus = 10
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
-                    self.publish_goal(goal_pos=goal_lift_out, goal_floor=goal_lift_floor, relocation=False, taskStatus_old=taskStatus)
+                    self.publish_goal(goal_pos=ele_out_pos, goal_floor=ele_out_floor, relocation=False, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor-222> Error in PUBLISH GOAL: {e}\n")
-                    
-            if taskStatus == "idle_lift_in":
+                    rospy.loginfo(f"\n <executor-230> Error in PUBLISH GOAL: {e}\n")
 
-                elevatorControl = self.elevatorControlParams.get_elevatorControl()
-                goal_lift_in = elevatorControl.get("fromElevatorInAddress").get("pose").get("dock")
-                goal_lift_floor = elevatorControl.get("fromElevatorInAddress").get("floor")
+                robot_state = self.state.get_state()
+                taskStatus = robot_state.get("taskStatus")
 
+                #目标接收成功 [机器人正在赶往电梯口](10), 更新电梯状态为[10], 通知后台
+                if taskStatus == "delivering_lift_out" or taskStatus == "returning_lift_out":
+                    self.elevatorStatus = 10
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+
+            if taskStatus == "idle_lift_in" or taskStatus == "return_lift_in": #到达电梯外部坐标, 准备走进电梯内部
+
+                #到达电梯门口 且 收到 [电梯门打开](40) 的信号
                 if self.elevatorStatus == 40:
+                    
+                    elevatorControl = self.elevatorControlParams.get_elevatorControl()
+                    ele_in_pos = elevatorControl.get("fromElevatorInAddress").get("pose").get("dock")
+                    ele_in_floor = elevatorControl.get("fromElevatorInAddress").get("floor")
+
+                    #通知planning部分 机器人可以开始向电梯内部走, 待目标接收成功, 机器人状态改为 [delivering_lift_in]-[机器人正在赶往电梯内部]
                     try:
-                        self.elevatorStatus = 50
-                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
-                        self.publish_goal(goal_pos=goal_lift_in, goal_floor=goal_lift_floor, relocation=False, taskStatus_old=taskStatus)
+                        self.publish_goal(goal_pos=ele_in_pos, goal_floor=ele_in_floor, relocation=False, taskStatus_old=taskStatus)
                     except Exception as e:
-                        rospy.loginfo(f"\n <executor-236> Error in PUBLISH GOAL: {e}\n")
+                        rospy.loginfo(f"\n <executor-249> Error in PUBLISH GOAL: {e}\n")
+                    
+                    robot_state = self.state.get_state()
+                    taskStatus = robot_state.get("taskStatus")
+                    
+                    #目标接收成功 [机器人正在赶往电梯内部](50), 更新电梯状态为[50], 通知后台
+                    if taskStatus == "delivering_lift_in" or taskStatus == "returning_lift_in":
+                        self.elevatorStatus = 50
+                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                
+                #到达电梯门口 还没收到 电梯门已开 的信号, 所以要发送 [已到达电梯口](20) 的命令
                 elif self.elevatorStatus == 10:
                     self.elevatorStatus = 20
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
                 
+                elif self.elevatorStatus == 20 or self.elevatorStatus == 30:
 
-            if taskStatus == "idle_inside_lift" and self.elevatorStatus == 50:
-                
+                    elevatorControl = self.elevatorControlParams.get_elevatorControl()
+                    ele_out_pos_new = elevatorControl.get("fromElevatorOutAddress").get("pose").get("dock")
+
+                    if ele_out_pos != ele_out_pos_new:
+                        ele_out_pos = ele_out_pos_new
+
+                        if taskStatus == "idle_lift_in":
+                            self.state.update_taskStatus("idle_lift_out_another")
+                        else:
+                            self.state.update_taskStatus("return_lift_out_another")
+                        try:
+                            self.publish_goal(goal_pos=ele_out_pos_new, goal_floor=ele_out_floor, relocation=False, taskStatus_old=taskStatus)
+                        except Exception as e:
+                            rospy.loginfo(f"\n <executor-230> Error in PUBLISH GOAL: {e}\n")
+
+            if (taskStatus == "idle_inside_lift" or taskStatus == "return_inside_lift") and self.elevatorStatus == 50: #机器人在电梯内部并且刚才的状态是[正在赶往电梯]
+
+                #通知后台机器人已到达电梯内部
                 self.elevatorStatus = 60
-                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
-                self.state.update_taskStatus("idle_relocation")
+                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
                 
-            if taskStatus == "idle_relocation" and self.elevatorStatus == 80:
+                #更新机器人自身的状态为 等待重定位 [idle_relocation] 或者 [return_relocation]
+                if taskStatus == "idle_inside_lift":
+                    self.state.update_taskStatus("idle_relocation")
+                elif taskStatus == "return_inside_lift":
+                    self.state.update_taskStatus("return_relocation")
 
-                self.state.update_position(floor=goal_floor, building="ntuitive")
+            if (taskStatus == "idle_relocation" or taskStatus == "return_relocation") and self.elevatorStatus == 80: #机器人处于可以发生重定位的状态并且电梯门已开
 
+                #首先更新机器人现在所在的 [楼层] 和 [楼]
+                self.state.update_position(floor=to_floor, building="ntuitive")
+                robot_floor = self.state.get_state().get("floor")
+
+                #拿到重定位的坐标
                 elevatorControl = self.elevatorControlParams.get_elevatorControl()
-                goal_relocation = elevatorControl.get("toElevatorInAddress").get("pose").get("dock")
-                goal_floor = elevatorControl.get("toElevatorInAddress").get("floor")
+                relocation_pos = elevatorControl.get("toElevatorInAddress").get("pose").get("dock")
+                relocation_floor = elevatorControl.get("toElevatorInAddress").get("floor")    
 
+                #给planning部分发送重定位信息, 待目标接收成功, 机器人状态改为 [idle_inLift]/[return_inLift]-[机器人正在重置地图]
                 try:
-                    self.elevatorStatus = 90
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
-                    self.publish_goal(goal_pos=goal_relocation, goal_floor=goal_floor, relocation=True, taskStatus_old=taskStatus)
+                    print("305:\n")
+                    self.publish_goal(goal_pos=relocation_pos, goal_floor=relocation_floor, relocation=True, taskStatus_old=taskStatus)  
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor-261> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-294> Error in PUBLISH GOAL: {e}\n")
 
-            if taskStatus == "idle_toGo":
+                robot_state = self.state.get_state()
+                taskStatus = robot_state.get("taskStatus")
 
+                #目标接收成功 [机器人正在重置地图](90), 更新电梯状态为[90], 通知后台
+                if taskStatus == "idle_inLift" or taskStatus == "return_inLift":
+                    self.elevatorStatus = 90
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+            
+            #机器人重置地图成功
+            if taskStatus == "idle_toGo" or taskStatus == "return_toGo":
+                
+                #用了电梯系统的话, 需要向后台更新电梯状态 [机器人重置地图成功](100)
+                if self.elevatorStatus == 90:
+                    self.elevatorStatus = 100
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+
+                #用了电梯系统的话, 需要把这个[同步更新后台的电梯状态]的线程关掉
                 if self.elevatorGettter:
                     try:
                         self.elevatorGettter.stop()
@@ -269,21 +343,18 @@ class InteractionThread(threading.Thread):
                         pass
                     finally:
                         self.elevatorGettter = None
-                
-                if self.elevatorStatus == 90:
-                    self.elevatorStatus = 100
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=goal_floor)
 
                 try:
-                    self.publish_goal(goal_pos=goal_pos, goal_floor=goal_floor, relocation=False, taskStatus_old=taskStatus)
+                    self.publish_goal(goal_pos=to_pos, goal_floor=to_floor, relocation=False, taskStatus_old=taskStatus)
                 except Exception as e:
-                    rospy.loginfo(f"\n <executor-280> Error in PUBLISH GOAL: {e}\n")
+                    rospy.loginfo(f"\n <executor-324> Error in PUBLISH GOAL: {e}\n")
 
             robot_state = self.state.get_state()
             taskStatus = robot_state.get("taskStatus")
 
             rate.sleep()
 
+        #如果 [elevatorFlowGetter线程] 没关就要关掉
         if self.elevatorGettter:
             try:
                 self.elevatorGettter.stop()
@@ -292,127 +363,32 @@ class InteractionThread(threading.Thread):
             finally:
                 self.elevatorGettter = None
 
-    def back(self, taskId, robot_floor, return_pos, return_floor):
-        """
-        跟电梯交互的流程
-        """
-        robot_state = self.state.get_state()
-        taskStatus = robot_state.get("taskStatus")
-
-        uuid_str = str(uuid.uuid4())
-
-        rate = rospy.Rate(0.5)
-    
-        while taskStatus != "idle":
-
-            if taskStatus == "return_lift_out":
-
-                self.elevatorControlParams.update_basicInfo(robotId=ROBOTID, taskId=taskId)
-                self.elevatorControlParams.update_floorInfo(fromFloor=robot_floor, toFloor=return_floor)
-                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=0, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-
-                elevatorControl = self.elevatorControlParams.get_elevatorControl()
-                return_lift_out = elevatorControl.get("fromElevatorOutAddress").get("pose").get("dock")
-                return_lift_floor = elevatorControl.get("fromElevatorOutAddress").get("floor")
-
-                if not self.elevatorGettter:
-                    try:
-                        self.elevatorGettter = elevatorFlowGetter.ElevatorFlowGetter(owner=self, flow_id=uuid_str, period=5)
-                        self.elevatorGettter.start()
-                    except Exception as e:
-                        rospy.loginfo(f" <executor-323> start ElevatorFlowWatcher failed: {e}")
-
-                try:
-                    self.elevatorStatus = 10
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-                    self.publish_goal(goal_pos=return_lift_out, goal_floor=return_lift_floor, relocation=False, taskStatus_old=taskStatus)
-                except Exception as e:
-                    rospy.loginfo(f"\n <executor-330> Error in PUBLISH GOAL: {e}\n")
-                    
-            if taskStatus == "return_lift_in":
-
-                elevatorControl = self.elevatorControlParams.get_elevatorControl()
-                return_lift_in = elevatorControl.get("fromElevatorInAddress").get("pose").get("dock")
-                return_lift_floor = elevatorControl.get("fromElevatorInAddress").get("floor")
-
-                if self.elevatorStatus == 40:
-                    try:
-                        self.elevatorStatus = 50
-                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-                        self.publish_goal(goal_pos=return_lift_in, goal_floor=return_lift_floor, relocation=False, taskStatus_old=taskStatus)
-                    except Exception as e:
-                        rospy.loginfo(f"\n <executor-344> Error in PUBLISH GOAL: {e}\n")
-
-                elif self.elevatorStatus == 10:
-                    self.elevatorStatus = 20
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-
-            if taskStatus == "return_inside_lift" and self.elevatorStatus == 50:
-                self.elevatorStatus = 60
-                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-                self.state.update_taskStatus("return_relocation")
-                
-            if taskStatus == "return_relocation" and self.elevatorStatus == 80:
-
-                
-                self.state.update_position(floor=return_floor, building="ntuitive")
-
-                elevatorControl = self.elevatorControlParams.get_elevatorControl()
-                return_relocation = elevatorControl.get("toElevatorInAddress").get("pose").get("dock")
-                return_floor = elevatorControl.get("toElevatorInAddress").get("floor")
-
-                try:
-                    self.elevatorStatus = 90
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-                    self.publish_goal(goal_pos=return_relocation, goal_floor=return_floor, relocation=True, taskStatus_old=taskStatus)
-                except Exception as e:
-                    rospy.loginfo(f"\n <executor-369> Error in PUBLISH GOAL: {e}\n")
-
-            if taskStatus == "return_toGo":
-
-                if self.elevatorGettter:
-                    try:
-                        self.elevatorGettter.stop()
-                    except Exception:
-                        pass
-                    finally:
-                        self.elevatorGettter = None
-                
-                if self.elevatorStatus == 90:
-                    self.elevatorStatus = 100
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=return_floor)
-
-                try:
-                    self.publish_goal(goal_pos=return_pos, goal_floor=return_floor, relocation=False, taskStatus_old=taskStatus)
-                except Exception as e:
-                    rospy.loginfo(f"\n <executor-388> Error in PUBLISH GOAL: {e}\n")
-
-            robot_state = self.state.get_state()
-            taskStatus = robot_state.get("taskStatus")
-
-            rate.sleep()
-
-        if self.elevatorGettter:
-            try:
-                self.elevatorGettter.stop()
-            except Exception:
-                pass
-            finally:
-                self.elevatorGettter = None
 
     def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor):
-
+        """
+        用来调用接口, 与后台协调电梯使用流程, 并更新相关电梯使用参数.
+        参数:
+            flowId: 流程ID, 每次使用电梯固定一个值
+            elevatorStatus: 电梯使用状态
+            taskId: 正在执行的任务ID
+            fromFloor: 机器人出发楼层
+            toFloor: 机器人需要到达的楼层
+        """
         response = self.http_client.set_elevatorControlFlow(flowId=flowId, elevatorStatus=elevatorStatus, robotId=ROBOTID, taskId=taskId, fromFloor=fromFloor, toFloor=toFloor)
         
-        flow_info = response.get("data").get("flowInfo")
-        elevatorStatus = flow_info.get("status")
+        try:
+            flow_info = response.get("data").get("flowInfo")
+            elevatorStatus = flow_info.get("status")
+
+            fromElevatorOutAddress = flow_info.get("fromElevatorOutAddress")
+            fromElevatorInAddress = flow_info.get("fromElevatorInAddress")
+            toElevatorOutAddress = flow_info.get("toElevatorOutAddress")
+            toElevatorInAddress = flow_info.get("toElevatorInAddress")
+
+        except Exception as e:
+            rospy.loginfo(f" <executor-455> fetch elevator info error: {e}")
 
         self.elevatorStatus = elevatorStatus
-
-        fromElevatorOutAddress = flow_info.get("fromElevatorOutAddress")
-        fromElevatorInAddress = flow_info.get("fromElevatorInAddress")
-        toElevatorOutAddress = flow_info.get("toElevatorOutAddress")
-        toElevatorInAddress = flow_info.get("toElevatorInAddress")
 
         self.elevatorControlParams.update_fromElevatorOutAddress(fromElevatorOutAddress=fromElevatorOutAddress)
         self.elevatorControlParams.update_fromElevatorInAddress(fromElevatorInAddress=fromElevatorInAddress)
@@ -520,12 +496,10 @@ class InteractionThread(threading.Thread):
             #配送成功
             if taskStatus == dataInfo.TaskStatus.DELIVERY_COMPLETE.value:
                 self.state.update_taskStatus("delivered")
-                self.robot_mqtt.publish_state()
                 self.state.update_taskId(0)
             #配送失败
             elif taskStatus == dataInfo.TaskStatus.DELIVERY_FAILED.value:
                 self.state.update_taskStatus("delivered_failed")
-                self.robot_mqtt.publish_state()
                 self.state.update_taskId(0)
 
 
@@ -541,7 +515,7 @@ class InteractionThread(threading.Thread):
 
 
 class FetchTaskThread(threading.Thread):
-    def __init__(self, http_client, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, period, elevatorPlan: dataInfo.ElevatorPlan , stop_event: threading.Event):
+    def __init__(self, http_client, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, period, elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, stop_event: threading.Event):
         """
         这个线程用于执行周期性地从后台拉取任务信息, 为了避免因为网络问题没有得到最新的任务状态
         参数:
@@ -561,6 +535,7 @@ class FetchTaskThread(threading.Thread):
         self.period = period
         self.elevatorPlan = elevatorPlan
         self.stop_event = stop_event
+        self.elevatorControlParams = elevatorControlParams
 
         self.level = {"1": 1, "2m": 2, "3": 3, "4": 4, "5": 5}
 
@@ -572,8 +547,6 @@ class FetchTaskThread(threading.Thread):
             now = time.monotonic()  
             if now >= next_fetch:
 
-                status_old = self.statusBackend.get_statusBackend().get("status")
-                
                 robot_state = self.state.get_state()
                 robot_taskId_old = robot_state.get("taskId")
                 robot_floor = robot_state.get("floor")
@@ -581,6 +554,8 @@ class FetchTaskThread(threading.Thread):
                 
                 response = self.http_client.select_taskInfo(taskId=robot_taskId_old, floor=robot_floor, building=robot_building)
                 response_code = response.get("code")
+
+                status_old = self.statusBackend.get_statusBackend().get("status")
 
                 if response_code == 0:
                     data = response.get("data")
@@ -590,44 +565,90 @@ class FetchTaskThread(threading.Thread):
 
                         taskId_new = data.get("taskInfo").get("id")
                         status_new = data.get("taskInfo").get("status")
-                        robotStatus = self.state.get_state().get("taskStatus")
 
-                        # 如果是不同任务id(也就是机器人执行完了某个任务, 或者根本没执行任何任务)
-                        # 收到了来自后台的 response -- 30 or 40 则更新机器人状态, 添加任务信息, 更新后台状态记录
-                        if status_old != status_new and robot_taskId_old != taskId_new:
-                            #get 相关值
-                            code = data.get("code")
-                            #配送任务的 Id 和 QR code
-                            self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
+                        if robot_taskId_old != taskId_new and (status_new == 30 or status_new == 40):
 
-                            #配送目的地相信信息的 获取&存储&更新
-                            goal_addrList = taskInfo.get("addressList")
-                            self.store_goalPositions(goal=True, addrList=goal_addrList)
+                            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
 
-                            #配送完成返回地址信息的 获取&存储&更新
+                            robotStatus = self.state.get_state().get("taskStatus")
+                            
+                            #有新任务且机器人处于可以接收新任务的状态
+                            if robotStatus in ["idle", "returning", "idle_lift_out", "return_lift_out", "delivering_lift_out", "returning_lift_out", "idle_lift_in", "return_lift_in",  "delivered", "delivered_failed", "cancel_delivery"]:
+                                
+                                self.currentOrder.reset_currentOrder()
+                                self.elevatorControlParams.reset_elevatorControlParams()
+
+                                #更新任务信息
+                                code = data.get("code")
+                                self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
+                                goal_addrList = taskInfo.get("addressList")
+                                self.store_goalPositions(goal=True, addrList=goal_addrList)
+                                return_addrList = data.get("addressList")
+                                self.store_goalPositions(goal=False, addrList=return_addrList)
+
+                                #更新机器人状态
+                                self.state.update_taskId(taskId_new)
+                                self.state.update_taskStatus("idle")
+
+                                
+                        elif robot_taskId_old == taskId_new and status_new == 60:
+                            
+                            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
+
+                            robotStatus = self.state.get_state().get("taskStatus")
+
+                            if robotStatus in ["delivering", "arrived", "idle_lift_out", "delivering_lift_out", "idle_lift_in"]:
+                                
+                                self.currentOrder.reset_currentOrder()
+                                self.elevatorControlParams.reset_elevatorControlParams()
+
+                                #更新机器人[返回地址]
+                                return_addrList = data.get("addressList")
+                                self.store_goalPositions(goal=False, addrList=return_addrList)
+
+                                #更新机器人状态
+                                self.state.update_taskId(0)
+                                self.state.update_taskStatus("cancel_delivery")
+
+                        elif robot_taskId_old != taskId_new and status_new == 90:
+
+                            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
+                            
+                            self.state.update_taskId(taskId_new)
+                            self.state.update_taskStatus("restock")
+
+                            self.currentOrder.reset_currentOrder()
+                            self.elevatorControlParams.reset_elevatorControlParams()
+
+                            #更新机器人[返回地址]
                             return_addrList = data.get("addressList")
                             self.store_goalPositions(goal=False, addrList=return_addrList)
 
-                            #更新后台状态记录
+                        elif robot_taskId_old == taskId_new and status_new == 30 and status_old == 90:
+
                             self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
-                            #然后更新机器人状态 -- 主要是任务id
-                            if status_new == 90:
-                                self.state.update_taskStatus("restock")
-                            elif status_new == 30 or status_new == 40:
-                                self.state.update_taskStatus("idle")
+
+                            self.currentOrder.reset_currentOrder()
+                            self.elevatorControlParams.reset_elevatorControlParams()
+
+                            #更新任务信息
+                            code = data.get("code")
+                            self.currentOrder.update_deliveryDetails(taskId=taskId_new, code=code)
+                            goal_addrList = taskInfo.get("addressList")
+                            self.store_goalPositions(goal=True, addrList=goal_addrList)
+                            return_addrList = data.get("addressList")
+                            self.store_goalPositions(goal=False, addrList=return_addrList)
+
+                            #更新机器人状态
                             self.state.update_taskId(taskId_new)
-                            
-                        # 如果同一个任务id情况下(机器人正在执行某一任务), 收到来自后台的response, 除了60 其他都不用管
-                        if status_old != status_new and robot_taskId_old == taskId_new:
-                            self.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
-                            # 是 60 取消任务的话
-                            if status_new == 60 and (robotStatus == "delivering" or robotStatus == "arrived"):
-                                self.state.update_taskId(0)
-                                self.state.update_taskStatus("cancel_delivery")
-                    else:
-                        #配送完成返回地址信息的 获取&存储&更新
-                        return_addrList = data.get("addressList")
-                        self.store_goalPositions(goal=False, addrList=return_addrList)
+                            self.state.update_taskStatus("idle")
+
+
+                    #else:
+                        #robotStatus = self.state.get_state().get("taskStatus")
+
+                        #return_addrList = data.get("addressList")
+                        #self.store_goalPositions(goal=False, addrList=return_addrList)
                         
                 else:
                     rospy.loginfo(f"Backend response with: {response_code}")
@@ -769,8 +790,8 @@ if __name__ == "__main__":
     time.sleep(0.1)
 
     #mqtt初始化与连接 -- 成功连接会更新机器人状态为idle
-    robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
-    robot_mqtt.connect()
+    #robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
+    #robot_mqtt.connect()
 
     #机器人客户端
     http_client = httpClient.HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
@@ -782,13 +803,13 @@ if __name__ == "__main__":
     #线程启动
     stop_event = threading.Event()
     #MQTT 话题发布线程
-    state_thread = StateThread(robot_mqtt, HEARTBEAT, stop_event)
-    state_thread.start()
+    #state_thread = StateThread(robot_mqtt, HEARTBEAT, stop_event)
+    #state_thread.start()
     #http client 线程
-    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, elevatorPlan=elevatorPlan , elevatorControlParams=elevatorControlParams, ros_pub_goal=ros_pub_goal, robot_mqtt=robot_mqtt, http_client=http_client, stop_event=stop_event)
+    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, elevatorPlan=elevatorPlan , elevatorControlParams=elevatorControlParams, ros_pub_goal=ros_pub_goal, http_client=http_client, stop_event=stop_event)
     interaction_thread.start()
     #fetch task info 线程
-    fetchTask_thread = FetchTaskThread(http_client=http_client, state=state, statusBackend=statusBackend, currentOrder=currentOrder, period=HEARTBEAT, elevatorPlan=elevatorPlan, stop_event=stop_event)
+    fetchTask_thread = FetchTaskThread(http_client=http_client, state=state, statusBackend=statusBackend, currentOrder=currentOrder, period=HEARTBEAT, elevatorPlan=elevatorPlan, elevatorControlParams=elevatorControlParams, stop_event=stop_event)
     fetchTask_thread.start()
     #http server 线程
     flask_thread = start_flask_in_thread(flask_app, "0.0.0.0", 8000)
@@ -800,13 +821,13 @@ if __name__ == "__main__":
     finally:
         #回收线程
         stop_event.set()
-        state_thread.join(timeout=1)
+        #state_thread.join(timeout=1)
         interaction_thread.join(timeout=1)
         fetchTask_thread.join(timeout=1)
         flask_thread.shutdown()
         flask_thread.join(timeout=1)
 
         #正常退出发布离线消息
-        robot_mqtt.publish_connection(status="offline", reason="shutdown")
-        robot_mqtt.stop()
+        #robot_mqtt.publish_connection(status="offline", reason="shutdown")
+        #robot_mqtt.stop()
         

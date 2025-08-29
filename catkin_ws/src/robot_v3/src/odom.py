@@ -12,6 +12,11 @@ def odom_cb(msg):
 
     print(msg.pose.pose.position.x, msg.pose.pose.position.y, yaw)
 
+
+def battery(msg):
+    print(msg)
+
 rospy.init_node("odom_angle_listener")
-rospy.Subscriber("/odom", Odometry, odom_cb)
+#rospy.Subscriber("/odom", Odometry, odom_cb)
+rospy.Subscriber("")
 rospy.spin()

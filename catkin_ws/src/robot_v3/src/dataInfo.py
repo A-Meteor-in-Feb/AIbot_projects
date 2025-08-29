@@ -30,7 +30,7 @@ class StateInfo:
             "building": "ntuitive",
             "coordinateType": "map",
             "battery": 0,
-            "taskStatus": "",
+            "taskStatus": "idle",
             "taskId": 0,
             "connection": "offline",
             "autonomousMode": True,
