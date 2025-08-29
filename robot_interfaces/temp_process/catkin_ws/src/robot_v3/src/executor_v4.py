@@ -133,11 +133,14 @@ class InteractionThread(threading.Thread):
 
             # 机器人 [arrived]
             if taskStatus == "arrived":
+                #拍照
+                self.keypoint_photo()
                 self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value, elevatorCommand=None)
-                
                 code = self.currentOrder.get_currentOrder().get("code")
                 #qr_check = self.qr_check(code)
                 #if qr_check:
+                #拍照
+                self.keypoint_photo()
                 time.sleep(5)
                 print("\n scanning \n")
                 if True:
@@ -248,7 +251,9 @@ class InteractionThread(threading.Thread):
 
                 #到达电梯门口 且 收到 [电梯门打开](40) 的信号
                 if self.elevatorStatus == 40:
-                    
+                    #拍照
+                    self.keypoint_photo()
+
                     elevatorControl = self.elevatorControlParams.get_elevatorControl()
                     ele_in_pos = elevatorControl.get("fromElevatorInAddress").get("pose").get("dock")
                     ele_in_floor = elevatorControl.get("fromElevatorInAddress").get("floor")
@@ -271,7 +276,9 @@ class InteractionThread(threading.Thread):
                 elif self.elevatorStatus == 10:
                     self.elevatorStatus = 20
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
-                
+                    #拍照
+                    self.keypoint_photo()
+
                 elif self.elevatorStatus == 20 or self.elevatorStatus == 30:
 
                     elevatorControl = self.elevatorControlParams.get_elevatorControl()
@@ -310,7 +317,10 @@ class InteractionThread(threading.Thread):
                 #拿到重定位的坐标
                 elevatorControl = self.elevatorControlParams.get_elevatorControl()
                 relocation_pos = elevatorControl.get("toElevatorInAddress").get("pose").get("dock")
-                relocation_floor = elevatorControl.get("toElevatorInAddress").get("floor")    
+                relocation_floor = elevatorControl.get("toElevatorInAddress").get("floor") 
+
+                #拍照
+                self.keypoint_photo()   
 
                 #给planning部分发送重定位信息, 待目标接收成功, 机器人状态改为 [idle_inLift]/[return_inLift]-[机器人正在重置地图]
                 try:
@@ -326,7 +336,9 @@ class InteractionThread(threading.Thread):
                 if taskStatus == "idle_inLift" or taskStatus == "return_inLift":
                     self.elevatorStatus = 90
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
-            
+                     #拍照
+                    self.keypoint_photo()
+
             #机器人重置地图成功
             if taskStatus == "idle_toGo" or taskStatus == "return_toGo":
                 
@@ -490,7 +502,7 @@ class InteractionThread(threading.Thread):
             rospy.loginfo(f"\n notify backend with taskId:{taskId}, taskStatus:{taskStatus}, elevatorCommand:{elevatorCommand}\n")
             rospy.loginfo(f"\n notify backend and get: {response} \n")
         except Exception as e:
-            rospy.loginfo(f"\n <executor-517> error happens: {e}\n")
+            rospy.loginfo(f"\n <executor-493> error happens: {e}\n")
         
         if taskStatus:
             #配送成功
@@ -501,6 +513,15 @@ class InteractionThread(threading.Thread):
             elif taskStatus == dataInfo.TaskStatus.DELIVERY_FAILED.value:
                 self.state.update_taskStatus("delivered_failed")
                 self.state.update_taskId(0)
+
+    def keypoint_photo(self):
+        """
+        这个函数的作用是控制机器人在关键节点拍照片, 上传到后台
+        """
+        try:
+            response = self.http_client.report_image()
+        except Exception as e:
+            rospy.loginfo(f"\n <executor-512> error happens: {e}\n")
 
 
     def finalize_task(self):

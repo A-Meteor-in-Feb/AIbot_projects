@@ -1,0 +1,18 @@
+
+ <httpClient-60> 第0次调用接口异常: HTTPConnectionPool(host='192.168.10.164', port=18001): Max retries exceeded with url: /api/robot/client/reportRobotCollect (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0xffff946a6f70>, 'Connection to 192.168.10.164 timed out. (connect timeout=10)'))
+
+<httpClient-51> backend response: {'code': 0, 'msg': '操作成功', 'data': {}}
+
+<httpClient-51> backend response: {'code': 0, 'msg': '操作成功', 'data': {}}
+
+
+ <httpClient-60> 第0次调用接口异常: HTTPConnectionPool(host='10.25.0.15', port=18001): Read timed out. (read timeout=10)
+
+
+ <httpClient-60> 第1次调用接口异常: HTTPConnectionPool(host='10.25.0.15', port=18001): Read timed out. (read timeout=10)
+
+
+ <httpClient-60> 第2次调用接口异常: HTTPConnectionPool(host='10.25.0.15', port=18001): Read timed out. (read timeout=10)
+
+<httpClient-51> backend response: {'code': 0, 'msg': '操作成功', 'data': {}}
+
