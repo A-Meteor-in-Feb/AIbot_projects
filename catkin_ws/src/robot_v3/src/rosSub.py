@@ -16,6 +16,9 @@ class RosSub:
         参数:
             state: 对象实例, 方便相应属性更新.
         """
+        self.state = state
+
+        
         #机器人基础状态 - 位置、电量、异常码 需要的话题
         self.topic_localization = "/global_localization" 
         self.topic_battery = "/battery"
@@ -35,8 +38,6 @@ class RosSub:
         self.sub_signal = rospy.Subscriber(self.topic_signal, String, self.callback_signal, queue_size=1, tcp_nodelay=True)
         self.sub_position = rospy.Subscriber(self.topic_position, Position, self.callback_position, queue_size=1, tcp_nodelay=True)
         self.sub_step = rospy.Subscriber(self.topic_step, Int32, self.callback_step, queue_size=1, tcp_nodelay=True)
-
-        self.state = state
 
     def callback_localization(self, msg: Odometry):
         """

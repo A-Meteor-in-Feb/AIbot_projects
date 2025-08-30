@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 import socket
 import dataInfo
+import time
 
 
 class MqttClient:
@@ -127,3 +128,28 @@ class MqttClient:
         message = json.dumps(state_info).encode("utf-8")
         self.mqtt_client.publish(f"robots/{self.robotId}/state", message, qos=0)
         print("Published the state topic: ", state_info)
+
+    def publish_delivery(self):
+        """
+        控制货仓出货, 发布话题 robots/{robotId}/delivery
+        """
+        delivery = { "binId": 1401 }
+        message = json.dumps(delivery).encode("utf-8")
+        self.mqtt_client.publish(f"robots/{self.robotId}/delivery", message, qos=0)
+        print("\n publish delivery topic. \n")
+
+"""
+if __name__ == "__main__":
+    BROKER_HOST = "10.25.0.2"
+    BROKER_PORT = 1883
+    ROBOTID = "18950214603"
+    state = dataInfo.StateInfo()
+    robot_mqtt = MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
+    robot_mqtt.connect()
+    while True:
+        try:
+            robot_mqtt.publish_delivery()
+            time.sleep(5)
+        except KeyboardInterrupt:
+            break
+"""

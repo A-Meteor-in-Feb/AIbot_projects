@@ -61,7 +61,7 @@ class StateThread(threading.Thread):
 
 
 class InteractionThread(threading.Thread):
-    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, ros_pub_goal, http_client, stop_event: threading.Event):
+    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, ros_pub_goal,  mqtt_client, http_client, stop_event: threading.Event):
         """
         这个类主要用来控制机器人的执行, 与后台交互, tianxin交互
         参数:
@@ -82,6 +82,7 @@ class InteractionThread(threading.Thread):
         self.elevatorControlParams = elevatorControlParams
 
         self.ros_pub_goal = ros_pub_goal
+        self.mqtt_client = mqtt_client
 
         self.http_client = http_client
         
@@ -137,14 +138,16 @@ class InteractionThread(threading.Thread):
                 self.keypoint_photo()
                 self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value, elevatorCommand=None)
                 code = self.currentOrder.get_currentOrder().get("code")
-                #qr_check = self.qr_check(code)
+                qr_check = self.qr_check(code)
                 #if qr_check:
                 #拍照
                 self.keypoint_photo()
-                time.sleep(5)
-                print("\n scanning \n")
-                if True:
-                    #self.door_open()
+                #time.sleep(5)
+                #print("\n scanning \n")
+                #if True:
+                if qr_check:
+                    self.mqtt_client.publish_delivery()
+                    time.sleep(10)
                     self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_COMPLETE.value , elevatorCommand=None)
                 else:
                     self.notify_backend(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_FAILED.value , elevatorCommand=None)
@@ -811,8 +814,8 @@ if __name__ == "__main__":
     time.sleep(0.1)
 
     #mqtt初始化与连接 -- 成功连接会更新机器人状态为idle
-    #robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
-    #robot_mqtt.connect()
+    robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, state=state)
+    robot_mqtt.connect()
 
     #机器人客户端
     http_client = httpClient.HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
@@ -824,10 +827,10 @@ if __name__ == "__main__":
     #线程启动
     stop_event = threading.Event()
     #MQTT 话题发布线程
-    #state_thread = StateThread(robot_mqtt, HEARTBEAT, stop_event)
-    #state_thread.start()
+    state_thread = StateThread(robot_mqtt, HEARTBEAT, stop_event)
+    state_thread.start()
     #http client 线程
-    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, elevatorPlan=elevatorPlan , elevatorControlParams=elevatorControlParams, ros_pub_goal=ros_pub_goal, http_client=http_client, stop_event=stop_event)
+    interaction_thread = InteractionThread(state=state, statusBackend=statusBackend, currentOrder=currentOrder, elevatorPlan=elevatorPlan , elevatorControlParams=elevatorControlParams, ros_pub_goal=ros_pub_goal, mqtt_client=robot_mqtt, http_client=http_client, stop_event=stop_event)
     interaction_thread.start()
     #fetch task info 线程
     fetchTask_thread = FetchTaskThread(http_client=http_client, state=state, statusBackend=statusBackend, currentOrder=currentOrder, period=HEARTBEAT, elevatorPlan=elevatorPlan, elevatorControlParams=elevatorControlParams, stop_event=stop_event)
@@ -842,13 +845,13 @@ if __name__ == "__main__":
     finally:
         #回收线程
         stop_event.set()
-        #state_thread.join(timeout=1)
+        state_thread.join(timeout=1)
         interaction_thread.join(timeout=1)
         fetchTask_thread.join(timeout=1)
         flask_thread.shutdown()
         flask_thread.join(timeout=1)
 
         #正常退出发布离线消息
-        #robot_mqtt.publish_connection(status="offline", reason="shutdown")
-        #robot_mqtt.stop()
+        robot_mqtt.publish_connection(status="offline", reason="shutdown")
+        robot_mqtt.stop()
         
