@@ -20,19 +20,30 @@ class RobotStateInfo:
     def __init__(self):
         """
         用于维护、记录、存储机器人当前所有状态.
+        包括:
+            localization: 机器人的定位信息
+            ip: 机器人IP地址
+            floor: 机器人当前所在楼层
+            house: 机器人当前所在楼
+            coordinateType: 所在坐标地图
+            robotStatus: 机器人当前状态
+            robotTaskId: 机器人当前执行的任务ID
+            connection: 机器人在线状态
+            battery: 机器人电池电量
+            fault: 机器人是否发生故障
         """
         self.lock = threading.Lock()
 
         self.robotState = {
             "localization": {"x": 0, "y": 0, "theta": 0},
             "ip": "",
-            "floor": "2m",
-            "building": "ntuitive",
+            "floor": "",
+            "house": "",
             "coordinateType": "map",
-            "robotStatus": 0,
-            "robotTaskId": 0,
+            "robotStatus": "offline",
+            "robotTaskId": None,
             "connection": "offline",
-            "battery": 0,
+            "battery": None,
             "fault": False
         }
     
@@ -52,7 +63,7 @@ class RobotStateInfo:
             new_theta: 新的theta值 - float
         """
         with self.lock:
-            self.state["position"].update({
+            self.robotState["localization"].update({
                 "x": new_x,
                 "y": new_y,
                 "theta": new_theta
@@ -65,9 +76,9 @@ class RobotStateInfo:
             ip_addr: str, 机器人IP地址
         """
         with self.lock:
-            self.state["ip"] = ip_addr
+            self.robotState["ip"] = ip_addr
 
-    def update_position(self, floor, building):
+    def update_position(self, floor, house):
         """
         用来更新机器人所在楼层
         参数:
@@ -75,8 +86,8 @@ class RobotStateInfo:
             building: str, 机器人所在建筑物
         """
         with self.lock:
-            self.state["floor"] = floor
-            self.state["building"] = building
+            self.robotState["floor"] = floor
+            self.robotState["house"] = house
 
     def update_robotTaskId(self, taskId):
         """
@@ -104,7 +115,7 @@ class RobotStateInfo:
             "offile"为初始值, 上线后更新为online, 然后等到正常退出, 在变为offline.
         """
         with self.lock:
-            self.state["connection"] = connection
+            self.robotState["connection"] = connection
 
     def update_battery(self, batteryPercentage):
         """
@@ -113,7 +124,7 @@ class RobotStateInfo:
             batteryPercentage: 一个int值, 代表电池电量的百分比.
         """
         with self.lock:
-            self.state["battery"] = batteryPercentage
+            self.robotState["battery"] = batteryPercentage
 
     def update_fault(self, b_fault):
         """
@@ -123,7 +134,51 @@ class RobotStateInfo:
             如果发生故障, 再具体地发布error主题.
         
         with self.lock:
-            self.state["fault"] = b_fault
+            self.robotState["fault"] = b_fault
         """
 
+class RelocalizationInfo:
+    def __init__(self):
+        """
+        用于记录机器人重定位地址信息
+        """
+        self.lock = threading.Lock()
+
+        self.relocalizationInfo = {
+            "relocalization_position": {"x": 0.0, "y": 0.0, "theta": 0.0},
+            "floor": "",
+            "house": ""
+        }
     
+    def get_relocalizationInfo(self):
+        """
+        用于获取机器人重定位地址信息
+        """
+        with self.lock:
+            return copy.deepcopy(self.relocalizationInfo)
+    
+    def update_relocalizationInfo(self, position, floor, house):
+        """
+        用于更新机器人重定位地址信息
+        参数:
+            position: 重定位地址坐标
+            floor: 重定位楼层信息
+            house: 重定位楼的信息
+        """
+        with self.lock:
+            self.relocalizationInfo.update({
+                "relocalization_position": position,
+                "floor": floor,
+                "house": house
+            })
+
+    def reset_relocalizationInfo(self):
+        """
+        当一个重定位结束后, 重置重定位信息
+        """
+        with self.lock:
+            self.relocalizationInfo.update({
+                "relocalization_position": {"x": 0.0, "y": 0.0, "theta": 0.0},
+                "floor": "",
+                "house": ""
+            })

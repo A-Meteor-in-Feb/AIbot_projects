@@ -6,19 +6,22 @@ import time
 
 
 class MqttClient:
-    def __init__(self, host, port, robot_id, state: dataInfo.StateInfo):
+    def __init__(self, host, port, robot_id, robotState: dataInfo.RobotStateInfo, relocalizationInfo: dataInfo.RelocalizationInfo):
         """
         初始化机器人端MQTT client, 用于向后台发布各种话题.
         参数:
             host: MQTT broker host
             port: MQTT broker port
             robot_id: the id number of this robot
-            state_info: 发布 state 话题需要的数据对象
+            robotState: 发布 state 话题需要的数据对象
+            relocalizationInfo: 如果收到重定位指令, 需要存储到的数据对象
         """
         self.host = host
         self.port = port
         self.robotId = robot_id
-        self.state = state
+        self.robotState = robotState
+        self.relocalizationInfo = relocalizationInfo
+
         self.connected = False
 
         self.mqtt_client = mqtt.Client(client_id=robot_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
@@ -91,7 +94,7 @@ class MqttClient:
         发布话题 robots/{robotId}/network/ip
         """
         ip = self.get_ip()
-        self.state.update_ip(ip)
+        self.robotState.update_ip(ip_addr=ip)
         payload = {
             "interface": "wireguard",
             "ip": ip,
@@ -110,11 +113,11 @@ class MqttClient:
             reason: string, 机器人连接状态产生的原因
         """
         #先把机器人连接状态和任务状态更新
-        self.state.update_connection(connection=status)
+        self.robotState.update_connection(connection=status)
         if status == "online":
-            self.state.update_taskStatus(status="idle")
+            self.robotState.update_robotStatus(robotStatus="sleep")
         elif status == "offline":
-            self.state.update_taskStatus(status="offline")
+            self.robotState.update_robotStatus(robotStatus="offline")
 
         payload = {
             "status": status,
@@ -129,18 +132,28 @@ class MqttClient:
         """
         发布话题 robots/{robotId}/state
         """
-        state_info = self.state.get_state()
-        message = json.dumps(state_info).encode("utf-8")
+        robotState_info = self.robotState.get_state()
+        message = json.dumps(robotState_info).encode("utf-8")
         self.mqtt_client.publish(f"robots/{self.robotId}/state", message, qos=0)
-        print("Published the state topic: ", state_info)
+        print("\n Published the state topic: ", robotState_info)
 
     def command_handler(self, client, userdata, msg):
         """
         用于接收来自后台的特殊指令消息
         """
-        instructions = msg.payload.decode("utf-8")
-        instruction_type = instructions.get("type")
+        instructions = json.loads(msg.payload.decode("utf-8"))
+        type = instructions.get("type")
+        print(f"\n receive instruction from backend: {instructions}")
 
+        if type == "reset_address":
+            address = instructions.get("address")
+            position = address.get("pose").get("dock")
+            floor = address.get("floor")
+            house = address.get("house")
+
+            self.relocalizationInfo.update_relocalizationInfo(position=position, floor=floor, house=house)
+            self.robotState.update_robotStatus("reset_address")
+            
 
 """
 if __name__ == "__main__":
