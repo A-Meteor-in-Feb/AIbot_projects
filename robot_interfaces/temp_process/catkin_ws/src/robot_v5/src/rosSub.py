@@ -10,13 +10,14 @@ from tf.transformations import euler_from_quaternion
 from std_msgs.msg import Int32
 
 class RosSub:
-    def __init__(self, robotState: dataInfo.RobotStateInfo):
+    def __init__(self, robotState: dataInfo.RobotStateInfo, programStatus: dataInfo.ProgramStatus):
         """
         这个类用与订阅各种来自不同子系统的ROS话题.
         参数:
             robotState: 对象实例, 方便相应属性更新.
         """
         self.robotState = robotState
+        self.programStatus = programStatus
 
         #机器人基础状态 - 位置、电量、异常码 需要的话题
         self.topic_localization = "/global_localization" 
@@ -78,14 +79,36 @@ class RosSub:
             PLANNING_COMPLETE
         """
         signal = msg.data
-        robotStatus = self.robotState.get_state().get("robotStatus")
+        programStatus = self.programStatus.get_programStatus()
 
+        if signal == "GOAL_RECEIVED":
+            if programStatus == "to_lift_outside" or programStatus == "to_another_lift_outside":
+                self.programStatus.update_programStatus(programStatus="moving_lift_outside")
+            elif programStatus == "to_lift_inside":
+                self.programStatus.update_programStatus(programStatus="moving_lift_inside")
+            elif programStatus == "ready_move":
+                self.programStatus.update_programStatus(programStatus="moving")
+        
+        if signal == "GOAL_ARRIVED":
+            if programStatus == "moving_lift_outside":
+                self.programStatus.update_programStatus(programStatus="to_lift_inside")
+            elif programStatus == "moving_lift_inside":
+                self.programStatus.update_programStatus(programStatus="at_lift_inside")
+            elif programStatus == "moving":
+                self.programStatus.update_programStatus(programStatus="move_complete")
+        
         if signal == "RELOCATION_RECEIVED":
-            if robotStatus == "reset_address":
-                self.robotState.update_robotStatus("resetting")
+            if programStatus == "reset_address":
+                self.programStatus.update_programStatus(programStatus="resetting")
+            elif programStatus == "relocalization":
+                self.programStatus.update_programStatus(programStatus="relocalizing")
+
         if signal == "RELOCATION_COMPLETE":
-            if robotStatus == "resetting":
-                self.robotState.update_robotStatus("reset_success")
+            if programStatus == "resetting":
+                self.programStatus.update_programStatus(programStatus="reset_success")
+            if programStatus == "relocalizing":
+                self.programStatus.update_programStatus(programStatus="ready_move")
+
         if signal == "RELOCATION_FAILURE":
-            if robotStatus == "resetting":
-                self.robotState.update_robotStatus("reset_failure")
+            if programStatus == "resetting":
+                self.programStatus.update_programStatus(programStatus="reset_failure")

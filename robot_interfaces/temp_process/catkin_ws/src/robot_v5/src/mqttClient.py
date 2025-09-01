@@ -6,7 +6,7 @@ import time
 
 
 class MqttClient:
-    def __init__(self, host, port, robot_id, robotState: dataInfo.RobotStateInfo, relocalizationInfo: dataInfo.RelocalizationInfo):
+    def __init__(self, host, port, robot_id, robotState: dataInfo.RobotStateInfo, instructionInfo: dataInfo.InstructionInfo, programStatus: dataInfo.ProgramStatus):
         """
         初始化机器人端MQTT client, 用于向后台发布各种话题.
         参数:
@@ -20,7 +20,8 @@ class MqttClient:
         self.port = port
         self.robotId = robot_id
         self.robotState = robotState
-        self.relocalizationInfo = relocalizationInfo
+        self.instructionInfo = instructionInfo
+        self.programStatus = programStatus
 
         self.connected = False
 
@@ -115,7 +116,7 @@ class MqttClient:
         #先把机器人连接状态和任务状态更新
         self.robotState.update_connection(connection=status)
         if status == "online":
-            self.robotState.update_robotStatus(robotStatus="sleep")
+            self.robotState.update_robotStatus(robotStatus="rest")
         elif status == "offline":
             self.robotState.update_robotStatus(robotStatus="offline")
 
@@ -141,6 +142,8 @@ class MqttClient:
         """
         用于接收来自后台的特殊指令消息
         """
+        self.robotState.update_robotStatus("rest")
+
         instructions = json.loads(msg.payload.decode("utf-8"))
         type = instructions.get("type")
         print(f"\n receive instruction from backend: {instructions}")
@@ -151,9 +154,37 @@ class MqttClient:
             floor = address.get("floor")
             house = address.get("house")
 
-            self.relocalizationInfo.update_relocalizationInfo(position=position, floor=floor, house=house)
-            self.robotState.update_robotStatus("reset_address")
-            
+            self.instructionInfo.update_relocalizationInfo(position=position, floor=floor, house=house)
+            self.programStatus.update_programStatus(programStatus="reset_address")
+        
+        elif type == "move":
+            addressList = json.loads(instructions.get("addressList"))
+
+            for item in addressList:
+                desc = item.get("identity").get("desc")
+                dock = item.get("pose").get("dock")
+                floor = item.get("floor")
+                house = item.get("house")
+
+                move_dict = {
+                    "room": desc,
+                    "dock": dock,
+                    "floor": floor,
+                    "house": house
+                }
+
+                self.instructionInfo.update_movePositions(move_dict=move_dict)
+
+            self.programStatus.update_programStatus(programStatus="move")
+        
+        elif type == "switch_status":
+            status = instructions.get("status")
+            self.robotState.update_robotStatus(robotStatus=status)
+        
+        elif type == "execute_command":
+            commandContent = instructions.get("commandContent")
+            self.instructionInfo.update_command(commandContent=commandContent)
+            self.programStatus.update_programStatus("execute_command")
 
 """
 if __name__ == "__main__":

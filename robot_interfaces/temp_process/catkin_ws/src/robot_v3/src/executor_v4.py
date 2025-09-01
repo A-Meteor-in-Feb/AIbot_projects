@@ -61,7 +61,9 @@ class StateThread(threading.Thread):
 
 
 class InteractionThread(threading.Thread):
-    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, currentOrder: dataInfo.CurrentOrder, elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, ros_pub_goal, http_client, stop_event: threading.Event):
+    def __init__(self, state: dataInfo.StateInfo, statusBackend: dataInfo.StatusBackend, 
+                 currentOrder: dataInfo.CurrentOrder, 
+                 elevatorPlan: dataInfo.ElevatorPlan, elevatorControlParams: dataInfo.ElevatorControl, ros_pub_goal, http_client, stop_event: threading.Event):
         """
         这个类主要用来控制机器人的执行, 与后台交互, tianxin交互
         参数:

@@ -137,7 +137,7 @@ class RobotStateInfo:
             self.robotState["fault"] = b_fault
         """
 
-class RelocalizationInfo:
+class InstructionInfo:
     def __init__(self):
         """
         用于记录机器人重定位地址信息
@@ -149,6 +149,10 @@ class RelocalizationInfo:
             "floor": "",
             "house": ""
         }
+        
+        self.movePositions = []
+
+        self.command = ""
     
     def get_relocalizationInfo(self):
         """
@@ -156,6 +160,22 @@ class RelocalizationInfo:
         """
         with self.lock:
             return copy.deepcopy(self.relocalizationInfo)
+        
+    def get_movePositions(self):
+        """
+        用于获取机器人需要移动到的位置信息
+        movePositions = [ {"room": "", "dock": {}, "floor": "", "house":""}, ... ]
+        """
+        with self.lock:
+            return copy.deepcopy(self.movePositions)
+        
+    def get_command(self):
+        with self.lock:
+            return self.command
+        
+    def update_command(self, commandContent):
+        with self.lock:
+            self.command = commandContent
     
     def update_relocalizationInfo(self, position, floor, house):
         """
@@ -172,6 +192,15 @@ class RelocalizationInfo:
                 "house": house
             })
 
+    def update_movePositions(self, move_dict):
+        """
+        更新move指令下, 机器人需要走的点位
+        参数:
+            move_dict = {"room": "", "dock": {}, "floor": "", "house":""}
+        """
+        with self.lock:
+            self.movePositions.append(move_dict)
+
     def reset_relocalizationInfo(self):
         """
         当一个重定位结束后, 重置重定位信息
@@ -182,3 +211,139 @@ class RelocalizationInfo:
                 "floor": "",
                 "house": ""
             })
+    
+    def reset_movePositions(self):
+        """
+        机器人走到指定地点后要重置数据
+        """
+        with self.lock:
+            self.movePositions = []
+
+    def reset_command(self):
+        with self.lock:
+            self.command = ""
+    
+
+class ProgramStatus:
+    def __init__(self):
+        """
+        用来记录程序执行的状态
+        """
+        self.lock = threading.Lock()
+        self.programStatus = ""
+    
+    def update_programStatus(self, programStatus):
+        """
+        更新程序执行的状态
+        """
+        with self.lock:
+            self.programStatus = programStatus
+
+    def get_programStatus(self):
+        """
+        得到程序执行的状态
+        ps: str 为 immutable 类型, 所以不需要考虑deepcopy
+        """
+        with self.lock:
+            return self.programStatus
+    
+    def reset_programStatus(self):
+        """
+        重置程序执行的状态
+        """
+        with self.lock:
+            self.programStatus = ""  
+
+
+class ElevatorControl:
+    def __init__(self):
+        self.lock = threading.Lock()
+
+        self.elevatorControlParams = {
+            "status": 0,
+            "robotId": 0,
+            "taskId": 0,
+            "house": "ntuitive",
+            "fromFloor": "",
+            "toFloor": "",
+            "fromElevatorOutAddress": {},
+            "fromElevatorInAddress": {},
+            "toElevatorOutAddress": {},
+            "toElevatorInAddress": {}
+        }
+
+    def get_elevatorControlParams(self):
+        """
+        获得当前用于电梯的详细信息
+        """
+        with self.lock:
+            return copy.deepcopy(self.elevatorControlParams)
+        
+    def update_basicInfo(self, robotId, taskId):
+        """
+        用于更新机器人基本信息
+        """
+        with self.lock:
+            self.elevatorControlParams["robotId"] = robotId
+            self.elevatorControlParams["taskId"] = taskId
+
+    def update_elevatorStatus(self, elevatorStatus):
+        """
+        用于更新电梯的现在的状态
+        """
+        with self.lock:
+            self.elevatorControlParams["status"] = elevatorStatus
+
+    def update_floorInfo(self, fromFloor, toFloor):
+        """
+        用于更新机器人要从哪层(fromFloor)到哪层(toFloor)
+        """
+        with self.lock:
+            self.elevatorControlParams["fromFloor"] = fromFloor
+            self.elevatorControlParams["toFloor"] = toFloor
+
+    def update_fromElevatorOutAddress(self, fromElevatorOutAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["fromElevatorOutAddress"] = fromElevatorOutAddress
+
+    def update_fromElevatorInAddress(self, fromElevatorInAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["fromElevatorInAddress"] = fromElevatorInAddress
+
+    def update_toElevatorOutAddress(self, toElevatorOutAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["toElevatorOutAddress"] = toElevatorOutAddress
+
+    def update_toElevatorInAddress(self, toElevatorInAddress):
+        """
+        用于更新机器人要上的电梯的外部坐标信息
+        """
+        with self.lock:
+            self.elevatorControlParams["toElevatorInAddress"] = toElevatorInAddress
+
+    def reset_elevatorControlParams(self):
+        """
+        任务结束后清空记录
+        """
+        with self.lock:
+            self.elevatorControlParams = {
+                "status": 0,
+                "robotId": 0,
+                "taskId": 0,
+                "house": "ntuitive",
+                "fromFloor": "",
+                "toFloor": "",
+                "fromElevatorOutAddress": {},
+                "fromElevatorInAddress": {},
+                "toElevatorOutAddress": {},
+                "toElevatorInAddress": {}
+            }
