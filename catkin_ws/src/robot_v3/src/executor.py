@@ -208,7 +208,7 @@ class InteractionThread(threading.Thread):
 
         uuid_str = str(uuid.uuid4())
 
-        rate = rospy.Rate(0.5) #控制两秒执行一次循环
+        rate = rospy.Rate(1) #控制一秒执行一次循环
 
         while  taskStatus not in ["idle", "arrived", "delivering", "returning", "cancel_delivery"]:
 
