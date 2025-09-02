@@ -11,3 +11,4 @@ catkin_ws/src/robot_v3/DS_Store
 robot_interfaces/*
 robot_side/*
 catkin_ws/requirements.txt
+catkin_ws/src/realsense-ros
