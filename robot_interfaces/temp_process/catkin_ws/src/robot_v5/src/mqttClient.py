@@ -116,7 +116,7 @@ class MqttClient:
         #先把机器人连接状态和任务状态更新
         self.robotState.update_connection(connection=status)
         if status == "online":
-            self.robotState.update_robotStatus(robotStatus="rest")
+            self.robotState.update_robotStatus(robotStatus="idle")
         elif status == "offline":
             self.robotState.update_robotStatus(robotStatus="offline")
 
@@ -143,6 +143,7 @@ class MqttClient:
         用于接收来自后台的特殊指令消息
         """
         self.robotState.update_robotStatus("rest")
+        self.programStatus.reset_programStatus()
 
         instructions = json.loads(msg.payload.decode("utf-8"))
         type = instructions.get("type")
@@ -154,12 +155,14 @@ class MqttClient:
             floor = address.get("floor")
             house = address.get("house")
 
+            self.robotState.update_position(floor=floor, house=house)
             self.instructionInfo.update_relocalizationInfo(position=position, floor=floor, house=house)
             self.programStatus.update_programStatus(programStatus="reset_address")
         
         elif type == "move":
             addressList = json.loads(instructions.get("addressList"))
 
+            print(f"\n addressList: {addressList}")
             for item in addressList:
                 desc = item.get("identity").get("desc")
                 dock = item.get("pose").get("dock")

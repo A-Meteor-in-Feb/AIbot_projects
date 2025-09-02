@@ -79,6 +79,7 @@ class RosSub:
             PLANNING_COMPLETE
         """
         signal = msg.data
+        robotStatus = self.robotState.get_state().get("robotStatus")
         programStatus = self.programStatus.get_programStatus()
 
         if signal == "GOAL_RECEIVED":
@@ -94,8 +95,13 @@ class RosSub:
                 self.programStatus.update_programStatus(programStatus="to_lift_inside")
             elif programStatus == "moving_lift_inside":
                 self.programStatus.update_programStatus(programStatus="at_lift_inside")
-            elif programStatus == "moving":
+            elif programStatus == "moving" and robotStatus == "rest":
                 self.programStatus.update_programStatus(programStatus="move_complete")
+            elif programStatus == "moving" and robotStatus == "task":
+                self.programStatus.update_programStatus(programStatus="arrived")
+            elif programStatus == "moving" and robotStatus == "back":
+                self.programStatus.reset_programStatus()
+                self.robotState.update_robotStatus("idle")
         
         if signal == "RELOCATION_RECEIVED":
             if programStatus == "reset_address":

@@ -24,7 +24,6 @@ class ElevatorFlowGetter:
         fh2 = logging.FileHandler("backend_response2.log", mode="a", encoding="utf-8")
         fh2.setLevel(logging.INFO)
         self.file_logger2.addHandler(fh2)
-        
 
     def start(self):
         if self._thread.is_alive():
@@ -55,7 +54,7 @@ class ElevatorFlowGetter:
             self._stop.wait(0.1)
 
     def get(self):
-        if self._stop.is_set() and  rospy.is_shutdown():
+        if self._stop.is_set() or rospy.is_shutdown():
             return schedule.CancelJob
             
         try:
