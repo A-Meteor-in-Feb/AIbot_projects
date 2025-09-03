@@ -196,7 +196,9 @@ class InteractionThread(threading.Thread):
                     self.back_handler(return_positions=return_positions)
 
             if robotStatus == "exce":
-                rospy.loginfo("\nnow robot status is exce\n")
+                programStatus = self.programStatus.get_programStatus()
+                taskId = self.robotState.get_state().get("robotTaskId")
+                self.toBackend_reportWarn(taskId=taskId, type=programStatus)
             
         
         except Exception as e:
@@ -610,10 +612,10 @@ class InteractionThread(threading.Thread):
         self.toBackend_photo()
         self.toBackend_notify(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value)
         
-        qr_check = self.qrCheck_handler(code)
+        #qr_check = self.qrCheck_handler(code)
         self.toBackend_photo()
-        if qr_check:
-        #if True:
+        #if qr_check:
+        if True:
             #self.delivery_handler()
             self.toBackend_notify(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_COMPLETE.value)
         else:

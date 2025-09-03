@@ -1,8 +1,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
-from robot_v3.msg import Battery
-from robot_v3.msg import Position
+from woosh_msgs.msg import Battery
 from robot_v5 import dataInfo
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
@@ -22,7 +21,6 @@ class RosSub:
         #机器人基础状态 - 位置、电量、异常码 需要的话题
         self.topic_localization = "/global_localization" 
         self.topic_battery = "/battery"
-        self.topic_statusCode = "/status_code"
 
         #跟tianxin交互需要用到的话题
         self.topic_signal = "/signal"
@@ -30,7 +28,6 @@ class RosSub:
         #话题订阅
         self.sub_localization = rospy.Subscriber(self.topic_localization, Odometry, self.callback_localization, queue_size=1, tcp_nodelay=True)
         self.sub_battery = rospy.Subscriber(self.topic_battery, Battery, self.callback_battery, queue_size=1, tcp_nodelay=True)
-        self.sub_statusCode = rospy.Subscriber(self.topic_statusCode, UInt64, self.callback_statusCode, queue_size=1, tcp_nodelay=True)
         
         #跟tianxin交互需要用到的话题
         self.sub_signal = rospy.Subscriber(self.topic_signal, String, self.callback_signal, queue_size=1, tcp_nodelay=True)
@@ -55,21 +52,6 @@ class RosSub:
             msg: Battery, 由机器人底盘发布的电量信息
         """
         self.robotState.update_battery(int(msg.batteryPercentage))
-
-    def callback_statusCode(self, msg: UInt64):
-        """
-        For 实时获取异常码 published by 机器人底盘
-        参数:
-            msg: UIn64 一个112位数字, 代表机器人是否发生故障
-        TODO 但其实我觉得故障来源不止这里, 而且不一定机器人底盘现在是可以被正常使用的状态
-        TODO 而且有很多异常码, 也有很多正常码, 我觉得判断的逻辑是不是需要改一改或者怎么样之类的
-        
-        code = int(msg.data)
-        if code == 1:
-            self.state.update_fault(False)
-        else:
-            self.state.update_fault(True)
-        """
 
     def callback_signal(self, msg: String):
         """
@@ -122,3 +104,9 @@ class RosSub:
         if signal == "RELOCATION_FAILURE":
             if programStatus == "resetting":
                 self.programStatus.update_programStatus(programStatus="reset_failure")
+
+        if signal in ["ERROR_CONTROL", "ERROR_PLANNING", "ERROR_OSCILLATING"]:
+            self.robotState.update_robotStatus("exce")
+            self.robotState.update_fault(True)
+            self.programStatus.update_programStatus(programStatus=signal)
+           

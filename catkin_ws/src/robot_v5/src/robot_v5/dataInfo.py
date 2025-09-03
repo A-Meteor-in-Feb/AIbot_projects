@@ -43,7 +43,7 @@ class RobotStateInfo:
             "robotStatus": "offline",
             "robotTaskId": 0,
             "connection": "offline",
-            "battery": None,
+            "battery": 0,
             "fault": False
         }
     
@@ -132,10 +132,10 @@ class RobotStateInfo:
         参数: 
             b_fault: 一个bool值, 代表是否发生故障.
             如果发生故障, 再具体地发布error主题.
-        
+        """
         with self.lock:
             self.robotState["fault"] = b_fault
-        """
+        
 
 class StatusBackend:
     def __init__(self):
