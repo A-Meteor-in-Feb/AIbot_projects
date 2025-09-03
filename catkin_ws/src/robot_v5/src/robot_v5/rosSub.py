@@ -3,7 +3,7 @@ from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
 from robot_v3.msg import Battery
 from robot_v3.msg import Position
-import dataInfo
+from robot_v5 import dataInfo
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
@@ -79,6 +79,7 @@ class RosSub:
             PLANNING_COMPLETE
         """
         signal = msg.data
+        robotStatus = self.robotState.get_state().get("robotStatus")
         programStatus = self.programStatus.get_programStatus()
 
         if signal == "GOAL_RECEIVED":
@@ -89,13 +90,22 @@ class RosSub:
             elif programStatus == "ready_move":
                 self.programStatus.update_programStatus(programStatus="moving")
         
+        if signal == "STOP_RECEIVED":
+            if programStatus == "stop":
+                self.programStatus.update_programStatus(programStatus="stop_complete")
+        
         if signal == "GOAL_ARRIVED":
             if programStatus == "moving_lift_outside":
                 self.programStatus.update_programStatus(programStatus="to_lift_inside")
             elif programStatus == "moving_lift_inside":
                 self.programStatus.update_programStatus(programStatus="at_lift_inside")
-            elif programStatus == "moving":
+            elif programStatus == "moving" and robotStatus == "rest":
                 self.programStatus.update_programStatus(programStatus="move_complete")
+            elif programStatus == "moving" and robotStatus == "task":
+                self.programStatus.update_programStatus(programStatus="arrived")
+            elif programStatus == "moving" and robotStatus == "back":
+                self.programStatus.reset_programStatus()
+                self.robotState.update_robotStatus("idle")
         
         if signal == "RELOCATION_RECEIVED":
             if programStatus == "reset_address":

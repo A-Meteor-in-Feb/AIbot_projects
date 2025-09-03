@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 import socket
-import dataInfo
+from robot_v5 import dataInfo
 import time
 
 
@@ -136,13 +136,14 @@ class MqttClient:
         robotState_info = self.robotState.get_state()
         message = json.dumps(robotState_info).encode("utf-8")
         self.mqtt_client.publish(f"robots/{self.robotId}/state", message, qos=0)
-        print("\n Published the state topic: ", robotState_info)
+        print(f"\n Published the state topic: {robotState_info} \n")
 
     def command_handler(self, client, userdata, msg):
         """
         用于接收来自后台的特殊指令消息
         """
         self.robotState.update_robotStatus("rest")
+        self.programStatus.reset_programStatus()
 
         instructions = json.loads(msg.payload.decode("utf-8"))
         type = instructions.get("type")
@@ -153,7 +154,7 @@ class MqttClient:
             position = address.get("pose").get("dock")
             floor = address.get("floor")
             house = address.get("house")
-            
+
             self.robotState.update_position(floor=floor, house=house)
             self.instructionInfo.update_relocalizationInfo(position=position, floor=floor, house=house)
             self.programStatus.update_programStatus(programStatus="reset_address")
@@ -182,6 +183,8 @@ class MqttClient:
         elif type == "switch_status":
             status = instructions.get("status")
             self.robotState.update_robotStatus(robotStatus=status)
+            if status == "rest":
+                self.programStatus.update_programStatus("stop")
         
         elif type == "execute_command":
             commandContent = instructions.get("commandContent")
