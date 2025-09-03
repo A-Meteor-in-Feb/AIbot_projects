@@ -105,7 +105,7 @@ class RosSub:
             if programStatus == "resetting":
                 self.programStatus.update_programStatus(programStatus="reset_failure")
 
-        if signal in ["ERROR_CONTROL", "ERROR_PLANNING", "ERROR_OSCILLATING"]:
+        if "GOAL_Failed" in signal:
             self.robotState.update_robotStatus("exce")
             self.robotState.update_fault(True)
             self.programStatus.update_programStatus(programStatus=signal)
