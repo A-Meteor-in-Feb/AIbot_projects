@@ -107,7 +107,7 @@ class FetchTask:
                             
                         self.owner.statusBackend.update_statusBackend(taskId=taskId_new, status=status_new)
 
-                        robotStatus = self.owner.roborState.get_state().get("robotStatus")
+                        robotStatus = self.owner.robotState.get_state().get("robotStatus")
                         programStatus = self.owner.programStatus.get_programStatus()
 
                         if robotStatus == "task" and programStatus not in ["moving_lift_inside", "at_lift_inside", "relocalization", "relocalizing", "ready_move"]:

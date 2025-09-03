@@ -1,0 +1,113 @@
+version: "3"
+
+services:
+  roscore:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    command: bash -lc "source /opt/ros/noetic/setup.bash && roscore"
+    networks: [rosnet]
+
+  builder:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    command: [
+      "bash","-lc",
+      "set -e && \
+       source /opt/ros/noetic/setup.bash && \
+       cd /workspace/catkin_ws && \
+       rm -rf build devel && \
+       if [ ! -f src/CMakeLists.txt ]; then (cd src && catkin_init_workspace); fi && \
+       catkin_make"
+    ]
+    volumes:
+      - ./catkin_ws:/workspace/catkin_ws
+    working_dir: /workspace
+    networks: [rosnet]
+
+  # 机器人1：executor
+  robot1:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    depends_on: [roscore]
+    environment:
+      - ROS_MASTER_URI=http://roscore:11311
+      - ROS_NAMESPACE=robot1
+    command: bash -lc "
+      source /opt/ros/noetic/setup.bash &&
+      source /workspace/catkin_ws/devel/setup.bash &&
+      python3 catkin_ws/src/robot_v5/src/executor.py
+        --robot-id=18950214603
+        --private-key=z/CszPJh61yWfA1eJhmDKg==
+        --iv-vector=+tBPz/vp+8x9ps4ikCj6btA== "
+    
+    volumes: 
+      - ./catkin_ws:/workspace/catkin_ws
+    working_dir: /workspace
+    networks: [rosnet]
+
+  # 机器人1: mock
+  mock1:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    depends_on: [roscore]
+    environment:
+      - ROS_MASTER_URI=http://roscore:11311
+      - ROS_NAMESPACE=robot1
+    command: bash -lc "
+      source /opt/ros/noetic/setup.bash &&
+      source /workspace/catkin_ws/devel/setup.bash &&
+      python3 /workspace/catkin_ws/src/robot_v5/src/mock_ros.py"
+
+    volumes: 
+      - ./catkin_ws:/workspace/catkin_ws
+    working_dir: /workspace
+    networks: [rosnet]
+
+  # 机器人2: executor
+  robot2:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    depends_on: [roscore]
+    environment:
+      - ROS_MASTER_URI=http://roscore:11311
+      - ROS_NAMESPACE=robot2
+    command: bash -lc "
+      source /opt/ros/noetic/setup.bash &&
+      source /workspace/catkin_ws/devel/setup.bash &&
+      python3 catkin_ws/src/robot_v5/src/executor.py
+        --robot-id=20711224348
+        --private-key=3r67RyXcZPKvmR8gstMeyQ==
+        --iv-vector=+qs7bZJQ+hOt98YwP/a9yA== "
+    
+    volumes: 
+      - ./catkin_ws:/workspace/catkin_ws
+    working_dir: /workspace
+    networks: [rosnet]
+
+  # 机器人2: mock
+  mock2:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    depends_on: [roscore]
+    environment:
+      - ROS_MASTER_URI=http://roscore:11311
+      - ROS_NAMESPACE=robot2
+    command: bash -lc "
+      source /opt/ros/noetic/setup.bash &&
+      source /workspace/catkin_ws/devel/setup.bash &&
+      python3 /workspace/catkin_ws/src/robot_v5/src/mock_ros.py"
+    
+    volumes: 
+      - ./catkin_ws:/workspace/catkin_ws
+    working_dir: /workspace
+    networks: [rosnet]
+
+networks:
+  rosnet:
+    driver: bridge

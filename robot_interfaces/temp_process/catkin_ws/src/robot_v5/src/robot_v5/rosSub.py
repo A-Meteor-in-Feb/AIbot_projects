@@ -3,7 +3,7 @@ from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
 from robot_v3.msg import Battery
 from robot_v3.msg import Position
-import dataInfo
+from robot_v5 import dataInfo
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
@@ -89,6 +89,10 @@ class RosSub:
                 self.programStatus.update_programStatus(programStatus="moving_lift_inside")
             elif programStatus == "ready_move":
                 self.programStatus.update_programStatus(programStatus="moving")
+        
+        if signal == "STOP_RECEIVED":
+            if programStatus == "stop":
+                self.programStatus.update_programStatus(programStatus="stop_complete")
         
         if signal == "GOAL_ARRIVED":
             if programStatus == "moving_lift_outside":

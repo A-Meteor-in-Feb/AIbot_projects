@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 import socket
-import dataInfo
+from robot_v5 import dataInfo
 import time
 
 
@@ -116,7 +116,7 @@ class MqttClient:
         #先把机器人连接状态和任务状态更新
         self.robotState.update_connection(connection=status)
         if status == "online":
-            self.robotState.update_robotStatus(robotStatus="idle")
+            self.robotState.update_robotStatus(robotStatus="rest")
         elif status == "offline":
             self.robotState.update_robotStatus(robotStatus="offline")
 
@@ -136,7 +136,7 @@ class MqttClient:
         robotState_info = self.robotState.get_state()
         message = json.dumps(robotState_info).encode("utf-8")
         self.mqtt_client.publish(f"robots/{self.robotId}/state", message, qos=0)
-        print("\n Published the state topic: ", robotState_info)
+        print(f"\n Published the state topic: {robotState_info} \n")
 
     def command_handler(self, client, userdata, msg):
         """
@@ -183,6 +183,8 @@ class MqttClient:
         elif type == "switch_status":
             status = instructions.get("status")
             self.robotState.update_robotStatus(robotStatus=status)
+            if status == "rest":
+                self.programStatus.update_programStatus("stop")
         
         elif type == "execute_command":
             commandContent = instructions.get("commandContent")

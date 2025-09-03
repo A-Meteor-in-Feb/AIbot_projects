@@ -1,0 +1,2 @@
+<httpClient-51> backend response: {'code': 0, 'data': {'addressList': [{'navigation': {'arrival_method': 2}, 'pose': {'real': {'x': 2.7100000381469727, 'y': -0.5699999928474426, 'theta': -2.180000066757202}, 'dock': {'x': 2.7100000381469727, 'y': -0.5699999928474426, 'theta': -2.2899999618530273}}, 'identity': {'no': 'E584FA80', 'id': 3850697344, 'desc': 'PARKINGSITE'}, 'stationName': '小区001', 'floor': '2m', 'house': 'ntuitive', 'dock_settings': {'identify': '', 'verify': ''}, 'stationId': 18839843720}], 'restArea': {'$ref': '$.data.addressList[0]'}}, 'msg': '操作成功'}
+

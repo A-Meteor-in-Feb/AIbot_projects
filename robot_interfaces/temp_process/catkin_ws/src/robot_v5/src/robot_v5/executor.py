@@ -8,20 +8,46 @@ from std_msgs.msg import String
 import uuid
 import schedule
 import subprocess
+import argparse
+from types import SimpleNamespace
 
-import mqttClient
-import rosSub
-import httpClient
-import dataInfo
+from robot_v5 import mqttClient
+from robot_v5 import rosSub
+from robot_v5 import httpClient
+from robot_v5 import dataInfo
 #import httpServer
-import encryption
-import qrCode
-import elevatorFlowGetter
-import fetchTask
+from robot_v5 import encryption
+from robot_v5 import qrCode
+from robot_v5 import elevatorFlowGetter
+from robot_v5 import fetchTask
 
 from flask import Flask, jsonify
 from werkzeug.serving import make_server
 from threading import Thread
+
+
+#后台指定的参数
+ROBOTID = "18950214603"
+PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="
+IV_VECTOR = "tBPz/vp+8x9ps4ikCj6btA=="
+
+#ROBOTID = args.robot_id
+#PRIVATE_KEY = args.private_key
+#IV_VECTOR = args.iv_vector
+
+#控制参数
+HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送 & 跟后台发送请求的周期
+
+#连接参数
+BROKER_HOST = "10.25.0.2"
+BROKER_PORT = 1883
+HTTP_HEAD = "http"
+BACKEND_HOST = "10.25.0.15"   # "192.168.10.164"
+BACKEND_PORT = "18001"        # "8889"
+
+#ROS 发布话题名
+TOPIC_GOAL = "goal_v3"
+
 
 
 class MqttThread(threading.Thread):
@@ -93,7 +119,12 @@ class InteractionThread(threading.Thread):
             return schedule.CancelJob
 
         try:
-            robotStatus = self.robotState.get_state().get("robotStatus")
+            robotState = self.robotState.get_state()
+            if robotState is None:
+                rospy.logwarn("<executor-98> robotState is None, skip this tick.")
+                return
+            
+            robotStatus = robotState.get("robotStatus")
             programStatus = self.programStatus.get_programStatus()
             rospy.loginfo(f"\nrobotStatus: {robotStatus}; programStatus: {programStatus}\n")
 
@@ -118,6 +149,9 @@ class InteractionThread(threading.Thread):
 
                 elif programStatus == "execute_command_complete":
                     self.finalize_command_handler()
+                
+                elif programStatus == "stop":
+                    self.publish_goal(goal_pos=None, goal_floor="", goal_house="", relocation=False, programStatus_old=programStatus, stop=True)
 
             if robotStatus == "idle":
                 if not self.fetchTask:
@@ -142,11 +176,12 @@ class InteractionThread(threading.Thread):
 
                 if programStatus == "arrived":
                     self.arrived_handler(taskId=taskId, code=code)
+                    self.robotState.update_robotTaskId(0)
                 
                 if programStatus == "delivered" or programStatus == "delivered_failed":
                     robot_floor = self.robotState.get_state().get("floor")
                     robot_house = self.robotState.get_state().get("house")
-                    self.delivered_handler(taskId=taskId, robot_floor=robot_floor, robot_house=robot_house)
+                    self.delivered_handler(taskId=0, robot_floor=robot_floor, robot_house=robot_house)
                     
             if robotStatus == "back":
                 programStatus = self.programStatus.get_programStatus()
@@ -208,7 +243,7 @@ class InteractionThread(threading.Thread):
 
         return ps
 
-    def publish_goal(self, goal_pos, goal_floor, goal_house, relocation, programStatus_old):
+    def publish_goal(self, goal_pos, goal_floor, goal_house, relocation, programStatus_old, stop=False):
         """
         给tianxin发布他规划路径需要的数据
         参数:
@@ -218,11 +253,16 @@ class InteractionThread(threading.Thread):
             final_floor: 最后机器人需要到达的楼层
         """
         goal = Goal_v3()
-
-        goal.pose = self.position_transform(goal_pos)
+        
+        if goal_pos is None:
+            goal.pose = PoseStamped()
+        else:
+            goal.pose = self.position_transform(goal_pos)
+        
         goal.floor = goal_floor
         goal.house = goal_house
         goal.relocation = relocation
+        goal.stop = stop
         self.ros_pub_goal.publish(goal)
         rospy.loginfo(f"\n Forwarded the goal info to the planning part \n {goal}\n")
         self.publish_goal_wait(programStatus_old=programStatus_old)
@@ -234,7 +274,7 @@ class InteractionThread(threading.Thread):
         """
         rate = rospy.Rate(10) 
         waited = 0
-        while waited < 5.0:
+        while waited < 0.5:
                             
             if self.stop_event.is_set() or rospy.is_shutdown():
                 break
@@ -603,10 +643,10 @@ class InteractionThread(threading.Thread):
             taskInfo = data.get("taskInfo") or {}
             if taskInfo != {}:
                 status_new = data.get("taskInfo").get("status")
-                if status_new == 30 or status_new == 40:
+                if status_new == 30 or status_new == 40 or status_new == 90:
                     self.robotState.update_robotStatus(robotStatus="idle")
-                else:
-                    self.robotState.update_robotStatus(robotStatus="back")
+            else:
+                self.robotState.update_robotStatus(robotStatus="back")
 
     def back_handler(self, return_positions):
         
@@ -640,25 +680,15 @@ class InteractionThread(threading.Thread):
             finally:
                 self.elevatorGettter = None
 
-if __name__ == "__main__":
 
-    #后台指定的参数
-    ROBOTID = "18950214603"
-    PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="
-    IV_VECTOR = "tBPz/vp+8x9ps4ikCj6btA=="
+def main():
 
-    #控制参数
-    HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送 & 跟后台发送请求的周期
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument("--robot-id", required=True, help="Unique ID of this robot")
+    #parser.add_argument("--private-key", required=True, help="Encryption private key")
+    #parser.add_argument("--iv-vector", required=True, help="Encryption IV vector")
+    #args = parser.parse_args()
 
-    #连接参数
-    BROKER_HOST = "10.25.0.2"
-    BROKER_PORT = 1883
-    HTTP_HEAD = "http"
-    BACKEND_HOST = "10.25.0.15"   # "192.168.10.164"
-    BACKEND_PORT = "18001"        # "8889"
-
-    #ROS 发布话题名
-    TOPIC_GOAL = "/goal_v3"
 
     #临界资源初始化
     robotState = dataInfo.RobotStateInfo()
