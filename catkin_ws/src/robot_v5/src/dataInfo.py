@@ -41,9 +41,9 @@ class RobotStateInfo:
             "house": "ntuitive",
             "coordinateType": "map",
             "robotStatus": "offline",
-            "robotTaskId": None,
+            "robotTaskId": 0,
             "connection": "offline",
-            "battery": None,
+            "battery": 0,
             "fault": False
         }
     

@@ -1,8 +1,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
-from robot_v3.msg import Battery
-from robot_v3.msg import Position
+from woosh_msgs.msg import Battery
 import dataInfo
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
@@ -112,3 +111,5 @@ class RosSub:
         if signal == "RELOCATION_FAILURE":
             if programStatus == "resetting":
                 self.programStatus.update_programStatus(programStatus="reset_failure")
+
+
