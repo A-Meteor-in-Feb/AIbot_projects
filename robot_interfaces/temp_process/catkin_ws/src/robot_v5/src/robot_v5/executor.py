@@ -196,7 +196,9 @@ class InteractionThread(threading.Thread):
                     self.back_handler(return_positions=return_positions)
 
             if robotStatus == "exce":
-                rospy.loginfo("\nnow robot status is exce\n")
+                programStatus = self.programStatus.get_programStatus()
+                taskId = self.robotState.get_state().get("robotTaskId")
+                self.toBackend_reportWarn(taskId=taskId, type=programStatus)
             
         
         except Exception as e:
