@@ -92,7 +92,9 @@ class InteractionThread(threading.Thread):
                  http_client: httpClient.HttpClient, programStatus: dataInfo.ProgramStatus,
                  elevatorControl: dataInfo.ElevatorControl, statusBackend: dataInfo.StatusBackend,
                  currentOrder: dataInfo.CurrentOrder, ros_pub_goal, stop_event: threading.Event):
-        
+        """
+        这个线程主要用于逻辑控制和交互
+        """
         super().__init__(daemon=True)
 
         self.robotState = robotState
