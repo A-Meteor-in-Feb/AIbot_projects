@@ -1,15 +1,16 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
-from woosh_msgs.msg import Battery
+#from woosh_msgs.msg import Battery
 from robot_v5 import dataInfo
+from robot_v5 import mqttClient
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from std_msgs.msg import Int32
 
 class RosSub:
-    def __init__(self, robotState: dataInfo.RobotStateInfo, programStatus: dataInfo.ProgramStatus):
+    def __init__(self, robotState: dataInfo.RobotStateInfo, programStatus: dataInfo.ProgramStatus, robot_mqtt: mqttClient.MqttClient):
         """
         这个类用与订阅各种来自不同子系统的ROS话题.
         参数:
@@ -17,6 +18,7 @@ class RosSub:
         """
         self.robotState = robotState
         self.programStatus = programStatus
+        self.robot_mqtt = robot_mqtt
 
         #机器人基础状态 - 位置、电量、异常码 需要的话题
         self.topic_localization = "/global_localization" 
@@ -27,7 +29,7 @@ class RosSub:
 
         #话题订阅
         self.sub_localization = rospy.Subscriber(self.topic_localization, Odometry, self.callback_localization, queue_size=1, tcp_nodelay=True)
-        self.sub_battery = rospy.Subscriber(self.topic_battery, Battery, self.callback_battery, queue_size=1, tcp_nodelay=True)
+        #self.sub_battery = rospy.Subscriber(self.topic_battery, Battery, self.callback_battery, queue_size=1, tcp_nodelay=True)
         
         #跟tianxin交互需要用到的话题
         self.sub_signal = rospy.Subscriber(self.topic_signal, String, self.callback_signal, queue_size=1, tcp_nodelay=True)
@@ -45,13 +47,13 @@ class RosSub:
 
         self.robotState.update_localization(msg.pose.pose.position.x, msg.pose.pose.position.y, yaw)
 
-    def callback_battery(self, msg: Battery):
+    #def callback_battery(self, msg: Battery):
         """
         For 实时更新机器人的电池电量.
         参数:
             msg: Battery, 由机器人底盘发布的电量信息
         """
-        self.robotState.update_battery(int(msg.batteryPercentage))
+        #self.robotState.update_battery(int(msg.batteryPercentage))
 
     def callback_signal(self, msg: String):
         """
@@ -61,6 +63,12 @@ class RosSub:
             PLANNING_COMPLETE
         """
         signal = msg.data
+
+        try:
+            self.robot_mqtt.publish_signal(signal)
+        except Exception as e:
+            rospy.loginfo("\n <rosSub-72> forward signal with mqtt error: {e}\n")
+
         robotStatus = self.robotState.get_state().get("robotStatus")
         programStatus = self.programStatus.get_programStatus()
 
@@ -86,8 +94,7 @@ class RosSub:
             elif programStatus == "moving" and robotStatus == "task":
                 self.programStatus.update_programStatus(programStatus="arrived")
             elif programStatus == "moving" and robotStatus == "back":
-                self.programStatus.reset_programStatus()
-                self.robotState.update_robotStatus("idle")
+                self.programStatus.update_programStatus(programStatus="back_arrived")
         
         if signal == "RELOCATION_RECEIVED":
             if programStatus == "reset_address":
@@ -105,7 +112,7 @@ class RosSub:
             if programStatus == "resetting":
                 self.programStatus.update_programStatus(programStatus="reset_failure")
 
-        if signal in ["ERROR_CONTROL", "ERROR_PLANNING", "ERROR_OSCILLATING"]:
+        if "GOAL_Failed" in signal:
             self.robotState.update_robotStatus("exce")
             self.robotState.update_fault(True)
             self.programStatus.update_programStatus(programStatus=signal)

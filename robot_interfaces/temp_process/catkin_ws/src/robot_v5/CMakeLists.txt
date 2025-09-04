@@ -20,6 +20,7 @@ include_directories(
 
 catkin_install_python(PROGRAMS
   scripts/executor.py
+  scripts/mock_ros.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -37,8 +37,8 @@ class RobotStateInfo:
         self.robotState = {
             "localization": {"x": 0, "y": 0, "theta": 0},
             "ip": "",
-            "floor": "2m",
-            "house": "ntuitive",
+            "floor": "",
+            "house": "",
             "coordinateType": "map",
             "robotStatus": "offline",
             "robotTaskId": 0,
@@ -326,6 +326,7 @@ class ProgramStatus:
         """
         self.lock = threading.Lock()
         self.programStatus = ""
+        self.cond = threading.Condition(self.lock)
     
     def update_programStatus(self, programStatus):
         """
@@ -333,6 +334,7 @@ class ProgramStatus:
         """
         with self.lock:
             self.programStatus = programStatus
+            self.cond.notify_all()
 
     def get_programStatus(self):
         """
@@ -348,6 +350,7 @@ class ProgramStatus:
         """
         with self.lock:
             self.programStatus = ""  
+            self.cond.notify_all()
 
 
 class ElevatorControl:
@@ -442,3 +445,21 @@ class ElevatorControl:
                 "toElevatorOutAddress": {},
                 "toElevatorInAddress": {}
             }
+
+
+class Signal:
+    def __init__(self):
+        self.lock = threading.lock()
+        self.signal = ""
+
+    def update_signal(self, signal):
+        with self.lock:
+            self.signal = signal
+
+    def get_signal(self):
+        with self.lock:
+            return self.signal
+    
+    def reset_signal(self):
+        with self.lock:
+            self.signal = ""

@@ -38,7 +38,7 @@ services:
     command: bash -lc "
       source /opt/ros/noetic/setup.bash &&
       source /workspace/catkin_ws/devel/setup.bash &&
-      python3 catkin_ws/src/robot_v5/src/executor.py
+      rosrun robot_v5 executor.py
         --robot-id=18950214603
         --private-key=z/CszPJh61yWfA1eJhmDKg==
         --iv-vector=+tBPz/vp+8x9ps4ikCj6btA== "
@@ -60,7 +60,7 @@ services:
     command: bash -lc "
       source /opt/ros/noetic/setup.bash &&
       source /workspace/catkin_ws/devel/setup.bash &&
-      python3 /workspace/catkin_ws/src/robot_v5/src/mock_ros.py"
+      rosrun robot_v5 mock_ros.py"
 
     volumes: 
       - ./catkin_ws:/workspace/catkin_ws
@@ -79,7 +79,7 @@ services:
     command: bash -lc "
       source /opt/ros/noetic/setup.bash &&
       source /workspace/catkin_ws/devel/setup.bash &&
-      python3 catkin_ws/src/robot_v5/src/executor.py
+      rosrun robot_v5 executor.py
         --robot-id=20711224348
         --private-key=3r67RyXcZPKvmR8gstMeyQ==
         --iv-vector=+qs7bZJQ+hOt98YwP/a9yA== "
@@ -101,7 +101,7 @@ services:
     command: bash -lc "
       source /opt/ros/noetic/setup.bash &&
       source /workspace/catkin_ws/devel/setup.bash &&
-      python3 /workspace/catkin_ws/src/robot_v5/src/mock_ros.py"
+      rosrun robot_v5 mock_ros.py"
     
     volumes: 
       - ./catkin_ws:/workspace/catkin_ws
