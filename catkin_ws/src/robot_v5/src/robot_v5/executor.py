@@ -20,6 +20,7 @@ from robot_v5 import encryption
 from robot_v5 import qrCode
 from robot_v5 import elevatorFlowGetter
 from robot_v5 import fetchTask
+from robot_v5 import timeoutMonitor
 
 from flask import Flask, jsonify
 from werkzeug.serving import make_server
@@ -31,15 +32,17 @@ ROBOTID = "18950214603"
 PRIVATE_KEY = "z/CszPJh61yWfA1eJhmDKg=="
 IV_VECTOR = "tBPz/vp+8x9ps4ikCj6btA=="
 
-#ROBOTID = args.robot_id
-#PRIVATE_KEY = args.private_key
-#IV_VECTOR = args.iv_vector
+#ROBOTID = ""
+#PRIVATE_KEY = ""
+#IV_VECTOR = ""
+
+STATIONID = "18839843720"
 
 #控制参数
 HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送 & 跟后台发送请求的周期
 
 #连接参数
-BROKER_HOST = "10.25.0.2"
+BROKER_HOST = "10.25.0.17"
 BROKER_PORT = 1883
 HTTP_HEAD = "http"
 BACKEND_HOST = "10.25.0.15"   # "192.168.10.164"
@@ -108,6 +111,11 @@ class InteractionThread(threading.Thread):
 
         self.fetchTask = None
 
+        self.timeoutMonitor = timeoutMonitor.TimeoutMonitor(owner=self)
+        self.relocalization_timeout = 10
+        self.move_timeout = 20
+        self.elevator_timeout = 15
+
         self.scheduler = schedule.Scheduler()
         self.job = None
 
@@ -132,9 +140,11 @@ class InteractionThread(threading.Thread):
                 self.finalize_task()
 
                 if programStatus == "reset_address":
+                    self.timeoutMonitor.record(startStatus="reset_address", stopStatus="reset_success", timeout=self.relocalization_timeout)
                     self.relocalization_handler(programStatus_old=programStatus)
                     
                 elif programStatus == "move":
+                    self.timeoutMonitor.record(startStatus="move", stopStatus="move_complete", timeout=self.move_timeout)
                     positions = self.instructionInfo.get_movePositions()
                     self.move_handler(positions=positions)
                     
@@ -142,9 +152,11 @@ class InteractionThread(threading.Thread):
                     self.command_handler()
 
                 elif programStatus == "reset_success" or programStatus == "reset_failure":
+                    self.timeoutMonitor.cancel_record(startStatus="reset_address")
                     self.finalize_relocalization_handler()
 
                 elif programStatus == "move_complete":
+                    self.timeoutMonitor.cancel_record(startStatus="move")
                     self.finalize_move_handler()
 
                 elif programStatus == "execute_command_complete":
@@ -172,9 +184,11 @@ class InteractionThread(threading.Thread):
                     rospy.loginfo(f"\n<executor-138> Error in READ GOAL: {e}\n")
                 
                 if programStatus == "assigned":
+                    self.timeoutMonitor.record(startStatus="assigned", stopStatus="arrived", timeout=self.move_timeout)
                     self.assigned_handler(taskId=taskId, goal_positions=goal_positions)
 
                 if programStatus == "arrived":
+                    self.timeoutMonitor.cancel_record(startStatus="assigned")
                     self.arrived_handler(taskId=taskId, code=code)
                     self.robotState.update_robotTaskId(0)
                 
@@ -193,7 +207,13 @@ class InteractionThread(threading.Thread):
                     except Exception as e:
                         rospy.loginfo(f"\n<executor-156> Error in READ GOAL: {e}\n")
 
+                    startStatus = programStatus
+                    self.timeoutMonitor.record(startStatus=startStatus, stopStatus="back_arrived", timeout=self.move_timeout)
                     self.back_handler(return_positions=return_positions)
+
+                if programStatus == "back_arrived":
+                    self.timeoutMonitor.cancel_record(startStatus=startStatus)
+                    self.robotState.update_robotStatus("idle")
 
             if robotStatus == "exce":
                 programStatus = self.programStatus.get_programStatus()
@@ -342,6 +362,7 @@ class InteractionThread(threading.Thread):
     def move_handler(self, positions):
         for item in positions:
             robot_floor = self.robotState.get_state().get("floor")
+            robot_house = self.robotState.get_state().get("house")
             to_floor = item.get("floor")
             to_pos = item.get("dock")
             to_house = item.get("house")
@@ -349,10 +370,10 @@ class InteractionThread(threading.Thread):
             if robot_floor != to_floor:
                 self.elevatorControl.update_elevatorStatus(elevatorStatus=0)
                 self.programStatus.update_programStatus(programStatus="to_lift_outside")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house)
+                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
             else:
                 self.programStatus.update_programStatus(programStatus="ready_move")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house)
+                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
 
     def finalize_move_handler(self):
         self.instructionInfo.reset_movePositions()
@@ -371,7 +392,7 @@ class InteractionThread(threading.Thread):
     def finalize_command_handler(self):
         self.instructionInfo.reset_command()
 
-    def move_with_lift(self, taskId, robot_floor, to_pos, to_floor, to_house):
+    def move_with_lift(self, taskId, robot_floor, to_pos, to_floor, to_house, robot_house):
         """
         跟电梯交互
         参数:
@@ -386,10 +407,13 @@ class InteractionThread(threading.Thread):
 
         rate = rospy.Rate(1) #控制两秒执行一次循环
 
-        while programStatus != "moving":
+        startStatus = programStatus
+        self.timeoutMonitor.record(startStatus=startStatus, stopStatus="moving", timeout=self.elevator_timeout)
+
+        while programStatus != "moving" and "timeout" not in programStatus:
             
-            #切换状态被重置了. 退出循环
-            if programStatus == "":
+            #切换状态被重置了 或者 需要机器人停止. 退出循环
+            if programStatus == "" or programStatus == "stop":
                 self.elevatorStatus = 0
                 break
 
@@ -398,7 +422,7 @@ class InteractionThread(threading.Thread):
             if programStatus == "to_lift_outside": #准备走向电梯门外的点位
 
                 #向后台发初始化电梯流程请求 并更新 机器人执行任务需要的相关参数 
-                ok = self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                ok = self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
                 if not ok:
                     rospy.loginfo("\nno response from the backend\n")
                     rate.sleep()
@@ -432,7 +456,7 @@ class InteractionThread(threading.Thread):
                 #目标接收成功 [机器人正在赶往电梯口](10), 更新电梯状态为[10], 通知后台
                 if programStatus == "moving_lift_outside":
                     self.elevatorStatus = 10
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
 
             if programStatus == "to_lift_inside": #到达电梯外部坐标, 准备走进电梯内部
 
@@ -457,12 +481,12 @@ class InteractionThread(threading.Thread):
                     #目标接收成功 [机器人正在赶往电梯内部](50), 更新电梯状态为[50], 通知后台
                     if programStatus == "moving_lift_inside":
                         self.elevatorStatus = 50
-                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
                 
                 #到达电梯门口 还没收到 电梯门已开 的信号, 所以要发送 [已到达电梯口](20) 的命令
                 elif self.elevatorStatus == 10:
                     self.elevatorStatus = 20
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
                     #拍照
                     self.toBackend_photo()
 
@@ -485,7 +509,7 @@ class InteractionThread(threading.Thread):
 
                 #通知后台机器人已到达电梯内部
                 self.elevatorStatus = 60
-                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
                 
                 #更新机器人自身的状态为 等待重定位 [idle_relocation] 或者 [return_relocation]
                 self.programStatus.update_programStatus("relocalization")
@@ -516,7 +540,7 @@ class InteractionThread(threading.Thread):
                 #目标接收成功 [机器人正在重置地图](90), 更新电梯状态为[90], 通知后台
                 if programStatus == "relocalizing":
                     self.elevatorStatus = 90
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
                      #拍照
                     self.toBackend_photo()
 
@@ -555,7 +579,10 @@ class InteractionThread(threading.Thread):
             finally:
                 self.elevatorGettter = None
 
-    def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor):
+        if programStatus == "moving":
+            self.timeoutMonitor.cancel_record(startStatus=startStatus)
+
+    def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor, house):
         """
         用来调用接口, 与后台协调电梯使用流程, 并更新相关电梯使用参数.
         参数:
@@ -565,7 +592,7 @@ class InteractionThread(threading.Thread):
             fromFloor: 机器人出发楼层
             toFloor: 机器人需要到达的楼层
         """
-        response = self.http_client.set_elevatorControlFlow(flowId=flowId, elevatorStatus=elevatorStatus, robotId=ROBOTID, taskId=taskId, fromFloor=fromFloor, toFloor=toFloor)
+        response = self.http_client.set_elevatorControlFlow(flowId=flowId, elevatorStatus=elevatorStatus, robotId=ROBOTID, taskId=taskId, fromFloor=fromFloor, toFloor=toFloor, house=house)
         
         try:
             flow_info = response.get("data").get("flowInfo")
@@ -595,6 +622,7 @@ class InteractionThread(threading.Thread):
     def assigned_handler(self, taskId, goal_positions):
         for item in goal_positions:
             robot_floor = self.robotState.get_state().get("floor")
+            robot_house = self.robotState.get_state().get("house")
             to_floor = item.get("floor")
             to_pos = item.get("dock")
             to_house = item.get("house")
@@ -603,10 +631,10 @@ class InteractionThread(threading.Thread):
                     
             if to_floor != robot_floor:
                 self.programStatus.update_programStatus(programStatus="to_lift_outside")
-                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house)
+                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
             else:
                 self.programStatus.update_programStatus("ready_move")
-                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house)
+                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
 
     def arrived_handler(self, taskId, code):
         self.toBackend_photo()
@@ -654,6 +682,7 @@ class InteractionThread(threading.Thread):
         
         for item in return_positions:
             robot_floor = self.robotState.get_state().get("floor")
+            robot_house = self.robotState.get_state().get("house")
             to_floor = item.get("floor")
             to_pos = item.get("dock")
             to_house = item.get("house")
@@ -662,10 +691,10 @@ class InteractionThread(threading.Thread):
                     
             if to_floor != robot_floor:
                 self.programStatus.update_programStatus(programStatus="to_lift_outside")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house)
+                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
             else:
                 self.programStatus.update_programStatus("ready_move")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house)
+                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
 
     def finalize_task(self):
         self.currentOrder.reset_currentOrder()
@@ -684,12 +713,18 @@ class InteractionThread(threading.Thread):
 
 
 def main():
-
-    #parser = argparse.ArgumentParser()
-    #parser.add_argument("--robot-id", required=True, help="Unique ID of this robot")
-    #parser.add_argument("--private-key", required=True, help="Encryption private key")
-    #parser.add_argument("--iv-vector", required=True, help="Encryption IV vector")
-    #args = parser.parse_args()
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--robot-id", required=True, help="Unique ID of this robot")
+    parser.add_argument("--private-key", required=True, help="Encryption private key")
+    parser.add_argument("--iv-vector", required=True, help="Encryption IV vector")
+    args = parser.parse_args()
+    
+    global ROBOTID, PRIVATE_KEY, IV_VECTOR
+    ROBOTID = args.robot_id
+    PRIVATE_KEY = args.private_key
+    IV_VECTOR = args.iv_vector
+    """
 
 
     #临界资源初始化
@@ -702,7 +737,6 @@ def main():
     
     #ros 初始化
     rospy.init_node("executor", anonymous=True)
-    ros_sub = rosSub.RosSub(robotState=robotState, programStatus=programStatus)
     ros_pub_goal = rospy.Publisher(TOPIC_GOAL, Goal_v3, queue_size=1)
     time.sleep(0.1)
 
@@ -713,8 +747,10 @@ def main():
     http_client = httpClient.HttpClient(head=HTTP_HEAD, host=BACKEND_HOST, port=BACKEND_PORT, httpEncryption=httpEncryption)
 
     #mqtt初始化与连接 -- 成功连接会更新机器人状态为idle
-    robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, robot_id=ROBOTID, robotState=robotState, instructionInfo=instructionInfo, programStatus=programStatus)
+    robot_mqtt = mqttClient.MqttClient(host=BROKER_HOST, port=BROKER_PORT, station_id=STATIONID, robot_id=ROBOTID, robotState=robotState, instructionInfo=instructionInfo, programStatus=programStatus)
     robot_mqtt.connect()
+
+    ros_sub = rosSub.RosSub(robotState=robotState, programStatus=programStatus, robot_mqtt=robot_mqtt)
 
     #线程启动
     stop_event = threading.Event()

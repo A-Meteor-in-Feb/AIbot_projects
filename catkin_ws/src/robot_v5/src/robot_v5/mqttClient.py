@@ -6,7 +6,7 @@ import time
 
 
 class MqttClient:
-    def __init__(self, host, port, robot_id, robotState: dataInfo.RobotStateInfo, instructionInfo: dataInfo.InstructionInfo, programStatus: dataInfo.ProgramStatus):
+    def __init__(self, host, port, station_id, robot_id, robotState: dataInfo.RobotStateInfo, instructionInfo: dataInfo.InstructionInfo, programStatus: dataInfo.ProgramStatus):
         """
         初始化机器人端MQTT client, 用于向后台发布各种话题.
         参数:
@@ -19,6 +19,7 @@ class MqttClient:
         self.host = host
         self.port = port
         self.robotId = robot_id
+        self.stationId = station_id
         self.robotState = robotState
         self.instructionInfo = instructionInfo
         self.programStatus = programStatus
@@ -39,8 +40,8 @@ class MqttClient:
         """
         print(f"MQTT client connected with rc: {reason_code}")
 
-        self.mqtt_client.subscribe(topic=f"robots/{self.robotId}/command", qos=0)
-        self.mqtt_client.message_callback_add(f"robots/{self.robotId}/command", self.command_handler)
+        self.mqtt_client.subscribe(topic=f"robots/{self.stationId}/{self.robotId}/command", qos=0)
+        self.mqtt_client.message_callback_add(f"robots/{self.stationId}/{self.robotId}/command", self.command_handler)
 
         self.connected = True
         self.publish_connection(status="online", reason="connect")
@@ -60,7 +61,7 @@ class MqttClient:
         """
         payload = {"status": "offline", "reason": "disconnect"}
         message = json.dumps(payload).encode("utf-8")
-        self.mqtt_client.will_set(f"robots/{self.robotId}/connection", message, qos=1, retain=True)
+        self.mqtt_client.will_set(f"robots/{self.stationId}/{self.robotId}/connection", message, qos=1, retain=True)
 
     def connect(self):
         """
@@ -103,7 +104,7 @@ class MqttClient:
         }
         message = json.dumps(payload).encode("utf-8")
 
-        self.mqtt_client.publish(f"robots/{self.robotId}/network/ip", message, qos=1, retain=False)
+        self.mqtt_client.publish(f"robots/{self.stationId}/{self.robotId}/network/ip", message, qos=1, retain=False)
         print("Publish the network/ip topic, ip: ", ip)
 
     def publish_connection(self, status, reason):
@@ -126,7 +127,7 @@ class MqttClient:
         }
         message = json.dumps(payload).encode("utf-8")
 
-        self.mqtt_client.publish(f"robots/{self.robotId}/connection", message, qos=1, retain=True)
+        self.mqtt_client.publish(f"robots/{self.stationId}/{self.robotId}/connection", message, qos=1, retain=True)
         print("Publish the connection topic and update the state")
 
     def publish_state(self):
@@ -135,8 +136,20 @@ class MqttClient:
         """
         robotState_info = self.robotState.get_state()
         message = json.dumps(robotState_info).encode("utf-8")
-        self.mqtt_client.publish(f"robots/{self.robotId}/state", message, qos=0)
+        self.mqtt_client.publish(f"robots/{self.stationId}/{self.robotId}/state", message, qos=0)
         print(f"\n Published the state topic: {robotState_info} \n")
+
+    def publish_signal(self, signal):
+        """
+        发布tianxin发给我的所有信号
+        """
+        payload = {
+            "signal": signal
+        }
+        message = json.dumps(payload).encode("utf-8")
+        self.mqtt_client.publish(f"robots/{self.stationId}/{self.robotId}/signal", message, qos=0)
+        print(f"\n Published the state topic: {signal} \n")
+
 
     def command_handler(self, client, userdata, msg):
         """
