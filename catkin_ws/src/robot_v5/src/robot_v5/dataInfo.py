@@ -37,8 +37,8 @@ class RobotStateInfo:
         self.robotState = {
             "localization": {"x": 0, "y": 0, "theta": 0},
             "ip": "",
-            "floor": "2m",
-            "house": "ntuitive_align",
+            "floor": "",
+            "house": "",
             "coordinateType": "map",
             "robotStatus": "offline",
             "robotTaskId": 0,
@@ -326,13 +326,15 @@ class ProgramStatus:
         """
         self.lock = threading.Lock()
         self.programStatus = ""
-    
+        self.cond = threading.Condition(self.lock)
+
     def update_programStatus(self, programStatus):
         """
         更新程序执行的状态
         """
         with self.lock:
             self.programStatus = programStatus
+            self.cond.notify_all()
 
     def get_programStatus(self):
         """
@@ -348,6 +350,7 @@ class ProgramStatus:
         """
         with self.lock:
             self.programStatus = ""  
+            self.cond.notify_all()
 
 
 class ElevatorControl:
