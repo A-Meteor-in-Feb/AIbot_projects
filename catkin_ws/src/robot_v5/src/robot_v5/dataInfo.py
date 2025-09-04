@@ -38,7 +38,7 @@ class RobotStateInfo:
             "localization": {"x": 0, "y": 0, "theta": 0},
             "ip": "",
             "floor": "2m",
-            "house": "ntuitive",
+            "house": "ntuitive_align",
             "coordinateType": "map",
             "robotStatus": "offline",
             "robotTaskId": 0,
@@ -132,10 +132,105 @@ class RobotStateInfo:
         参数: 
             b_fault: 一个bool值, 代表是否发生故障.
             如果发生故障, 再具体地发布error主题.
-        
+        """
         with self.lock:
             self.robotState["fault"] = b_fault
+        
+
+class StatusBackend:
+    def __init__(self):
         """
+        statusBackend: 用于维护后台发来的任务状态, 用于实时核对任务状态的变化
+        """
+        self.lock = threading.Lock()
+
+        self.statusBackend = {
+            "taskId": 0,
+            "status": 0
+        }
+
+    def get_statusBackend(self):
+        """
+        获得实时后台发布的任务状态
+        """
+        with self.lock:
+            return copy.deepcopy(self.statusBackend)
+
+    def update_statusBackend(self, taskId, status):
+        """
+        用于更新任务状态.
+        参数:
+            taskId: 任务Id
+            status: int 一个数字, 代表后台现在对于任务执行状态的记录
+        """
+        with self.lock:
+            self.statusBackend.update({
+                "taskId": taskId,
+                "status": status
+            })
+
+
+class CurrentOrder:
+    def __init__(self):
+        """
+        currentOrder: 用于维护记录当前执行的任务的详细信息 --- 后面可能还会更新 
+        """
+        self.lock = threading.Lock()
+        self.currentOrder = {
+            "taskId": 0,
+            "code": "",
+            "goal_positions":[],
+            "return_positions":[]
+        }
+
+    def get_currentOrder(self):
+        """
+        获得当前任务详细信息, 可能用于二维码核对, 打开相应货仓等等
+        """
+        with self.lock:
+            return copy.deepcopy(self.currentOrder)    
+    
+    def update_deliveryDetails(self, taskId, code):
+        """
+        用于更新当前执行的任务的信息
+        参数:
+            taskId: task ID
+            code: 用于核对二维码的code
+        """
+        with self.lock:
+            self.currentOrder["taskId"] = taskId
+            self.currentOrder["code"] = code
+
+    def update_goalPositions(self, goal_pos_dict):
+        """
+        用于更新当前任务的目标地址的所有信息
+        参数:
+            goal_pos_dict = {"room": "", "dock": {}, "floor": "", "house":""}
+        """
+        with self.lock:
+            self.currentOrder["goal_positions"].append(goal_pos_dict)
+
+    def update_returnPositions(self, return_pos_dict):
+        """
+        用于更新当前任务结束后机器人返回地址的详细信息.
+        参数:
+            return_pos_dict = {"room": "", "dock": {}, "floor": "", "house":""}
+        """
+        with self.lock:
+            self.currentOrder["return_positions"].append(return_pos_dict)
+
+    def reset_currentOrder(self):
+        """
+        任务结束后重置.
+        """
+        with self.lock:
+            self.currentOrder = {
+                "taskId": 0,
+                "code": "",
+                "goal_positions": [],
+                "return_positions": []
+            }
+
 
 class InstructionInfo:
     def __init__(self):

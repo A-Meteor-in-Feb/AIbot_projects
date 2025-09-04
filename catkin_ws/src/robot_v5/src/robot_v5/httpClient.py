@@ -1,8 +1,8 @@
 import json
-import dataInfo
+from robot_v5 import dataInfo
 import uuid
 import requests
-import encryption
+from robot_v5 import encryption
 import time
 from pathlib import Path
 import base64
@@ -103,7 +103,7 @@ class HttpClient:
             return None
     
 
-    def update_taskStatus(self, taskId, taskStatus, elevatorControlCommand):
+    def update_taskStatus(self, taskId, taskStatus):
         """
         接口2: 机器人向后台更新任务进度
         参数:
@@ -120,15 +120,11 @@ class HttpClient:
         payload = {
             "taskId": taskId,
             "step": "step",
+            "taskStatus": taskStatus,
             "timestamp": dataInfo.utc_now_ms(),
             "uuid": uuid_str
         }
         
-        if taskStatus:
-            payload["taskStatus"] = taskStatus
-        if elevatorControlCommand:
-            payload["elevatorControlCommand"] = elevatorControlCommand
-
         #加密
         #encypted_payload = self.httpEncyption.encrypted_data(payload)
         #data = {"data": encypted_payload}
