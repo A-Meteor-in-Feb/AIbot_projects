@@ -1,7 +1,7 @@
 import rospy
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import UInt64
-#from woosh_msgs.msg import Battery
+from woosh_msgs.msg import Battery
 from robot_v5 import dataInfo
 from robot_v5 import mqttClient
 from std_msgs.msg import String
@@ -29,7 +29,7 @@ class RosSub:
 
         #话题订阅
         self.sub_localization = rospy.Subscriber(self.topic_localization, Odometry, self.callback_localization, queue_size=1, tcp_nodelay=True)
-        #self.sub_battery = rospy.Subscriber(self.topic_battery, Battery, self.callback_battery, queue_size=1, tcp_nodelay=True)
+        self.sub_battery = rospy.Subscriber(self.topic_battery, Battery, self.callback_battery, queue_size=1, tcp_nodelay=True)
         
         #跟tianxin交互需要用到的话题
         self.sub_signal = rospy.Subscriber(self.topic_signal, String, self.callback_signal, queue_size=1, tcp_nodelay=True)
@@ -47,13 +47,13 @@ class RosSub:
 
         self.robotState.update_localization(msg.pose.pose.position.x, msg.pose.pose.position.y, yaw)
 
-    #def callback_battery(self, msg: Battery):
+    def callback_battery(self, msg: Battery):
         """
         For 实时更新机器人的电池电量.
         参数:
             msg: Battery, 由机器人底盘发布的电量信息
         """
-        #self.robotState.update_battery(int(msg.batteryPercentage))
+        self.robotState.update_battery(int(msg.batteryPercentage))
 
     def callback_signal(self, msg: String):
         """
@@ -81,8 +81,7 @@ class RosSub:
                 self.programStatus.update_programStatus(programStatus="moving")
         
         if signal == "STOP_RECEIVED":
-            if programStatus == "stop":
-                self.programStatus.update_programStatus(programStatus="stop_complete")
+            self.programStatus.update_programStatus(programStatus="stop_complete")
         
         if signal == "GOAL_ARRIVED":
             if programStatus == "moving_lift_outside":
@@ -111,8 +110,9 @@ class RosSub:
         if signal == "RELOCATION_FAILURE":
             if programStatus == "resetting":
                 self.programStatus.update_programStatus(programStatus="reset_failure")
-        
+
         if "GOAL_Failed" in signal:
             self.robotState.update_robotStatus("exce")
             self.robotState.update_fault(True)
             self.programStatus.update_programStatus(programStatus=signal)
+           

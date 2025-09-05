@@ -145,7 +145,7 @@ class HttpClient:
         """
         url = f"{self.base_url}/api/robot/client/reportRobotCollect"
 
-        image_bytes = Path("images/deliver.jpg").read_bytes()
+        image_bytes = Path("/home/amov/yangtianjiao/AIbot_project/images/deliver.jpg").read_bytes()
         image_base64 = base64.b64encode(image_bytes).decode("ascii")
         timestamp = dataInfo.utc_now_ms()
         uuid_str = str(uuid.uuid4())
@@ -214,7 +214,7 @@ class HttpClient:
             return None
         
 
-    def set_elevatorControlFlow(self, flowId, elevatorStatus, robotId, taskId, fromFloor, toFloor, house, from_elevator_out ={}, from_elevator_in = {}, to_elevator_out = {}, to_elevator_in = {}):
+    def set_elevatorControlFlow(self, flowId, elevatorStatus, robotId, taskId, fromFloor, toFloor, fromHouse, toHouse, from_elevator_out ={}, from_elevator_in = {}, to_elevator_out = {}, to_elevator_in = {}):
         """
         向后台发送电梯执行流程
         参数:
@@ -239,7 +239,8 @@ class HttpClient:
             "stamp": timestamp,
             "robotId": robotId,
             "taskId": taskId,
-            "house": house,
+            "fromHouse": fromHouse,
+            "toHouse": toHouse,
             "fromFloor": fromFloor,
             "toFloor": toFloor,
             "fromElevatorOutAddress": from_elevator_out,

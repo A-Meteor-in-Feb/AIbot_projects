@@ -12,3 +12,5 @@ robot_interfaces/*
 robot_side/*
 catkin_ws/requirements.txt
 catkin_ws/src/realsense-ros
+catkin_ws/src/robot_v5/src/robot_v5/__pycache__/*
+catkin_ws/src/robot_v5/src/__pycache__/*
