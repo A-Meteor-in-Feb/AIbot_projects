@@ -115,8 +115,8 @@ class InteractionThread(threading.Thread):
 
         self.timeoutMonitor = timeoutMonitor.TimeoutMonitor(owner=self)
         self.relocalization_timeout = 10
-        self.move_timeout = 20
-        self.elevator_timeout = 15
+        self.move_timeout = 3000
+        self.elevator_timeout = 2400
 
         self.scheduler = schedule.Scheduler()
         self.job = None
@@ -148,7 +148,7 @@ class InteractionThread(threading.Thread):
                 elif programStatus == "move":
                     self.timeoutMonitor.record(startStatus="move", stopStatus="move_complete", timeout=self.move_timeout)
                     positions = self.instructionInfo.get_movePositions()
-                    self.move_handler(positions=positions)
+                    self.move_handler(taskId=None, positions=positions)
                     
                 elif programStatus == "execute_command":
                     self.command_handler()
@@ -187,7 +187,7 @@ class InteractionThread(threading.Thread):
                 
                 if programStatus == "assigned":
                     self.timeoutMonitor.record(startStatus="assigned", stopStatus="arrived", timeout=self.move_timeout)
-                    self.assigned_handler(taskId=taskId, goal_positions=goal_positions)
+                    self.move_handler(taskId=taskId, goal_positions=goal_positions)
 
                 if programStatus == "arrived":
                     self.timeoutMonitor.cancel_record(startStatus="assigned")
@@ -211,7 +211,7 @@ class InteractionThread(threading.Thread):
 
                     startStatus = programStatus
                     self.timeoutMonitor.record(startStatus=startStatus, stopStatus="back_arrived", timeout=self.move_timeout)
-                    self.back_handler(return_positions=return_positions)
+                    self.move_handler(taskId=None, return_positions=return_positions)
 
                 if programStatus == "back_arrived":
                     self.timeoutMonitor.cancel_record(startStatus=startStatus)
@@ -361,21 +361,26 @@ class InteractionThread(threading.Thread):
     def finalize_relocalization_handler(self):
         self.instructionInfo.reset_relocalizationInfo()
 
-    def move_handler(self, positions):
+    def move_handler(self, taskId, positions):
         for item in positions:
             robot_floor = self.robotState.get_state().get("floor")
             robot_house = self.robotState.get_state().get("house")
             to_floor = item.get("floor")
             to_pos = item.get("dock")
             to_house = item.get("house")
+            programStatus = self.programStatus.get_programStatus()
 
-            if robot_floor != to_floor:
-                self.elevatorControl.update_elevatorStatus(elevatorStatus=0)
+            if robot_floor != to_floor or robot_house != to_house:
+                self.elevatorStatus = 0
+                while programStatus == "moving":
+                    programStatus = self.programStatus.get_programStatus()
                 self.programStatus.update_programStatus(programStatus="to_lift_outside")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
+                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
             else:
+                while programStatus == "moving":
+                    programStatus = self.programStatus.get_programStatus()
                 self.programStatus.update_programStatus(programStatus="ready_move")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
+                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
 
     def finalize_move_handler(self):
         self.instructionInfo.reset_movePositions()
@@ -403,8 +408,10 @@ class InteractionThread(threading.Thread):
             to_pos: 机器人要到达的目的地坐标
             to_floor: 机器人要到达的目的地楼层
             to_house: 机器人要到达的目的地建筑
+            robot_house: 机器人目前在的建筑
         """
         programStatus = self.programStatus.get_programStatus()
+        robotStatus = self.robotState.get_state().get("robotStatus")
         uuid_str = str(uuid.uuid4())
 
         rate = rospy.Rate(1) #控制两秒执行一次循环
@@ -412,10 +419,10 @@ class InteractionThread(threading.Thread):
         startStatus = programStatus
         self.timeoutMonitor.record(startStatus=startStatus, stopStatus="moving", timeout=self.elevator_timeout)
 
-        while programStatus != "moving" and "timeout" not in programStatus:
+        while programStatus != "moving":
             
             #切换状态被重置了 或者 需要机器人停止. 退出循环
-            if programStatus == "" or programStatus == "stop":
+            if programStatus == "" or programStatus == "stop" or "timeout" in programStatus or robotStatus == "exce":
                 self.elevatorStatus = 0
                 break
 
@@ -424,7 +431,7 @@ class InteractionThread(threading.Thread):
             if programStatus == "to_lift_outside": #准备走向电梯门外的点位
 
                 #向后台发初始化电梯流程请求 并更新 机器人执行任务需要的相关参数 
-                ok = self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
+                ok = self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
                 if not ok:
                     rospy.loginfo("\nno response from the backend\n")
                     rate.sleep()
@@ -434,10 +441,13 @@ class InteractionThread(threading.Thread):
                 self.elevatorControl.update_basicInfo(robotId=ROBOTID, taskId=taskId)
                 self.elevatorControl.update_floorInfo(fromFloor=robot_floor, toFloor=to_floor)
                 
-                elevatorControlParams = self.elevatorControl.get_elevatorControlParams()
-                ele_out_pos = elevatorControlParams.get("fromElevatorOutAddress").get("pose").get("dock")
-                ele_out_floor = elevatorControlParams.get("fromElevatorOutAddress").get("floor")
-                ele_out_house = elevatorControlParams.get("fromElevatorOutAddress").get("house")
+                try:
+                    elevatorControlParams = self.elevatorControl.get_elevatorControlParams()
+                    ele_out_pos = elevatorControlParams.get("fromElevatorOutAddress").get("pose").get("dock")
+                    ele_out_floor = elevatorControlParams.get("fromElevatorOutAddress").get("floor")
+                    ele_out_house = elevatorControlParams.get("fromElevatorOutAddress").get("house")
+                except Exception as e:
+                    rospy.loginfo(f"\n <Executor-444> Error in reading 'fromElevatorOutAddress': {e}\n")
 
                 #启动从后台获取电梯状态的进程
                 if not self.elevatorGettter:
@@ -458,7 +468,7 @@ class InteractionThread(threading.Thread):
                 #目标接收成功 [机器人正在赶往电梯口](10), 更新电梯状态为[10], 通知后台
                 if programStatus == "moving_lift_outside":
                     self.elevatorStatus = 10
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
 
             if programStatus == "to_lift_inside": #到达电梯外部坐标, 准备走进电梯内部
 
@@ -467,12 +477,15 @@ class InteractionThread(threading.Thread):
                     #拍照
                     self.toBackend_photo()
                     
-                    elevatorControl = self.elevatorControl.get_elevatorControlParams()
-                    ele_in_pos = elevatorControl.get("fromElevatorInAddress").get("pose").get("dock")
-                    ele_in_floor = elevatorControl.get("fromElevatorInAddress").get("floor")
-                    ele_in_house = elevatorControl.get("fromElevatorInAddress").get("house")
+                    try:
+                        elevatorControl = self.elevatorControl.get_elevatorControlParams()
+                        ele_in_pos = elevatorControl.get("fromElevatorInAddress").get("pose").get("dock")
+                        ele_in_floor = elevatorControl.get("fromElevatorInAddress").get("floor")
+                        ele_in_house = elevatorControl.get("fromElevatorInAddress").get("house")
+                    except:
+                        rospy.loginfo(f"\n <executor-480> Error in reading 'fromElevatorInAddress': {e}\n")
 
-                    #通知planning部分 机器人可以开始向电梯内部走, 待目标接收成功, 机器人状态改为 [delivering_lift_in]-[机器人正在赶往电梯内部]
+                    #通知planning部分 机器人可以开始向电梯内部走, 待目标接收成功, 机器人状态改为 [moving_lift_in]-[机器人正在赶往电梯内部]
                     try:
                         self.publish_goal(goal_pos=ele_in_pos, goal_floor=ele_in_floor, goal_house=ele_in_house, relocation=False, programStatus_old=programStatus)
                     except Exception as e:
@@ -483,12 +496,12 @@ class InteractionThread(threading.Thread):
                     #目标接收成功 [机器人正在赶往电梯内部](50), 更新电梯状态为[50], 通知后台
                     if programStatus == "moving_lift_inside":
                         self.elevatorStatus = 50
-                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
+                        self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
                 
                 #到达电梯门口 还没收到 电梯门已开 的信号, 所以要发送 [已到达电梯口](20) 的命令
                 elif self.elevatorStatus == 10:
                     self.elevatorStatus = 20
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
                     #拍照
                     self.toBackend_photo()
 
@@ -511,7 +524,7 @@ class InteractionThread(threading.Thread):
 
                 #通知后台机器人已到达电梯内部
                 self.elevatorStatus = 60
-                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
+                self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
                 
                 #更新机器人自身的状态为 等待重定位 [idle_relocation] 或者 [return_relocation]
                 self.programStatus.update_programStatus("relocalization")
@@ -519,15 +532,18 @@ class InteractionThread(threading.Thread):
             if programStatus == "relocalization" and self.elevatorStatus == 80: #机器人处于可以发生重定位的状态并且电梯门已开
 
                 #首先更新机器人现在所在的 [楼层] 和 [楼]
-                self.robotState.update_position(floor=to_floor, house="ntuitive")
+                self.robotState.update_position(floor=to_floor, house=to_house)
                 robot_floor = self.robotState.get_state().get("floor")
+                robot_house = self.robotState.get_state().get("house")
 
-                #拿到重定位的坐标
-                elevatorControl = self.elevatorControl.get_elevatorControlParams()
-                relocalization_pos = elevatorControl.get("toElevatorInAddress").get("pose").get("dock")
-                relocalization_floor = elevatorControl.get("toElevatorInAddress").get("floor") 
-                relocalization_house = elevatorControl.get("toElevatorInAddress").get("house")
-
+                try:
+                    elevatorControl = self.elevatorControl.get_elevatorControlParams()
+                    relocalization_pos = elevatorControl.get("toElevatorInAddress").get("pose").get("dock")
+                    relocalization_floor = elevatorControl.get("toElevatorInAddress").get("floor") 
+                    relocalization_house = elevatorControl.get("toElevatorInAddress").get("house")
+                except Exception as e:
+                    rospy.loginfo(f"\n <Executor-539> Error in reading relocalization: {e}\n")
+                
                 #拍照
                 self.toBackend_photo()   
 
@@ -542,7 +558,7 @@ class InteractionThread(threading.Thread):
                 #目标接收成功 [机器人正在重置地图](90), 更新电梯状态为[90], 通知后台
                 if programStatus == "relocalizing":
                     self.elevatorStatus = 90
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, house=robot_house)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
                      #拍照
                     self.toBackend_photo()
 
@@ -552,7 +568,7 @@ class InteractionThread(threading.Thread):
                 #用了电梯系统的话, 需要向后台更新电梯状态 [机器人重置地图成功](100)
                 if self.elevatorStatus == 90:
                     self.elevatorStatus = 100
-                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor)
+                    self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
 
                 #用了电梯系统的话, 需要把这个[同步更新后台的电梯状态]的线程关掉
                 if self.elevatorGettter:
@@ -569,7 +585,7 @@ class InteractionThread(threading.Thread):
                     rospy.loginfo(f"\n<executor-493> Error in PUBLISH GOAL: {e}\n")
 
             programStatus = self.programStatus.get_programStatus()
-
+            robotStatus = self.robotState.get_state().get("robotStatus")
             rate.sleep()
 
         #如果 [elevatorFlowGetter线程] 没关就要关掉
@@ -584,7 +600,7 @@ class InteractionThread(threading.Thread):
         if programStatus == "moving":
             self.timeoutMonitor.cancel_record(startStatus=startStatus)
 
-    def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor, house):
+    def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor, fromHouse, toHouse):
         """
         用来调用接口, 与后台协调电梯使用流程, 并更新相关电梯使用参数.
         参数:
@@ -594,7 +610,7 @@ class InteractionThread(threading.Thread):
             fromFloor: 机器人出发楼层
             toFloor: 机器人需要到达的楼层
         """
-        response = self.http_client.set_elevatorControlFlow(flowId=flowId, elevatorStatus=elevatorStatus, robotId=ROBOTID, taskId=taskId, fromFloor=fromFloor, toFloor=toFloor, house=house)
+        response = self.http_client.set_elevatorControlFlow(flowId=flowId, elevatorStatus=elevatorStatus, robotId=ROBOTID, taskId=taskId, fromFloor=fromFloor, toFloor=toFloor, fromHouse=fromHouse, toHouse=toHouse)
         
         try:
             flow_info = response.get("data").get("flowInfo")
@@ -604,6 +620,8 @@ class InteractionThread(threading.Thread):
             fromElevatorInAddress = flow_info.get("fromElevatorInAddress")
             toElevatorOutAddress = flow_info.get("toElevatorOutAddress")
             toElevatorInAddress = flow_info.get("toElevatorInAddress")
+
+            print(f"\n\n flow info: {flow_info} \n\n")
 
         except Exception as e:
             rospy.loginfo(f"\n<executor-530> fetch elevator info error: {e}\n")
@@ -620,7 +638,8 @@ class InteractionThread(threading.Thread):
         self.elevatorControl.update_toElevatorInAddress(toElevatorInAddress=toElevatorInAddress)
 
         return True
-
+   
+    """
     def assigned_handler(self, taskId, goal_positions):
         for item in goal_positions:
             robot_floor = self.robotState.get_state().get("floor")
@@ -637,6 +656,7 @@ class InteractionThread(threading.Thread):
             else:
                 self.programStatus.update_programStatus("ready_move")
                 self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
+    """
 
     def arrived_handler(self, taskId, code):
         self.toBackend_photo()
@@ -680,6 +700,7 @@ class InteractionThread(threading.Thread):
             else:
                 self.robotState.update_robotStatus(robotStatus="back")
 
+    """
     def back_handler(self, return_positions):
         
         for item in return_positions:
@@ -697,7 +718,8 @@ class InteractionThread(threading.Thread):
             else:
                 self.programStatus.update_programStatus("ready_move")
                 self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
-
+        """
+    
     def finalize_task(self):
         self.currentOrder.reset_currentOrder()
         self.robotState.update_robotTaskId(0)

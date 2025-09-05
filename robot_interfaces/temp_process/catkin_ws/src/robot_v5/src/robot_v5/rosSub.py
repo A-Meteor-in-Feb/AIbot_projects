@@ -81,8 +81,7 @@ class RosSub:
                 self.programStatus.update_programStatus(programStatus="moving")
         
         if signal == "STOP_RECEIVED":
-            if programStatus == "stop":
-                self.programStatus.update_programStatus(programStatus="stop_complete")
+            self.programStatus.update_programStatus(programStatus="stop_complete")
         
         if signal == "GOAL_ARRIVED":
             if programStatus == "moving_lift_outside":

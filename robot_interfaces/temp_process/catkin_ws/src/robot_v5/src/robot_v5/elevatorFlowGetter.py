@@ -65,6 +65,8 @@ class ElevatorFlowGetter:
             flow_info = response.get("data").get("flowInfo")
             elevatorStatus = flow_info.get("status")
 
+            print(f"\n\n flow info: {flow_info} \n\n")
+
             self.owner.elevatorStatus = elevatorStatus
 
             fromElevatorOutAddress = flow_info.get("fromElevatorOutAddress")

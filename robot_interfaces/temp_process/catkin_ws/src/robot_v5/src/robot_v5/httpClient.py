@@ -214,7 +214,7 @@ class HttpClient:
             return None
         
 
-    def set_elevatorControlFlow(self, flowId, elevatorStatus, robotId, taskId, fromFloor, toFloor, house, from_elevator_out ={}, from_elevator_in = {}, to_elevator_out = {}, to_elevator_in = {}):
+    def set_elevatorControlFlow(self, flowId, elevatorStatus, robotId, taskId, fromFloor, toFloor, fromHouse, toHouse, from_elevator_out ={}, from_elevator_in = {}, to_elevator_out = {}, to_elevator_in = {}):
         """
         向后台发送电梯执行流程
         参数:
@@ -239,7 +239,8 @@ class HttpClient:
             "stamp": timestamp,
             "robotId": robotId,
             "taskId": taskId,
-            "house": house,
+            "fromHouse": fromHouse,
+            "toHouse": toHouse,
             "fromFloor": fromFloor,
             "toFloor": toFloor,
             "fromElevatorOutAddress": from_elevator_out,
