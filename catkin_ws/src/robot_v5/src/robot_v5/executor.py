@@ -221,6 +221,7 @@ class InteractionThread(threading.Thread):
                 programStatus = self.programStatus.get_programStatus()
                 taskId = self.robotState.get_state().get("robotTaskId")
                 self.toBackend_reportWarn(taskId=taskId, type=programStatus)
+                self.timeoutMonitor.clear_record()
             
         
         except Exception as e:
@@ -411,7 +412,6 @@ class InteractionThread(threading.Thread):
             robot_house: 机器人目前在的建筑
         """
         programStatus = self.programStatus.get_programStatus()
-        robotStatus = self.robotState.get_state().get("robotStatus")
         uuid_str = str(uuid.uuid4())
 
         rate = rospy.Rate(1) #控制两秒执行一次循环
@@ -419,12 +419,9 @@ class InteractionThread(threading.Thread):
         startStatus = programStatus
         self.timeoutMonitor.record(startStatus=startStatus, stopStatus="moving", timeout=self.elevator_timeout)
 
-        while programStatus != "moving":
-            
-            #切换状态被重置了 或者 需要机器人停止. 退出循环
-            if programStatus == "" or programStatus == "stop" or "timeout" in programStatus or robotStatus == "exce":
-                self.elevatorStatus = 0
-                break
+        move_status = ["to_lift_outside", "moving_lift_outside", "to_lift_inside", "moving_lift_inside", "to_another_lift_outside", "at_lift_inside", "relocalization", "relocalizing", "ready_move"]
+        
+        while programStatus in move_status:
 
             rospy.loginfo(f"\nprogramStatus: {programStatus}; elevatorStatus: {self.elevatorStatus}\n")
 
@@ -585,7 +582,6 @@ class InteractionThread(threading.Thread):
                     rospy.loginfo(f"\n<executor-493> Error in PUBLISH GOAL: {e}\n")
 
             programStatus = self.programStatus.get_programStatus()
-            robotStatus = self.robotState.get_state().get("robotStatus")
             rate.sleep()
 
         #如果 [elevatorFlowGetter线程] 没关就要关掉
@@ -597,8 +593,8 @@ class InteractionThread(threading.Thread):
             finally:
                 self.elevatorGettter = None
 
-        if programStatus == "moving":
-            self.timeoutMonitor.cancel_record(startStatus=startStatus)
+        self.elevatorStatus = 0
+        self.timeoutMonitor.cancel_record(startStatus=startStatus)
 
     def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor, fromHouse, toHouse):
         """
