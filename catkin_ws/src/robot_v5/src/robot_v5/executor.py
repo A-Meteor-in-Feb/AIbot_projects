@@ -201,7 +201,8 @@ class InteractionThread(threading.Thread):
                     
             if robotStatus == "back":
                 programStatus = self.programStatus.get_programStatus()
-
+                startStatus = programStatus
+                
                 if programStatus in ["delivered", "delivered_failed", "restock", "cancel_delivery"]:
                     try:
                         currentOrder_info = self.currentOrder.get_currentOrder()
@@ -209,7 +210,6 @@ class InteractionThread(threading.Thread):
                     except Exception as e:
                         rospy.loginfo(f"\n<executor-156> Error in READ GOAL: {e}\n")
 
-                    startStatus = programStatus
                     self.timeoutMonitor.record(startStatus=startStatus, stopStatus="back_arrived", timeout=self.move_timeout)
                     self.move_handler(taskId=None, positions=return_positions)
 
