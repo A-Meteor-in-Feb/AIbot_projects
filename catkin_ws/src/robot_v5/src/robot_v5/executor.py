@@ -202,7 +202,7 @@ class InteractionThread(threading.Thread):
             if robotStatus == "back":
                 programStatus = self.programStatus.get_programStatus()
                 startStatus = programStatus
-                
+
                 if programStatus in ["delivered", "delivered_failed", "restock", "cancel_delivery"]:
                     try:
                         currentOrder_info = self.currentOrder.get_currentOrder()
@@ -222,6 +222,8 @@ class InteractionThread(threading.Thread):
                 taskId = self.robotState.get_state().get("robotTaskId")
                 self.toBackend_reportWarn(taskId=taskId, type=programStatus)
                 self.timeoutMonitor.clear_record()
+                self.instructionInfo.reset_movePositions()
+                self.finalize_task()
             
         
         except Exception as e:
