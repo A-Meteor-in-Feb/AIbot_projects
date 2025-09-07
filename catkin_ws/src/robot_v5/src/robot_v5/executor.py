@@ -187,7 +187,7 @@ class InteractionThread(threading.Thread):
                 
                 if programStatus == "assigned":
                     self.timeoutMonitor.record(startStatus="assigned", stopStatus="arrived", timeout=self.move_timeout)
-                    self.move_handler(taskId=taskId, goal_positions=goal_positions)
+                    self.move_handler(taskId=taskId, positions=goal_positions)
 
                 if programStatus == "arrived":
                     self.timeoutMonitor.cancel_record(startStatus="assigned")
@@ -211,7 +211,7 @@ class InteractionThread(threading.Thread):
 
                     startStatus = programStatus
                     self.timeoutMonitor.record(startStatus=startStatus, stopStatus="back_arrived", timeout=self.move_timeout)
-                    self.move_handler(taskId=None, return_positions=return_positions)
+                    self.move_handler(taskId=None, positions=return_positions)
 
                 if programStatus == "back_arrived":
                     self.timeoutMonitor.cancel_record(startStatus=startStatus)
@@ -549,7 +549,8 @@ class InteractionThread(threading.Thread):
                     self.publish_goal(goal_pos=relocalization_pos, goal_floor=relocalization_floor, goal_house=relocalization_house, relocation=True, programStatus_old=programStatus)
                 except Exception as e:
                     rospy.loginfo(f"\n<executor-462> Error in PUBLISH GOAL: {e}\n")
-
+                
+                self.timeoutMonitor.record(startStatus="relocalization", stopStatus="ready_move", timeout=self.relocalization_timeout)
                 programStatus = self.programStatus.get_programStatus()
 
                 #目标接收成功 [机器人正在重置地图](90), 更新电梯状态为[90], 通知后台
@@ -564,6 +565,7 @@ class InteractionThread(threading.Thread):
                 
                 #用了电梯系统的话, 需要向后台更新电梯状态 [机器人重置地图成功](100)
                 if self.elevatorStatus == 90:
+                    self.timeoutMonitor.cancel_record(startStatus="relocalization")
                     self.elevatorStatus = 100
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
 
