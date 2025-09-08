@@ -34,6 +34,10 @@ class TimeoutMonitor:
         with self.lock:
             self.active.pop(startStatus, None)
 
+    def clear_record(self):
+        with self.lock:
+            self.active.clear()
+
     def stop(self):
         self.stop_event.set()
         self.thread.join(timeout=1)

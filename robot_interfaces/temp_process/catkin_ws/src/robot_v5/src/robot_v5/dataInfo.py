@@ -180,7 +180,8 @@ class CurrentOrder:
             "taskId": 0,
             "code": "",
             "goal_positions":[],
-            "return_positions":[]
+            "return_positions":[],
+            "delivery_info":[]
         }
 
     def get_currentOrder(self):
@@ -219,6 +220,15 @@ class CurrentOrder:
         with self.lock:
             self.currentOrder["return_positions"].append(return_pos_dict)
 
+    def update_deliveryInfo(self, cargo_dict):
+        """
+        用于更新当前任务的详细货物信息
+        参数:
+            cargo_dict = {"binId": number}
+        """
+        with self.lock:
+            self.currentOrder["delivery_info"].append(cargo_dict)
+
     def reset_currentOrder(self):
         """
         任务结束后重置.
@@ -228,7 +238,8 @@ class CurrentOrder:
                 "taskId": 0,
                 "code": "",
                 "goal_positions": [],
-                "return_positions": []
+                "return_positions": [],
+                "delivery_info": []
             }
 
 

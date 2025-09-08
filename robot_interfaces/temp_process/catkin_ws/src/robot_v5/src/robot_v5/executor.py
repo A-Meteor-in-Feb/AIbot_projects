@@ -116,7 +116,7 @@ class InteractionThread(threading.Thread):
         self.timeoutMonitor = timeoutMonitor.TimeoutMonitor(owner=self)
         self.relocalization_timeout = 10
         self.move_timeout = 3000
-        self.elevator_timeout = 2400
+        self.elevator_timeout = 3000
 
         self.scheduler = schedule.Scheduler()
         self.job = None
@@ -182,17 +182,21 @@ class InteractionThread(threading.Thread):
                     goal_positions = currentOrder_info.get("goal_positions")
                     taskId = currentOrder_info.get("taskId")
                     code = currentOrder_info.get("code")
+                    delivery_info = currentOrder_info.get("delivery_info")
                 except Exception as e:
                     rospy.loginfo(f"\n<executor-138> Error in READ GOAL: {e}\n")
                 
                 if programStatus == "assigned":
                     self.timeoutMonitor.record(startStatus="assigned", stopStatus="arrived", timeout=self.move_timeout)
-                    self.move_handler(taskId=taskId, goal_positions=goal_positions)
+                    self.move_handler(taskId=taskId, positions=goal_positions)
 
                 if programStatus == "arrived":
                     self.timeoutMonitor.cancel_record(startStatus="assigned")
                     self.arrived_handler(taskId=taskId, code=code)
                     self.robotState.update_robotTaskId(0)
+
+                if programStatus == "delivered":
+                    self.cargoDelivery_handler(delivery_info=delivery_info)
                 
                 if programStatus == "delivered" or programStatus == "delivered_failed":
                     robot_floor = self.robotState.get_state().get("floor")
@@ -201,6 +205,7 @@ class InteractionThread(threading.Thread):
                     
             if robotStatus == "back":
                 programStatus = self.programStatus.get_programStatus()
+                startStatus = programStatus
 
                 if programStatus in ["delivered", "delivered_failed", "restock", "cancel_delivery"]:
                     try:
@@ -209,9 +214,8 @@ class InteractionThread(threading.Thread):
                     except Exception as e:
                         rospy.loginfo(f"\n<executor-156> Error in READ GOAL: {e}\n")
 
-                    startStatus = programStatus
                     self.timeoutMonitor.record(startStatus=startStatus, stopStatus="back_arrived", timeout=self.move_timeout)
-                    self.move_handler(taskId=None, return_positions=return_positions)
+                    self.move_handler(taskId=None, positions=return_positions)
 
                 if programStatus == "back_arrived":
                     self.timeoutMonitor.cancel_record(startStatus=startStatus)
@@ -221,6 +225,9 @@ class InteractionThread(threading.Thread):
                 programStatus = self.programStatus.get_programStatus()
                 taskId = self.robotState.get_state().get("robotTaskId")
                 self.toBackend_reportWarn(taskId=taskId, type=programStatus)
+                self.timeoutMonitor.clear_record()
+                self.instructionInfo.reset_movePositions()
+                self.finalize_task()
             
         
         except Exception as e:
@@ -411,7 +418,6 @@ class InteractionThread(threading.Thread):
             robot_house: 机器人目前在的建筑
         """
         programStatus = self.programStatus.get_programStatus()
-        robotStatus = self.robotState.get_state().get("robotStatus")
         uuid_str = str(uuid.uuid4())
 
         rate = rospy.Rate(1) #控制两秒执行一次循环
@@ -419,12 +425,9 @@ class InteractionThread(threading.Thread):
         startStatus = programStatus
         self.timeoutMonitor.record(startStatus=startStatus, stopStatus="moving", timeout=self.elevator_timeout)
 
-        while programStatus != "moving":
-            
-            #切换状态被重置了 或者 需要机器人停止. 退出循环
-            if programStatus == "" or programStatus == "stop" or "timeout" in programStatus or robotStatus == "exce":
-                self.elevatorStatus = 0
-                break
+        move_status = ["to_lift_outside", "moving_lift_outside", "to_lift_inside", "moving_lift_inside", "to_another_lift_outside", "at_lift_inside", "relocalization", "relocalizing", "ready_move"]
+        
+        while programStatus in move_status:
 
             rospy.loginfo(f"\nprogramStatus: {programStatus}; elevatorStatus: {self.elevatorStatus}\n")
 
@@ -552,7 +555,8 @@ class InteractionThread(threading.Thread):
                     self.publish_goal(goal_pos=relocalization_pos, goal_floor=relocalization_floor, goal_house=relocalization_house, relocation=True, programStatus_old=programStatus)
                 except Exception as e:
                     rospy.loginfo(f"\n<executor-462> Error in PUBLISH GOAL: {e}\n")
-
+                
+                self.timeoutMonitor.record(startStatus="relocalization", stopStatus="ready_move", timeout=self.relocalization_timeout)
                 programStatus = self.programStatus.get_programStatus()
 
                 #目标接收成功 [机器人正在重置地图](90), 更新电梯状态为[90], 通知后台
@@ -567,6 +571,7 @@ class InteractionThread(threading.Thread):
                 
                 #用了电梯系统的话, 需要向后台更新电梯状态 [机器人重置地图成功](100)
                 if self.elevatorStatus == 90:
+                    self.timeoutMonitor.cancel_record(startStatus="relocalization")
                     self.elevatorStatus = 100
                     self.set_elevatorFlow(flowId=uuid_str, elevatorStatus=self.elevatorStatus, taskId=taskId, fromFloor=robot_floor, toFloor=to_floor, fromHouse=robot_house, toHouse=to_house)
 
@@ -585,7 +590,6 @@ class InteractionThread(threading.Thread):
                     rospy.loginfo(f"\n<executor-493> Error in PUBLISH GOAL: {e}\n")
 
             programStatus = self.programStatus.get_programStatus()
-            robotStatus = self.robotState.get_state().get("robotStatus")
             rate.sleep()
 
         #如果 [elevatorFlowGetter线程] 没关就要关掉
@@ -597,8 +601,8 @@ class InteractionThread(threading.Thread):
             finally:
                 self.elevatorGettter = None
 
-        if programStatus == "moving":
-            self.timeoutMonitor.cancel_record(startStatus=startStatus)
+        self.elevatorStatus = 0
+        self.timeoutMonitor.cancel_record(startStatus=startStatus)
 
     def set_elevatorFlow(self, flowId, elevatorStatus, taskId, fromFloor, toFloor, fromHouse, toHouse):
         """
@@ -621,8 +625,6 @@ class InteractionThread(threading.Thread):
             toElevatorOutAddress = flow_info.get("toElevatorOutAddress")
             toElevatorInAddress = flow_info.get("toElevatorInAddress")
 
-            print(f"\n\n flow info: {flow_info} \n\n")
-
         except Exception as e:
             rospy.loginfo(f"\n<executor-530> fetch elevator info error: {e}\n")
 
@@ -638,35 +640,14 @@ class InteractionThread(threading.Thread):
         self.elevatorControl.update_toElevatorInAddress(toElevatorInAddress=toElevatorInAddress)
 
         return True
-   
-    """
-    def assigned_handler(self, taskId, goal_positions):
-        for item in goal_positions:
-            robot_floor = self.robotState.get_state().get("floor")
-            robot_house = self.robotState.get_state().get("house")
-            to_floor = item.get("floor")
-            to_pos = item.get("dock")
-            to_house = item.get("house")
-
-            rospy.loginfo(f"\nnew travil: robot's floor {robot_floor}, to: {to_floor}\n")
-                    
-            if to_floor != robot_floor:
-                self.programStatus.update_programStatus(programStatus="to_lift_outside")
-                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
-            else:
-                self.programStatus.update_programStatus("ready_move")
-                self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
-    """
 
     def arrived_handler(self, taskId, code):
         self.toBackend_photo()
         self.toBackend_notify(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value)
         
-        #qr_check = self.qrCheck_handler(code)
+        qr_check = self.qrCheck_handler(code)
         self.toBackend_photo()
-        #if qr_check:
-        if True:
-            #self.delivery_handler()
+        if qr_check:
             self.toBackend_notify(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_COMPLETE.value)
         else:
             self.toBackend_notify(taskId=taskId, taskStatus=dataInfo.TaskStatus.DELIVERY_FAILED.value)
@@ -684,6 +665,18 @@ class InteractionThread(threading.Thread):
             return qr_scanner.scan(code)
         finally:
             qr_scanner.close()
+
+    def cargoDelivery_handler(self, delivery_info):
+        """
+        这里处理利用MQTT吐货
+        """
+        n = []
+        for item in delivery_info:
+            binId = item.get("binId")
+            number = item.get("number")
+            for i in range(number):
+                n.append(binId)
+
 
     def delivered_handler(self, taskId, robot_floor, robot_house):
 

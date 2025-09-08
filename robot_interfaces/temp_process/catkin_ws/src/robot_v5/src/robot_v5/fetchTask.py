@@ -97,6 +97,8 @@ class FetchTask:
                             self.store_goalPositions(goal=True, addrList=goal_addrList)
                             return_addrList = data.get("addressList")
                             self.store_goalPositions(goal=False, addrList=return_addrList)
+                            spaceLists = taskInfo.get("spaceParams").get("spaceList")
+                            self.store_deliveryInfo(spaceLists=spaceLists)
 
                             #更新机器人状态
                             self.owner.robotState.update_robotTaskId(taskId_new)
@@ -152,6 +154,8 @@ class FetchTask:
                         self.store_goalPositions(goal=True, addrList=goal_addrList)
                         return_addrList = data.get("addressList")
                         self.store_goalPositions(goal=False, addrList=return_addrList)
+                        spaceLists = taskInfo.get("spaceParams").get("spaceList")
+                        self.store_deliveryInfo(spaceLists=spaceLists)
 
                         #更新机器人状态
                         self.owner.robotState.update_robotTaskId(taskId_new)
@@ -188,3 +192,14 @@ class FetchTask:
             else:
                 self.owner.currentOrder.update_returnPositions(return_pos_dict=pos_dict)
         
+    def store_deliveryInfo(self, spaceLists):
+        for item in spaceLists:
+            binId = item.get("spaceNo")
+            number = item.get("quantity")
+
+            cargo_dict = {
+                "binId":binId,
+                "number": number
+            }
+
+            self.owner.currentOrder.update_deliveryInfo(cargo_dict=cargo_dict)

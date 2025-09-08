@@ -19,12 +19,6 @@ class HttpClient:
         self.httpEncyption = httpEncryption
         self.flowId = ""
 
-        self.file_logger1 = logging.getLogger("backend_logger")
-        self.file_logger1.setLevel(logging.INFO)
-        fh1 = logging.FileHandler("backend_response.log", mode="a", encoding="utf-8")
-        fh1.setLevel(logging.INFO)
-        self.file_logger1.addHandler(fh1)
-
 
     def post_request(self, url, data):
         """
@@ -48,20 +42,20 @@ class HttpClient:
                     #不需要解密
                     result = response.json()
                     #print(f"\n <httpClient-42> backend response: {result}\n")
-                    self.file_logger1.info(f"<httpClient-51> backend response: {result}\n")
+                    print(f"<httpClient-51> backend response: {result}\n")
                     return result
                 #这里的情况包括服务器端各种异常比如 500, 404, 401 等等
                 else:
                     resp_code = response.status_code
-                    self.file_logger1.info(f"\n <httpClient-56> 第{i}次 [主动获取任务信息] 失败, 状态码: {response.status_code}\n")
+                    print(f"\n <httpClient-56> 第{i}次 [主动获取任务信息] 失败, 状态码: {response.status_code}\n")
             
             #网络异常、请求超时等等 网络错误
             except requests.RequestException as e:
-                self.file_logger1.info(f"\n <httpClient-60> 第{i}次调用接口异常: {e}\n")
+                print(f"\n <httpClient-60> 第{i}次调用接口异常: {e}\n")
 
             time.sleep(2)
 
-        self.file_logger1.info("\n <httpClient-64> 需要检查网络或后台状态 \n")
+        print("\n <httpClient-64> 需要检查网络或后台状态 \n")
         #self.report_httpError(code=resp_code)
 
         return None
