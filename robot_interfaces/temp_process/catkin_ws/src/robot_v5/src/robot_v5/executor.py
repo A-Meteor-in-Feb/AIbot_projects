@@ -21,6 +21,7 @@ from robot_v5 import qrCode
 from robot_v5 import elevatorFlowGetter
 from robot_v5 import fetchTask
 from robot_v5 import timeoutMonitor
+from robot_v5 import vendingMqtt
 
 from flask import Flask, jsonify
 from werkzeug.serving import make_server
@@ -42,6 +43,7 @@ STATIONID = "18839843720"
 HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送 & 跟后台发送请求的周期
 
 #连接参数
+VENDING_BROKER = ""
 BROKER_HOST = "10.25.0.17"
 BROKER_PORT = 1883
 HTTP_HEAD = "http"
@@ -91,7 +93,7 @@ class InteractionThread(threading.Thread):
     def __init__(self, robotState: dataInfo.RobotStateInfo, instructionInfo: dataInfo.InstructionInfo, 
                  http_client: httpClient.HttpClient, programStatus: dataInfo.ProgramStatus,
                  elevatorControl: dataInfo.ElevatorControl, statusBackend: dataInfo.StatusBackend,
-                 currentOrder: dataInfo.CurrentOrder, ros_pub_goal, stop_event: threading.Event):
+                 currentOrder: dataInfo.CurrentOrder, ros_pub_goal, vending_mqtt, stop_event: threading.Event):
         """
         这个线程主要用于逻辑控制和交互
         """
@@ -107,6 +109,7 @@ class InteractionThread(threading.Thread):
         self.ros_pub_goal = ros_pub_goal
         self.http_client = http_client
         self.stop_event = stop_event
+        self.vending_mqtt = vending_mqtt
 
         self.elevatorGettter = None
         self.elevatorStatus = 0
@@ -195,7 +198,7 @@ class InteractionThread(threading.Thread):
                     self.arrived_handler(taskId=taskId, code=code)
                     self.robotState.update_robotTaskId(0)
 
-                if programStatus == "delivered":
+                if programStatus == "cargo_delivery":
                     self.cargoDelivery_handler(delivery_info=delivery_info)
                 
                 if programStatus == "delivered" or programStatus == "delivered_failed":
@@ -347,7 +350,7 @@ class InteractionThread(threading.Thread):
             rospy.loginfo(f"\n<executor-273> error happens: {e}\n")
         
         if taskStatus == dataInfo.TaskStatus.DELIVERY_COMPLETE.value:
-            self.programStatus.update_programStatus("delivered")
+            self.programStatus.update_programStatus("cargo_delivery")
         elif taskStatus == dataInfo.TaskStatus.DELIVERY_FAILED.value:
             self.programStatus.update_programStatus("delivered_failed")
 
@@ -660,11 +663,13 @@ class InteractionThread(threading.Thread):
             False: 核对失败
         """
         #用两分钟的时间去核对二维码
-        qr_scanner = qrCode.QrCode(timeout=60)
-        try:
-            return qr_scanner.scan(code)
-        finally:
-            qr_scanner.close()
+        #qr_scanner = qrCode.QrCode(timeout=60)
+        #try:
+        #    return qr_scanner.scan(code)
+        #finally:
+        #    qr_scanner.close()
+        #订阅二维码, 两分钟内没订阅到或者订阅到了但是不匹配则返回失败
+        #成功后再出货
 
     def cargoDelivery_handler(self, delivery_info):
         """
@@ -676,7 +681,38 @@ class InteractionThread(threading.Thread):
             number = item.get("number")
             for i in range(number):
                 n.append(binId)
+        cmd = "shipment"
+        data = {
+            "data": {
+                "n": n
+            }
+        }
 
+        self.vending_mqtt.publish_client(cmd=cmd, data=data)
+        self.cargo_delivery_wait(programStatus_old="cargo_delivery")
+        programStatus = self.programStatus.get_programStatus()
+        if programStatus == "cargo_delivery_complete":
+            self.programStatus.update_programStatus("delivered")
+        else:
+            self.http_client.report_image_error(type=programStatus)
+            self.programStatus.update_programStatus("delivered")
+            
+        self.cargo_delivery_wait(programStatus_old=programStatus) # 等待用户拿货
+
+    def cargo_delivery_wait(self, programStatus_old):
+        rate = rospy.Rate(10) 
+        waited = 0
+        while waited < 120:
+                            
+            if self.stop_event.is_set() or rospy.is_shutdown():
+                break
+                            
+            programStatus_new = self.programStatus.get_programStatus()
+            if programStatus_new != programStatus_old:
+                break
+
+            rate.sleep()
+            waited += 0.1
 
     def delivered_handler(self, taskId, robot_floor, robot_house):
 
@@ -769,12 +805,15 @@ def main():
 
     ros_sub = rosSub.RosSub(robotState=robotState, programStatus=programStatus, robot_mqtt=robot_mqtt)
 
+    vending_mqtt = vendingMqtt.VendingMqtt(host=VENDING_BROKER, port=BACKEND_PORT, sn="sn")
+    vending_mqtt.connect()
+
     #线程启动
     stop_event = threading.Event()
     
     mqtt_thread = MqttThread(robot_mqtt=robot_mqtt, heartbeat=HEARTBEAT, stop_event=stop_event)
     mqtt_thread.start()
-    interaction_thread = InteractionThread(robotState=robotState, instructionInfo=instructionInfo, http_client=http_client, programStatus=programStatus, elevatorControl=elevatorControl, statusBackend=statusBackend, currentOrder=currentOrder, ros_pub_goal=ros_pub_goal, stop_event=stop_event)
+    interaction_thread = InteractionThread(robotState=robotState, instructionInfo=instructionInfo, http_client=http_client, programStatus=programStatus, elevatorControl=elevatorControl, statusBackend=statusBackend, currentOrder=currentOrder, ros_pub_goal=ros_pub_goal, vending_mqtt=vending_mqtt, stop_event=stop_event)
     interaction_thread.start()
 
 

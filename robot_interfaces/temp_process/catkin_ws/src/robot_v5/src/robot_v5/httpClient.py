@@ -161,6 +161,38 @@ class HttpClient:
             return response
         else:
             return None
+        
+    
+    def report_image_error(self, type):
+        """
+        接口3: 机器人主动向后台上传关键节点的图像
+        (也就是说到了关键节点你要自己主动控制摄像头拍照然后上传到后台)
+        (TODO: 判断关键节点 -> 控制摄像头拍照 -> 上传给后台)
+        """
+        url = f"{self.base_url}/api/robot/client/reportRobotCollect"
+
+        image_bytes = Path("images/deliver.jpg").read_bytes()
+        image_base64 = base64.b64encode(image_bytes).decode("ascii")
+        timestamp = dataInfo.utc_now_ms()
+        uuid_str = str(uuid.uuid4())
+
+        payload = {
+            "type": type,
+            "data": image_base64,
+            "timestamp": timestamp,
+            "uuid": uuid_str
+        }
+
+        #加密
+        #encrypted_payload = self.httpEncyption.encrypted_data(payload)
+        #data = {"data": encrypted_payload}
+
+        response = self.post_request(url=url, data=payload)
+
+        if response:
+            return response
+        else:
+            return None
 
 
     def report_video(self):
