@@ -116,7 +116,7 @@ class InteractionThread(threading.Thread):
         self.timeoutMonitor = timeoutMonitor.TimeoutMonitor(owner=self)
         self.relocalization_timeout = 10
         self.move_timeout = 3000
-        self.elevator_timeout = 2400
+        self.elevator_timeout = 3000
 
         self.scheduler = schedule.Scheduler()
         self.job = None
