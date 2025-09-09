@@ -8,7 +8,6 @@ class VendingMqtt:
         """
         这个类用于机器人与吐货机通信.
         """
-        
         self.host = host
         self.port = port
         self.msg_client = 1
@@ -66,7 +65,6 @@ class VendingMqtt:
                 "sn": self.sn,
                 "cmd": cmd,
                 "data": data
-
             }
         else:
             info = {
@@ -74,7 +72,6 @@ class VendingMqtt:
                 "sn": self.sn,
                 "cmd": cmd,
                 "data": data
-
             }
         message = json.dumps(info).encode("utf-8")
         self.mqtt_client.publish("vending/client", message, qos=0)
