@@ -5,6 +5,9 @@ from robot_v5 import dataInfo
 
 class VendingMqtt:
     def __init__(self, host, port, sn, programStatus: dataInfo.ProgramStatus):
+        """
+        这个类用于机器人与吐货机通信.
+        """
         
         self.host = host
         self.port = port
@@ -54,7 +57,7 @@ class VendingMqtt:
 
     def publish_client(self, cmd, data):
         """
-        发布话题 robots/{robotId}/state
+        发布话题 vending/client
         """
         if cmd == "shipment":
             self.msg_client += 1
@@ -81,7 +84,7 @@ class VendingMqtt:
 
     def server_handler(self, client, userdata, msg):
         """
-        用于接收来自后台的特殊指令消息
+        用于接收来自vending machine发布的消息 vending/server
         """
         params = json.loads(msg.payload.decode("utf-8"))
         msg_num = params.get("msg")

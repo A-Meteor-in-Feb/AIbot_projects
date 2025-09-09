@@ -174,6 +174,12 @@ class CurrentOrder:
     def __init__(self):
         """
         currentOrder: 用于维护记录当前执行的任务的详细信息 --- 后面可能还会更新 
+        包括:
+            taskId: 当前执行任务的ID
+            code: 当前任务的对应二维码
+            goal_positions: 要走到的对应地址位置信息
+            return_positions: 返回的对应地址位置信息
+            delivery_info: 要配送的货品的数量与货道号 
         """
         self.lock = threading.Lock()
         self.currentOrder = {
@@ -224,7 +230,7 @@ class CurrentOrder:
         """
         用于更新当前任务的详细货物信息
         参数:
-            cargo_dict = {"binId": number}
+            cargo_dict = {"binId": binId, "number": number}
         """
         with self.lock:
             self.currentOrder["delivery_info"].append(cargo_dict)
@@ -276,10 +282,16 @@ class InstructionInfo:
             return copy.deepcopy(self.movePositions)
         
     def get_command(self):
+        """
+        获得后台传过来的指令
+        """
         with self.lock:
             return self.command
         
     def update_command(self, commandContent):
+        """
+        更新后台传过来的指令
+        """
         with self.lock:
             self.command = commandContent
     
@@ -326,6 +338,9 @@ class InstructionInfo:
             self.movePositions = []
 
     def reset_command(self):
+        """
+        将存储的指令重置
+        """
         with self.lock:
             self.command = ""
     
@@ -366,13 +381,27 @@ class ProgramStatus:
 
 class ElevatorControl:
     def __init__(self):
+        """
+        用来记录机器人与电梯进行交互时需要的状态以及相关数据
+        包括:
+            status: 目前电梯的执行状态
+            robotId: 机器人ID
+            taskId: 正在执行的任务ID
+            house: 现在机器人所在的楼
+            fromFloor: 机器人出发楼层
+            toFloor: 机器人要走到的楼层
+            fromElevatorOutAddress: 要走到的电梯门口的点位
+            fromElevatorInAddress: 要走到店内内部的点位
+            toElevatorOutAddress: 没什么用
+            toElevatorInAddress: 要重定位的点位
+        """
         self.lock = threading.Lock()
 
         self.elevatorControlParams = {
             "status": 0,
             "robotId": 0,
             "taskId": 0,
-            "house": "ntuitive",
+            "house": "",
             "fromFloor": "",
             "toFloor": "",
             "fromElevatorOutAddress": {},
@@ -459,6 +488,9 @@ class ElevatorControl:
 
 
 class Signal:
+    """
+    好像没用来着....
+    """
     def __init__(self):
         self.lock = threading.lock()
         self.signal = ""

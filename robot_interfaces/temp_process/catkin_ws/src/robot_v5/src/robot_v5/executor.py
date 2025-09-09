@@ -95,7 +95,7 @@ class InteractionThread(threading.Thread):
                  elevatorControl: dataInfo.ElevatorControl, statusBackend: dataInfo.StatusBackend,
                  currentOrder: dataInfo.CurrentOrder, ros_pub_goal, vending_mqtt, stop_event: threading.Event):
         """
-        这个线程主要用于逻辑控制和交互
+        这个线程主要用于逻辑控制和不同系统之间的交互
         """
         super().__init__(daemon=True)
 
@@ -355,6 +355,9 @@ class InteractionThread(threading.Thread):
             self.programStatus.update_programStatus("delivered_failed")
 
     def relocalization_handler(self, programStatus_old):
+        """
+        处理重定位指令
+        """
         try:
             relocalization = self.instructionInfo.get_relocalizationInfo()
             relocalization_pos = relocalization.get("relocalization_position")
@@ -369,9 +372,15 @@ class InteractionThread(threading.Thread):
             rospy.loginfo(f"\n<executor-292> Error in PUBLISH GOAL: {e}\n")
 
     def finalize_relocalization_handler(self):
+        """
+        重定位指令结束后调用
+        """
         self.instructionInfo.reset_relocalizationInfo()
 
     def move_handler(self, taskId, positions):
+        """
+        机器人移动调用函数, move, 送货, 返回...
+        """
         for item in positions:
             robot_floor = self.robotState.get_state().get("floor")
             robot_house = self.robotState.get_state().get("house")
@@ -393,9 +402,15 @@ class InteractionThread(threading.Thread):
                 self.move_with_lift(taskId=taskId, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
 
     def finalize_move_handler(self):
+        """
+        机器人移动结束后调用函数接口
+        """
         self.instructionInfo.reset_movePositions()
 
     def command_handler(self):
+        """
+        机器人收到指令后处理接口
+        """
         command = self.instructionInfo.get_command()
         print(command)
         
@@ -407,6 +422,9 @@ class InteractionThread(threading.Thread):
         self.programStatus.update_programStatus("execute_command_complete") 
 
     def finalize_command_handler(self):
+        """
+        机器人指令处理完后调用的接口
+        """
         self.instructionInfo.reset_command()
 
     def move_with_lift(self, taskId, robot_floor, to_pos, to_floor, to_house, robot_house):
@@ -645,6 +663,9 @@ class InteractionThread(threading.Thread):
         return True
 
     def arrived_handler(self, taskId, code):
+        """
+        机器人配送到达后调用的接口
+        """
         self.toBackend_photo()
         self.toBackend_notify(taskId=taskId, taskStatus=dataInfo.TaskStatus.PENDING_RECEIPT.value)
         
@@ -715,6 +736,9 @@ class InteractionThread(threading.Thread):
         self.cargo_delivery_wait(programStatus_old=programStatus) # 等待用户拿货
 
     def cargo_delivery_wait(self, programStatus_old):
+        """
+        等待售卖机返回吐货结果
+        """
         rate = rospy.Rate(10) 
         waited = 0
         while waited < 120:
@@ -730,7 +754,9 @@ class InteractionThread(threading.Thread):
             waited += 0.1
 
     def delivered_handler(self, taskId, robot_floor, robot_house):
-
+        """
+        配送完成后调用的接口
+        """
         response = self.http_client.select_taskInfo(taskId=taskId, floor=robot_floor, building=robot_house)
         response_code = response.get("code")
         
@@ -746,6 +772,9 @@ class InteractionThread(threading.Thread):
 
     
     def finalize_task(self):
+        """
+        清空任务记录.
+        """
         self.currentOrder.reset_currentOrder()
         self.robotState.update_robotTaskId(0)
         self.statusBackend.update_statusBackend(0, 0)
