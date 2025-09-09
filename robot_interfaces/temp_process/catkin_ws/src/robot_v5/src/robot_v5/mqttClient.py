@@ -26,7 +26,8 @@ class MqttClient:
 
         self.connected = False
 
-        self.mqtt_client = mqtt.Client(client_id=robot_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
+        client_id = str(robot_id)+str(station_id)
+        self.mqtt_client = mqtt.Client(client_id=client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.reconnect_delay_set(min_delay=1, max_delay=30)

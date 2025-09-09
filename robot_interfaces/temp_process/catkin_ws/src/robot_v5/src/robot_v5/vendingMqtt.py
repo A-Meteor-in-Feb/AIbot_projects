@@ -9,15 +9,16 @@ class VendingMqtt:
         self.host = host
         self.port = port
         self.msg_client = 1
+        self.msg_server = 0
         self.sn = sn
         self.programStatus = programStatus
+        self.scanned_code = ""
 
-        self.mqtt_client = mqtt.Client(client_id="robot", callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
+        client_id = "robot"+str(self.sn)
+        self.mqtt_client = mqtt.Client(client_id=client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
         self.mqtt_client.on_connect = self.on_connect
         self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.reconnect_delay_set(min_delay=1, max_delay=30)
-
-        self.set_lastWill()
 
     def on_connect(self, client, userdata, flags, reason_code, properties):
         """
@@ -29,23 +30,11 @@ class VendingMqtt:
         self.mqtt_client.subscribe(topic="vending/server", qos=0)
         self.mqtt_client.message_callback_add("vending/server", self.server_handler)
 
-        self.connected = True
-
     def on_disconnect(self, client, userdata, flags, reason_code, properties):
         """
         掉线重连的回调函数
         """
-        self.connected = False
         print(f"MQTT disconnected with {reason_code}")
-
-
-    def set_lastWill(self):
-        """
-        last will 设置, 当机器人异常下线--程序崩溃停止运行, 或者彻底断线, 无法重连时发从此消息
-        """
-        payload = {"status": "offline", "reason": "disconnect"}
-        message = json.dumps(payload).encode("utf-8")
-        self.mqtt_client.will_set(f"robots/{self.stationId}/{self.robotId}/connection", message, qos=1, retain=True)
 
     def connect(self):
         """
@@ -58,7 +47,6 @@ class VendingMqtt:
         """
         控制机器人MQTT部分停止并退出执行
         """
-        self.connected = False
         self.mqtt_client.loop_stop()
         self.mqtt_client.disconnect()
         print("shutdown, exiting...")
@@ -68,31 +56,53 @@ class VendingMqtt:
         """
         发布话题 robots/{robotId}/state
         """
-        info = {
-            "msg": self.msg_client,
-            "sn": self.sn,
-            "cmd": cmd,
-            "data": data
+        if cmd == "shipment":
+            self.msg_client += 1
+            info = {
+                "msg": self.msg_client,
+                "sn": self.sn,
+                "cmd": cmd,
+                "data": data
 
-        }
+            }
+        else:
+            info = {
+                "msg": self.msg_server,
+                "sn": self.sn,
+                "cmd": cmd,
+                "data": data
+
+            }
         message = json.dumps(info).encode("utf-8")
         self.mqtt_client.publish("vending/client", message, qos=0)
         print(f"\n Published the state topic: {info} \n")
+        if cmd == "shipment":
+            self.msg_client += 1
 
     def server_handler(self, client, userdata, msg):
         """
         用于接收来自后台的特殊指令消息
         """
         params = json.loads(msg.payload.decode("utf-8"))
-        data = params.get("data")
-        status = "cargo_delivery_complete"
-        self.programStatus.update_programStatus(status)
-        for item in data:
-            r = item.get("r")
-            if r != 0:
-                e = item.get("e")
-                status = f"{status}:{e}"
-                self.programStatus.update_programStatus("status")
+        msg_num = params.get("msg")
+        self.msg_server = msg_num
+        cmd = params.get("cmd")
+        if cmd == "barcode":
+            data = params.get("data")
+            code_scanner = data.get("c")
+            programStatus = self.programStatus.get_programStatus()
+            if programStatus == "arrived":
+                self.scanned_code = code_scanner
+        elif cmd == "shipment":
+            data = params.get("data")
+            status = "cargo_delivery_complete"
+            self.programStatus.update_programStatus(status)
+            for item in data:
+                r = item.get("r")
+                if r != 0:
+                    e = item.get("e")
+                    status = f"{status}:{e}"
+                    self.programStatus.update_programStatus(status)
 
         print(f"\n receive instruction from backend: {params}")
 

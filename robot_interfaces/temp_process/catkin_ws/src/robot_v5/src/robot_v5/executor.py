@@ -662,14 +662,31 @@ class InteractionThread(threading.Thread):
             True: 核对成功
             False: 核对失败
         """
-        #用两分钟的时间去核对二维码
-        #qr_scanner = qrCode.QrCode(timeout=60)
-        #try:
-        #    return qr_scanner.scan(code)
-        #finally:
-        #    qr_scanner.close()
-        #订阅二维码, 两分钟内没订阅到或者订阅到了但是不匹配则返回失败
-        #成功后再出货
+        rate = rospy.Rate(10) 
+        waited = 0
+        cmd = "barcode"
+
+        while waited < 120:
+            code_get = self.vending_mqtt.scanned_code
+            if code_get:
+                if code == code_get:
+                    data = {
+                        "r": 0,
+                        "c": code_get
+                    }
+                    self.vending_mqtt.publish_client(cmd=cmd, data=data)
+                    return True
+            
+            rate.sleep()
+            waited += 0.1
+
+        data = {
+            "r": 1,
+            "c": self.vending_mqtt.scanned_code
+        }
+        self.vending_mqtt.publish_client(cmd=cmd, data=data)
+        return False
+        
 
     def cargoDelivery_handler(self, delivery_info):
         """
@@ -683,9 +700,7 @@ class InteractionThread(threading.Thread):
                 n.append(binId)
         cmd = "shipment"
         data = {
-            "data": {
-                "n": n
-            }
+            "n": n
         }
 
         self.vending_mqtt.publish_client(cmd=cmd, data=data)
@@ -729,25 +744,6 @@ class InteractionThread(threading.Thread):
             else:
                 self.robotState.update_robotStatus(robotStatus="back")
 
-    """
-    def back_handler(self, return_positions):
-        
-        for item in return_positions:
-            robot_floor = self.robotState.get_state().get("floor")
-            robot_house = self.robotState.get_state().get("house")
-            to_floor = item.get("floor")
-            to_pos = item.get("dock")
-            to_house = item.get("house")
-
-            rospy.loginfo(f"\nnew travil: robot's floor {robot_floor}, to: {to_floor}\n")
-                    
-            if to_floor != robot_floor:
-                self.programStatus.update_programStatus(programStatus="to_lift_outside")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
-            else:
-                self.programStatus.update_programStatus("ready_move")
-                self.move_with_lift(taskId=None, robot_floor=robot_floor, to_pos=to_pos, to_floor=to_floor, to_house=to_house, robot_house=robot_house)
-        """
     
     def finalize_task(self):
         self.currentOrder.reset_currentOrder()
