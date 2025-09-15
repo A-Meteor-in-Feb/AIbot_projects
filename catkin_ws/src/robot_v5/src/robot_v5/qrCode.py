@@ -86,4 +86,8 @@ class QrCode:
             self.dev.close()
         except Exception:
             pass
-        
+"""
+if __name__ == "__main__":
+    qr_scanner = QrCode(timeout=60)
+    print(qr_scanner.scan(code))     
+"""
