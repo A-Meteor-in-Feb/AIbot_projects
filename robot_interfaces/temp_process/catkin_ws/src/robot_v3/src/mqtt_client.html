@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>mqtt client</title>
+		<script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
+	</head>
+	<body>
+		<script>
+			window.initMqtt = function(stationId) {
+
+
+				window.client = mqtt.connect(`ws://39.98.129.125:1883/mqtt`, {
+					keepalive: 60,
+					clientId: 'admin_' + Date.now(),
+					clean: true,
+					reconnectPeriod: 1000,
+					connectTimeout: 30 * 1000,
+				});
+
+				// 连接成功
+				client.on('connect', function() {
+					alert('mqtt connect')
+					console.info('mqtt connect');
+				});
+
+				// 接收消息
+				client.on('message', function(topic, message) {
+					alert('mqtt message ' + message.toString())
+					console.info('mqtt message', message.toString());
+
+				});
+
+				// 连接错误
+				client.on('error', function(err) {
+					alert('mqtt error')
+					console.info('mqtt error', err);
+				});
+
+				// 断开连接
+				client.on('close', function() {
+					alert('mqtt close')
+					console.info('mqtt close');
+				});
+
+
+				client.subscribe(`robots/${stationId}/+/connection`, function(err) {
+					if (!err) {
+						console.info('mqtt subscribe success');
+
+					} else {
+						console.info('mqtt subscribe fail', err);
+					}
+				});
+
+				client.subscribe(`robots/${stationId}/+/signal`, function(err) {
+					if (!err) {
+						console.info('mqtt subscribe success');
+
+					} else {
+						console.info('mqtt subscribe fail', err);
+					}
+				});
+
+
+				client.subscribe(`vending/client`, function(err) {
+					if (!err) {
+						console.info('mqtt subscribe success');
+
+					} else {
+						console.info('mqtt subscribe fail', err);
+					}
+				});
+
+
+
+			}
+
+			initMqtt()
+		</script>
+	</body>
+</html>

@@ -43,7 +43,7 @@ STATIONID = "18839843720"
 HEARTBEAT = 5 #控制MQTT 状态话题的周期性发送 & 跟后台发送请求的周期
 
 #连接参数
-VENDING_BROKER = ""
+VENDING_BROKER = "192.168.1.5"
 BROKER_HOST = "10.25.0.17"
 BROKER_PORT = 1883
 HTTP_HEAD = "http"
@@ -688,7 +688,8 @@ class InteractionThread(threading.Thread):
         cmd = "barcode"
 
         while waited < 120:
-            code_get = self.vending_mqtt.scanned_code
+            with self.vending_mqtt.lock:
+                code_get = self.vending_mqtt.scanned_code
             if code_get:
                 if code == code_get:
                     data = {
@@ -713,6 +714,7 @@ class InteractionThread(threading.Thread):
         """
         这里处理利用MQTT吐货
         """
+        """
         n = []
         for item in delivery_info:
             binId = item.get("binId")
@@ -723,9 +725,21 @@ class InteractionThread(threading.Thread):
         data = {
             "n": n
         }
-
         self.vending_mqtt.publish_client(cmd=cmd, data=data)
         self.cargo_delivery_wait(programStatus_old="cargo_delivery")
+        programStatus = self.programStatus.get_programStatus()
+        """
+        for item in delivery_info:
+            binId = item.get("binId")
+            number = item.get("number")
+            for i in range(number):
+                n = int(binId)
+                data = {"n": n}
+                cmd = "shipment"
+
+                self.vending_mqtt.publish_client(cmd=cmd, data=data)
+                self.cargo_delivery_wait(programStatus_old="cargo_delivery")
+
         programStatus = self.programStatus.get_programStatus()
         if programStatus == "cargo_delivery_complete":
             self.programStatus.update_programStatus("delivered")
@@ -830,7 +844,7 @@ def main():
 
     ros_sub = rosSub.RosSub(robotState=robotState, programStatus=programStatus, robot_mqtt=robot_mqtt)
 
-    vending_mqtt = vendingMqtt.VendingMqtt(host=VENDING_BROKER, port=BACKEND_PORT, sn="sn")
+    vending_mqtt = vendingMqtt.VendingMqtt(host=VENDING_BROKER, port=BROKER_PORT, sn="SN25063001", programStatus=programStatus)
     vending_mqtt.connect()
 
     #线程启动

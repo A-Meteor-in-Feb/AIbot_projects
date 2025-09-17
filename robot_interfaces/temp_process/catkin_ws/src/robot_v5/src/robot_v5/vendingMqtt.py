@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 from robot_v5 import dataInfo
-
+import threading
 
 class VendingMqtt:
     def __init__(self, host, port, sn, programStatus: dataInfo.ProgramStatus):
@@ -15,6 +15,9 @@ class VendingMqtt:
         self.sn = sn
         self.programStatus = programStatus
         self.scanned_code = ""
+        self.error_info = ""
+
+        self.lock = threading.Lock()
 
         client_id = "robot"+str(self.sn)
         self.mqtt_client = mqtt.Client(client_id=client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2, clean_session=False)
@@ -59,7 +62,6 @@ class VendingMqtt:
         发布话题 vending/client
         """
         if cmd == "shipment":
-            self.msg_client += 1
             info = {
                 "msg": self.msg_client,
                 "sn": self.sn,
@@ -92,17 +94,18 @@ class VendingMqtt:
             code_scanner = data.get("c")
             programStatus = self.programStatus.get_programStatus()
             if programStatus == "arrived":
-                self.scanned_code = code_scanner
+                with self.lock:
+                    self.scanned_code = code_scanner
         elif cmd == "shipment":
             data = params.get("data")
             status = "cargo_delivery_complete"
             self.programStatus.update_programStatus(status)
-            for item in data:
-                r = item.get("r")
-                if r != 0:
-                    e = item.get("e")
-                    status = f"{status}:{e}"
-                    self.programStatus.update_programStatus(status)
+            #for item in data:
+            #    r = item.get("r")
+            #    if r != 0:
+            #        e = item.get("e")
+            #        status = f"{status}:{e}"
+            #        self.programStatus.update_programStatus(status)
 
         print(f"\n receive instruction from backend: {params}")
 
