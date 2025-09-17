@@ -15,7 +15,7 @@ class HttpClient:
         目的: 方便机器人随时调用向后台发送请求的接口.
         """
         self.base_url = f"{head}://{host}:{port}"
-        self.retries = 5
+        self.retries = 1
         self.httpEncyption = httpEncryption
         self.flowId = ""
 

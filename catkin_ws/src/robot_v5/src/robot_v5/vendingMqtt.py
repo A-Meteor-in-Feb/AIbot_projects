@@ -107,7 +107,7 @@ class VendingMqtt:
             #        status = f"{status}:{e}"
             #        self.programStatus.update_programStatus(status)
 
-        print(f"\n receive instruction from backend: {params}")
+        print(f"\n receive instruction from backend: {params}\n")
 
 
 """
