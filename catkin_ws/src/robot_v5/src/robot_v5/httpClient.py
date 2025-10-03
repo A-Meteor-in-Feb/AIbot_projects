@@ -33,7 +33,7 @@ class HttpClient:
             try:
                 header = self.httpEncyption.build_auth_headers()
 
-                response = requests.post(url=url, headers=header, json=data, timeout=10)
+                response = requests.post(url=url, headers=header, json=data, timeout=60)
 
                 if response.ok:
                     #需要解密
@@ -41,7 +41,7 @@ class HttpClient:
                     #result = self.httpEncyption.decrypt_response_data(data)
                     #不需要解密
                     result = response.json()
-                    print(f"\n <httpClient-44> post response: {result}\n")
+                    print(f"\n <httpClient-44>: {url} \n post response: \n {result}\n")
                     return result
                 #这里的情况包括服务器端各种异常比如 500, 404, 401 等等
                 else:
@@ -50,7 +50,7 @@ class HttpClient:
             
             #网络异常、请求超时等等 网络错误
             except requests.RequestException as e:
-                print(f"\n <httpClient-60> 第{i}次调用接口异常: {e}\n")
+                print(f"\n <httpClient-60>\n 第{i}次调用接口:{url}异常: {e}\n")
 
             time.sleep(2)
 

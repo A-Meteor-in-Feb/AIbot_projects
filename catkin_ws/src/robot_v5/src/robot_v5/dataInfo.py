@@ -4,6 +4,8 @@ import threading
 import copy
 
 def utc_now_ms():
+    """
+    """
     now = datetime.now()
     timestamp_str = now.strftime("%Y-%m-%d %H:%M:%S")
     return timestamp_str

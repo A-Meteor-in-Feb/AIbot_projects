@@ -7,7 +7,7 @@ import time
 def goal_callback(msg: Goal_v3):
     if msg.relocation:
         print(f"receive goal {msg}")
-        time.sleep(1)
+        time.sleep(0.2)
         publish_signal("RELOCATION_RECEIVED")
         print("RELOCATION_RECEIVED\n")
         time.sleep(5)
@@ -15,15 +15,15 @@ def goal_callback(msg: Goal_v3):
         print("RELOCATION_COMPLETE\n")
     elif msg.stop:
         print(f"receive goal {msg}")
-        time.sleep(2)
+        time.sleep(0.2)
         publish_signal("STOP_RECEIVED")
         print("STOP_RECEIVED\n")
     else:
         print(f"receive goal {msg}")
-        time.sleep(0.2)
+        time.sleep(5)
         publish_signal("GOAL_RECEIVED")
         print("GOAL_RECEIVED\n")
-        time.sleep(2)
+        time.sleep(5)
         publish_signal("GOAL_ARRIVED")
         print("GOAL_ARRIVED\n")
 

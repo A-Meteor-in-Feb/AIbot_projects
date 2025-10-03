@@ -308,7 +308,7 @@ class InteractionThread(threading.Thread):
         """
         rate = rospy.Rate(10) 
         waited = 0
-        while waited < 0.5:
+        while waited < 1:
                             
             if self.stop_event.is_set() or rospy.is_shutdown():
                 break
@@ -345,7 +345,7 @@ class InteractionThread(threading.Thread):
         """
         try:
             response = self.http_client.update_taskStatus(taskId=taskId, taskStatus=taskStatus)
-            rospy.loginfo(f"\nnotify backend and get: {response} \n")
+            rospy.loginfo(f"\nnotify backend with {taskStatus} \n get: {response} \n")
         except Exception as e:
             rospy.loginfo(f"\n<executor-350> error happens: {e}\n")
         
@@ -730,7 +730,7 @@ class InteractionThread(threading.Thread):
         """
         这里处理利用MQTT吐货
         """
-        """
+        
         n = []
         for item in delivery_info:
             binId = item.get("binId")
@@ -744,18 +744,7 @@ class InteractionThread(threading.Thread):
         self.vending_mqtt.publish_client(cmd=cmd, data=data)
         self.cargo_delivery_wait(programStatus_old="cargo_delivery")
         programStatus = self.programStatus.get_programStatus()
-        """
-        n = []
-        for item in delivery_info:
-            binId = item.get("binId")
-            number = item.get("number")
-            for i in range(number):
-                n.append(binId)
-                data = {"n": n}
-                cmd = "shipment"
-
-                self.vending_mqtt.publish_client(cmd=cmd, data=data)
-                self.cargo_delivery_wait(programStatus_old="cargo_delivery")
+        
                 
         programStatus = self.programStatus.get_programStatus()
         if programStatus == "cargo_delivery_complete":
