@@ -54,6 +54,22 @@ class FetchTask:
             self._stop.wait(0.1)
 
     def fetchTask(self):
+        """
+        从后台获取任务信息, 并根据返回结果更新机器人状态
+
+        流程：
+            1. 获取机器人当前状态 (taskId、floor、house 等)
+            2. 调用后台接口查询任务信息
+            3. 根据返回的 taskId 和 status 与本地状态对比:
+                - 如果有新任务，初始化 currentOrder 和 elevatorControl, 并更新机器人状态为 "task"
+                - 如果任务被取消 (status==60)，重置任务信息并更新机器人状态为 "back"
+                - 如果是补货任务 (status==90)，更新返回地址并设置状态为 "restock"
+                - 如果补货后重新分配配送任务 (status==30, old==90)，恢复配送逻辑
+            4. 遇到异常时，打印 ROS 日志
+        
+        返回:
+            schedule.CancelJob: 如果 stop 被触发或 ROS 关闭，则取消定时任务
+        """
         if self._stop.is_set() or rospy.is_shutdown():
             return schedule.CancelJob
         
@@ -193,6 +209,13 @@ class FetchTask:
                 self.owner.currentOrder.update_returnPositions(return_pos_dict=pos_dict)
         
     def store_deliveryInfo(self, spaceLists):
+        """
+        存储并更新订单的货品信息
+        参数:
+            spaceLists (list[dict]) 货仓空间信息，每个元素包含:
+                * spaceNo: 货道编号
+                * quantity: 数量
+        """
         for item in spaceLists:
             binId = item.get("spaceNo")
             number = item.get("quantity")

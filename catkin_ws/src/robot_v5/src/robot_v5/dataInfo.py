@@ -5,12 +5,26 @@ import copy
 
 def utc_now_ms():
     """
+    获取当前 UTC 时间并返回字符串格式
+    返回:
+        str: 当前 UTC 时间的字符串表示，格式为 "YYYY-MM-DD HH:MM:SS"
     """
     now = datetime.now()
     timestamp_str = now.strftime("%Y-%m-%d %H:%M:%S")
     return timestamp_str
 
 class TaskStatus(Enum):
+    """
+    任务状态枚举类, 用于表示订单或配送任务在不同阶段的状态值
+
+    Attributes:
+        DELIVERING (int): 配送中（值为 30)
+        PENDING_RECEIPT (int): 待收货（值为 40)
+        DELIVERY_COMPLETE (int): 配送完成（值为 50)
+        CANCELLED (int): 已取消（值为 60)
+        DELIVERY_FAILED (int): 配送失败（值为 80)
+        RESTOCKING (int): 补货中（值为 90)
+    """
     DELIVERING = 30
     PENDING_RECEIPT = 40
     DELIVERY_COMPLETE = 50

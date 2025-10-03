@@ -48,6 +48,17 @@ class ElevatorFlowGetter:
             self._stop.wait(0.1)
 
     def get(self):
+        """
+        获取电梯流程信息, 并更新 owner 对象
+
+        - 调用后台 HTTP 接口获取电梯流程状态。
+        - 记录返回数据到日志文件。
+        - 更新 owner 的 elevatorStatus 和 elevatorControl 相关参数。
+        - 当流程完成 (status==100 或 10000)，或 owner.programStatus 进入 "ready_move"，则终止任务。
+
+        返回:
+            schedule.CancelJob: 当流程结束或需要停止时返回该值以取消调度
+        """
         if self._stop.is_set() or rospy.is_shutdown():
             return schedule.CancelJob
             
