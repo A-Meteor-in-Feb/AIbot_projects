@@ -22,7 +22,6 @@ class ElevatorFlowGetter:
     def start(self):
         if self._thread.is_alive():
             return
-        # 注册定时任务：每 period 秒调用一次 _tick
 
         try:
             self.get()
